@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Outer circle ring -->
+  <circle cx="50" cy="50" r="47" stroke="white" stroke-width="3" fill="none"/>
+
+  <!-- Inner thin ring -->
+  <circle cx="50" cy="50" r="39" stroke="white" stroke-width="1" stroke-dasharray="4 3" fill="none" opacity="0.35"/>
+
+  <!-- DNA double helix strands -->
+  <!-- Left strand (S-curve) -->
+  <path d="M38 22 C34 30, 42 35, 38 44 C34 53, 42 57, 38 66 C34 75, 38 80, 38 80" 
+        stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- Right strand (S-curve, mirrored) -->
+  <path d="M62 22 C66 30, 58 35, 62 44 C66 53, 58 57, 62 66 C66 75, 62 80, 62 80" 
+        stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Horizontal rungs connecting the strands -->
+  <line x1="38" y1="29" x2="62" y2="29" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  <line x1="38" y1="38" x2="62" y2="38" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  <line x1="38" y1="50" x2="62" y2="50" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="38" y1="62" x2="62" y2="62" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  <line x1="38" y1="71" x2="62" y2="71" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Center dot at midpoint -->
+  <circle cx="50" cy="50" r="3" fill="white"/>
+
+  <!-- Small dots at rung-strand intersections for DNA node effect -->
+  <circle cx="38" cy="29" r="2" fill="white"/>
+  <circle cx="62" cy="29" r="2" fill="white"/>
+  <circle cx="38" cy="50" r="2" fill="white"/>
+  <circle cx="62" cy="50" r="2" fill="white"/>
+  <circle cx="38" cy="71" r="2" fill="white"/>
+  <circle cx="62" cy="71" r="2" fill="white"/>
+</svg>

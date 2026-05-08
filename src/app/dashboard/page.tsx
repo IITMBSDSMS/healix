@@ -1,0 +1,116 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Activity, HeartPulse, ShieldAlert, FileText, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function DashboardPage() {
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold mb-2">Welcome to Healix</h1>
+        <p className="text-white/60">Your central hub for intelligent healthcare and safety.</p>
+      </div>
+
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {/* Quick Action: Check Symptoms */}
+        <motion.div variants={item}>
+          <Link href="/ai-check" className="block h-full">
+            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors">
+              <div>
+                <div className="bg-primary/20 p-3 rounded-lg w-fit mb-4">
+                  <Activity className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Check Symptoms</h3>
+                <p className="text-sm text-white/60 mb-6">Use Healix AI to analyze your symptoms and get instant medical guidance.</p>
+              </div>
+              <span className="text-primary text-sm font-medium flex items-center gap-1">Start Check <ArrowRight className="h-4 w-4" /></span>
+            </GlassCard>
+          </Link>
+        </motion.div>
+
+        {/* Quick Action: Book Care */}
+        <motion.div variants={item}>
+          <Link href="/care" className="block h-full">
+            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors">
+              <div>
+                <div className="bg-green-500/20 p-3 rounded-lg w-fit mb-4">
+                  <HeartPulse className="h-6 w-6 text-green-500" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Book Care</h3>
+                <p className="text-sm text-white/60 mb-6">Schedule appointments with healthcare professionals and labs.</p>
+              </div>
+              <span className="text-green-500 text-sm font-medium flex items-center gap-1">Find Doctors <ArrowRight className="h-4 w-4" /></span>
+            </GlassCard>
+          </Link>
+        </motion.div>
+
+        {/* Quick Action: Emergency SOS */}
+        <motion.div variants={item}>
+          <Link href="/shesecure" className="block h-full">
+            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors" glowOnHover={false}>
+              <div className="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition-colors" />
+              <div className="relative z-10">
+                <div className="bg-red-500/20 p-3 rounded-lg w-fit mb-4">
+                  <ShieldAlert className="h-6 w-6 text-red-500 animate-pulse" />
+                </div>
+                <h3 className="text-xl font-semibold text-red-400 mb-2">Emergency SOS</h3>
+                <p className="text-sm text-white/60 mb-6">Quickly alert your emergency contacts with your live location.</p>
+              </div>
+              <span className="relative z-10 text-red-500 text-sm font-medium flex items-center gap-1">Configure Safety <ArrowRight className="h-4 w-4" /></span>
+            </GlassCard>
+          </Link>
+        </motion.div>
+      </motion.div>
+
+      {/* Recent Activity Section (Mock) */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mt-12"
+      >
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <FileText className="h-6 w-6 text-white/50" />
+          Recent Activity
+        </h2>
+        <GlassCard className="w-full overflow-hidden" glowOnHover={false}>
+          <div className="divide-y divide-white/10">
+            <div className="py-4 px-2 hover:bg-white/5 transition-colors flex justify-between items-center">
+              <div>
+                <p className="font-medium">Account created</p>
+                <p className="text-sm text-white/50">Welcome to Healix</p>
+              </div>
+              <span className="text-sm text-white/40">Just now</span>
+            </div>
+            <div className="py-8 px-2 text-center text-white/50">
+              No recent medical activity. Try checking your symptoms or booking an appointment.
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
+    </div>
+  );
+}
