@@ -10,7 +10,8 @@ import {
   getAdminData, updateApplicationStatus, deleteProject, updateProjectProgress, addVehicle, deleteVehicle,
   addBiolabPhoto, deleteBiolabPhoto, addBiolabEvent, deleteBiolabEvent, 
   addBiolabAnnouncement, deleteBiolabAnnouncement, addBiolabNews, deleteBiolabNews,
-  addBiolabProgram, deleteBiolabProgram, addReel, deleteReel
+  addBiolabProgram, deleteBiolabProgram, addReel, deleteReel,
+  addSessionPhoto, deleteSessionPhoto
 } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Session photo drag-drop state
+  const [photoDragOver, setPhotoDragOver] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoCaption, setPhotoCaption] = useState("");
+  const [photoAdding, setPhotoAdding] = useState(false);
+  const photoFileRef = React.useRef<HTMLInputElement>(null);
+
   const fetchData = async () => {
     setLoading(true);
     const res = await getAdminData();
@@ -32,6 +40,11 @@ export default function AdminPage() {
         router.push("/login");
       }
     } else {
+      // Merge local storage photos for mock/demo mode
+      if (typeof window !== 'undefined') {
+        const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+        res.session_photos = [...localPhotos, ...(res.session_photos || [])];
+      }
       setData(res);
     }
     setLoading(false);
@@ -39,9 +52,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push("/login");
-      else fetchData();
+    supabase.auth.getSession().then(() => {
+      fetchData();
     });
   }, []);
 
@@ -97,6 +109,13 @@ export default function AdminPage() {
 
   const handleDeleteContent = async (id: string, deleteFunc: Function) => {
     if(confirm("Delete this content?")) {
+      // Also remove from local storage if it exists there
+      if (typeof window !== 'undefined') {
+        const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+        const filtered = localPhotos.filter((p: any) => p.id !== id);
+        localStorage.setItem('healix_mock_photos', JSON.stringify(filtered));
+      }
+
       const res = await deleteFunc(id);
       if (res.error) alert(res.error);
       else fetchData();
@@ -655,6 +674,159 @@ export default function AdminPage() {
                     </div>
                   </GlassCard>
                 </div>
+
+                {/* Session Photos Management */}
+                <GlassCard className="border-white/5 mt-8">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-pink-400" /> Session Photos
+                    <span className="text-xs text-white/40 font-normal ml-2">— displayed in the SheSecure photo marquee</span>
+                  </h3>
+
+                  {/* Drag-drop upload zone */}
+                  <div
+                    className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 mb-4 cursor-pointer ${
+                      photoDragOver
+                        ? "border-pink-500 bg-pink-500/10"
+                        : photoPreview
+                        ? "border-pink-500/40 bg-[#0a0a0a]"
+                        : "border-white/10 bg-[#0a0a0a] hover:border-pink-500/40 hover:bg-pink-500/5"
+                    }`}
+                    onDragOver={(e) => { e.preventDefault(); setPhotoDragOver(true); }}
+                    onDragLeave={() => setPhotoDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setPhotoDragOver(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith("image/")) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    onClick={() => photoFileRef.current?.click()}
+                  >
+                    <input
+                      ref={photoFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    {photoPreview ? (
+                      <div className="relative">
+                        <img src={photoPreview} alt="Preview" className="w-full max-h-64 object-cover rounded-xl" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setPhotoPreview(null); }}
+                          className="absolute top-3 right-3 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                        <p className="absolute bottom-3 left-3 text-xs text-white/60">Click to replace</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-10 px-4">
+                        <div className={`p-4 rounded-2xl mb-3 transition-colors ${photoDragOver ? "bg-pink-500/20" : "bg-white/5"}`}>
+                          <ImageIcon className={`h-8 w-8 transition-colors ${photoDragOver ? "text-pink-400" : "text-white/30"}`} />
+                        </div>
+                        <p className="text-sm font-semibold text-white/70">{photoDragOver ? "Drop to upload" : "Drag & drop an image here"}</p>
+                        <p className="text-xs text-white/30 mt-1">or click to browse · PNG, JPG, WebP</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* URL fallback + caption + submit */}
+                  <div className="flex gap-2">
+                    <input
+                      value={photoCaption}
+                      onChange={(e) => setPhotoCaption(e.target.value)}
+                      placeholder="Caption (e.g. Digital Safety Training)"
+                      className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-500/50"
+                    />
+                    {!photoPreview && (
+                      <input
+                        id="photo-url-fallback"
+                        placeholder="Or paste image URL"
+                        className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-500/50"
+                      />
+                    )}
+                    <button
+                      disabled={photoAdding || (!photoPreview && !(document?.getElementById("photo-url-fallback") as HTMLInputElement)?.value)}
+                      onClick={async () => {
+                        const urlInput = document?.getElementById("photo-url-fallback") as HTMLInputElement;
+                        const imageUrl = photoPreview || urlInput?.value?.trim();
+                        if (!imageUrl || !photoCaption.trim()) {
+                          alert("Please add an image and a caption.");
+                          return;
+                        }
+                        setPhotoAdding(true);
+
+                        // In mock mode, we save to local storage for persistence
+                        if (typeof window !== 'undefined') {
+                          const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+                          const newPhoto = {
+                            id: 'mock-' + Date.now(),
+                            caption: photoCaption.trim(),
+                            image_url: imageUrl,
+                            created_at: new Date().toISOString()
+                          };
+                          localStorage.setItem('healix_mock_photos', JSON.stringify([newPhoto, ...localPhotos]));
+                        }
+
+                        const fd = new FormData();
+                        fd.append("caption", photoCaption.trim());
+                        fd.append("image_url", imageUrl);
+                        const res = await addSessionPhoto(fd);
+                        if (res?.error) {
+                          alert(res.error);
+                        } else {
+                          setPhotoPreview(null);
+                          setPhotoCaption("");
+                          if (urlInput) urlInput.value = "";
+                          fetchData();
+                        }
+                        setPhotoAdding(false);
+                      }}
+                      className="px-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-40 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold shrink-0"
+                    >
+                      {photoAdding ? (
+                        <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <><Plus className="h-4 w-4" /> Add Photo</>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Photos grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1 mt-6">
+                    {(data.session_photos || []).map((p: any) => (
+                      <div key={p.id} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-video">
+                        <img src={p.image_url} alt={p.caption} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                        <p className="absolute bottom-2 left-2 right-8 text-xs text-white font-semibold truncate">{p.caption}</p>
+                        <button
+                          onClick={() => handleDeleteContent(p.id, deleteSessionPhoto)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {(data.session_photos || []).length === 0 && (
+                      <div className="col-span-full py-8 text-center text-white/30 border border-dashed border-white/10 rounded-xl">
+                        No session photos yet. Upload or paste a URL above.
+                      </div>
+                    )}
+                  </div>
+                </GlassCard>
               </motion.div>
             )}
 

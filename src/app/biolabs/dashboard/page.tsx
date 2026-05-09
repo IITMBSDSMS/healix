@@ -36,12 +36,10 @@ export default function UserDashboardPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login?next=/biolabs/dashboard");
-      } else {
+      if (session) {
         setUser(session.user);
-        fetchDashboardData();
       }
+      fetchDashboardData();
     });
   }, []);
 

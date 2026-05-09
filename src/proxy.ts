@@ -51,8 +51,8 @@ function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-// ─── Middleware ────────────────────────────────────────────────────────────
-export async function middleware(request: NextRequest) {
+// ─── Proxy ────────────────────────────────────────────────────────────
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Get real IP (handles Vercel / Cloudflare proxies)
@@ -89,22 +89,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 4. Auth session management (Supabase)
+  // 4. Auth session management (Supabase) — handles all route protection & redirects
   const response = await updateSession(request);
-
-  // 5. Redirect unauthenticated users away from protected routes
-  if (isProtectedRoute(pathname)) {
-    const hasSession =
-      request.cookies.get("sb-access-token") ||
-      request.cookies.has("sb-auth-token") ||
-      [...request.cookies.getAll()].some((c) => c.name.includes("auth-token"));
-
-    if (!hasSession) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
 
   return response;
 }

@@ -59,9 +59,28 @@ export async function saveSosAlert(location: { lat: number; lng: number } | null
   return { success: true };
 }
 
+// ─── SESSION PHOTOS ──────────────────────────────────────────────────────────
+
+export async function getSessionPhotos() {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("shesecure_session_photos")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return data || [];
+}
+
 // ─── EMERGENCY CONTACTS ──────────────────────────────────────────────────────
 
+
 export async function getContacts() {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return [];
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -76,6 +95,9 @@ export async function getContacts() {
 }
 
 export async function saveContact(formData: FormData) {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return { success: true };
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
@@ -99,6 +121,9 @@ export async function saveContact(formData: FormData) {
 }
 
 export async function deleteContact(id: string) {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return { success: true };
+
   const supabase = await createClient();
   const { error } = await supabase.from("contacts").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -130,6 +155,12 @@ export async function startTrip(
   location: { lat: number; lng: number } | null,
   recordingEnabled: boolean = false
 ) {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) {
+    console.log("[MOCK] startTrip called", { vehicleId, location });
+    return { success: true, tripId: "mock-trip-" + Date.now() };
+  }
+
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -175,6 +206,8 @@ export async function startTrip(
 }
 
 export async function endTrip(tripId: string) {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return { success: true };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -188,6 +221,9 @@ export async function endTrip(tripId: string) {
 }
 
 export async function getTripHistory() {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return [];
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];

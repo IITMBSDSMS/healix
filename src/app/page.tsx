@@ -399,7 +399,7 @@ export default function Home() {
                   alt="Healix mobile app mockup showing health dashboard and SheSecure safety map"
                   width={520}
                   height={520}
-                  className="relative drop-shadow-2xl"
+                  className="relative drop-shadow-2xl w-full h-auto max-w-[520px]"
                   priority
                 />
               </motion.div>

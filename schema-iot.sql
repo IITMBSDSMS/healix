@@ -6,7 +6,8 @@ ADD COLUMN IF NOT EXISTS iot_device_id TEXT UNIQUE;
 CREATE TABLE IF NOT EXISTS public.iot_telemetry (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     device_id TEXT NOT NULL,
-    location JSONB NOT NULL, -- {lat: number, lng: number}
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
     audio_buffer TEXT, -- Base64 encoded short audio snippet for emergency streaming
     is_emergency BOOLEAN DEFAULT false,
     timestamp TIMESTAMPTZ DEFAULT NOW()

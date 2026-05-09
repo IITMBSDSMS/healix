@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Shield, AlertTriangle, MapPin, X, Users, Calendar, Phone, Mail, Trash2, Plus, QrCode, Car, CheckCircle, Clock, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { saveSosAlert, saveContact, deleteContact, lookupVehicle, startTrip, endTrip, updateTripLocation, getContacts, getTripHistory } from "./actions";
+import { saveSosAlert, saveContact, deleteContact, lookupVehicle, startTrip, endTrip, updateTripLocation, getContacts, getTripHistory, getSessionPhotos } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -53,6 +53,9 @@ export default function SheSecurePage() {
   // Trip History
   const [tripHistory, setTripHistory] = useState<any[]>([]);
 
+  // Session Photos (from DB, falls back to hardcoded)
+  const [dbSessionPhotos, setDbSessionPhotos] = useState<{id: string; image_url: string; caption: string}[]>([]);
+
   // Scanner Modal State
   const [showScanner, setShowScanner] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -61,15 +64,21 @@ export default function SheSecurePage() {
   useEffect(() => {
     const fetchData = async () => {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login?redirect=/shesecure");
-        return;
-      }
+      await supabase.auth.getSession();
       const fetchedContacts = await getContacts();
       const fetchedTrips = await getTripHistory();
+      const fetchedPhotos = await getSessionPhotos();
       setContacts(fetchedContacts);
       setTripHistory(fetchedTrips);
+      
+      // Merge local storage photos for mock/demo mode
+      let allPhotos = [...fetchedPhotos];
+      if (typeof window !== 'undefined') {
+        const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+        allPhotos = [...localPhotos, ...allPhotos];
+      }
+      
+      if (allPhotos.length > 0) setDbSessionPhotos(allPhotos);
     };
     fetchData();
   }, [router]);
@@ -567,7 +576,7 @@ export default function SheSecurePage() {
         <div className="relative overflow-hidden rounded-2xl border border-white/5" style={{ maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)" }}>
           <style>{`@keyframes marquee-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}.marquee-track{display:flex;gap:1.25rem;width:max-content;animation:marquee-scroll 30s linear infinite}.marquee-track:hover{animation-play-state:paused}`}</style>
           <div className="marquee-track py-3">
-            {[...sessionPhotos, ...sessionPhotos].map((photo, idx) => (
+            {[...(dbSessionPhotos.length > 0 ? dbSessionPhotos.map(p => ({ src: p.image_url, caption: p.caption })) : sessionPhotos), ...(dbSessionPhotos.length > 0 ? dbSessionPhotos.map(p => ({ src: p.image_url, caption: p.caption })) : sessionPhotos)].map((photo, idx) => (
               <div key={idx} className="relative group shrink-0 w-72 h-52 rounded-xl overflow-hidden border border-white/10 shadow-lg">
                 <img src={photo.src} alt={photo.caption} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

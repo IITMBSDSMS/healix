@@ -28,13 +28,31 @@ export function Navbar() {
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (user) {
+        setUser(user);
+      } else {
+        // Fallback: check for mock session cookie (dummy-mock-token)
+        const hasMock = document.cookie.split(";").some((c) =>
+          c.trim().startsWith("dummy-mock-token=")
+        );
+        if (hasMock) {
+          setUser({ email: "demo@healix.tech", id: "mock-user" });
+        }
+      }
     };
 
     getUser();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        // Re-check mock cookie on auth state changes (e.g. after logout)
+        const hasMock = document.cookie.split(";").some((c) =>
+          c.trim().startsWith("dummy-mock-token=")
+        );
+        setUser(hasMock ? { email: "demo@healix.tech", id: "mock-user" } : null);
+      }
     });
 
     return () => {

@@ -41,86 +41,68 @@ export default function LiveTrackingPage() {
   const lastSuccessRef = useRef<number>(Date.now());
   const heartbeatFiredRef = useRef(false);
 
-  // ─── Fetch Trip Data ───────────────────────────────────────────────────────
-  const fetchTrip = useCallback(async () => {
-    const data = await getTripData(tripId);
-    if ("error" in data) {
-      setError(data.error as string);
-      return null;
-    }
-    if ("trip" in data) {
-      const t = data.trip as any;
-      setTrip(t as TripData);
-      if (t.status === "iot_override") {
-        setSignalState("iot_override");
-        const deviceId = t.vehicles?.iot_device_id;
+  // ─── Unified Data Fetching ────────────────────────────────────────────────
+  const fetchData = useCallback(async () => {
+    try {
+      // 1. Try fetching trip data first
+      const data = await getTripData(tripId);
+      
+      if (data && "trip" in data) {
+        const t = data.trip as any;
+        setTrip(t as TripData);
+        
+        // Use device ID from trip or fallback to tripId itself if it looks like a device ID
+        const deviceId = t.vehicles?.iot_device_id || (tripId.startsWith("IOT-") ? tripId : null);
+        
         if (deviceId) {
           const tel = await getIotTelemetry(deviceId);
           if (tel.telemetry) {
             setIotTelemetry(tel.telemetry);
-            setCurrentLocation(tel.telemetry.location);
+            setCurrentLocation({ lat: tel.telemetry.lat, lng: tel.telemetry.lng });
+            setSignalState("iot_override");
           }
         }
-      } else if (t.status === "completed") {
-        setSignalState("completed");
+        
+        if (t.status === "completed") setSignalState("completed");
+        setLoading(false);
+        setError(null);
+        return;
       }
-    }
-    setLoading(false);
-    return data;
-  }, [tripId]);
 
-  // ─── Push GPS Location ─────────────────────────────────────────────────────
-  const pushLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCurrentLocation(loc);
-        lastSuccessRef.current = Date.now();
-        heartbeatFiredRef.current = false; // Reset failsafe
-
-        // Update signal to active
-        setSignalState(prev => prev === "iot_override" || prev === "completed" ? prev : "active");
-
-        try {
-          await fetch("/api/suraksha/track", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tripId, location: loc }),
+      // 2. Fallback: Try fetching as a direct IoT device if it looks like one
+      if (tripId.startsWith("IOT-")) {
+        const tel = await getIotTelemetry(tripId);
+        if (tel.telemetry) {
+          setIotTelemetry(tel.telemetry);
+          setCurrentLocation({ lat: tel.telemetry.lat, lng: tel.telemetry.lng });
+          setSignalState("iot_override");
+          
+          // Mock a trip object for the UI
+          setTrip({
+            id: tripId,
+            status: "active",
+            start_location: { lat: tel.telemetry.lat, lng: tel.telemetry.lng },
+            route_data: [],
+            created_at: new Date().toISOString(),
+            recording_enabled: false,
+            iot_override: true,
+            user: { name: "IoT Device" },
+            vehicles: { driver_name: "Hardware Tracker", vehicle_number: tripId }
           });
-        } catch (_) {}
-      },
-      () => {
-        // GPS denied / unavailable - don't update lastSuccess
+          setLoading(false);
+          setError(null);
+          return;
+        }
       }
-    );
-  }, [tripId]);
 
-  // ─── Heartbeat Monitor ─────────────────────────────────────────────────────
-  const checkHeartbeat = useCallback(async () => {
-    if (signalState === "iot_override" || signalState === "completed") return;
-
-    const elapsed = (Date.now() - lastSuccessRef.current) / 1000; // seconds
-
-    if (elapsed > 60 && !heartbeatFiredRef.current) {
-      heartbeatFiredRef.current = true;
-      setSignalState("lost");
-      // Trigger server-side failsafe alert
-      try {
-        await fetch("/api/suraksha/failsafe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tripId }),
-        });
-      } catch (_) {}
-
-      // Also switch to IoT override
-      await triggerIotOverride(tripId);
-      await fetchTrip();
-    } else if (elapsed > 30) {
-      setSignalState("weak");
+      throw new Error("Tracking ID not found or inactive.");
+    } catch (err: any) {
+      console.error("Fetch Error:", err);
+      // Only set error if we've been loading for a while (prevent flicker)
+      if (loading) setError(err.message || "Failed to load tracking data.");
+      setLoading(false);
     }
-  }, [signalState, tripId, fetchTrip]);
+  }, [tripId, loading]);
 
   // ─── SOS Handler ───────────────────────────────────────────────────────────
   const handleSos = async () => {
@@ -142,26 +124,24 @@ export default function LiveTrackingPage() {
     if (!confirm("Simulate Phone Battery Death? This will trigger the IoT hardware override for testing.")) return;
     await triggerIotOverride(tripId);
     setSignalState("iot_override");
-    await fetchTrip();
+    await fetchData();
   };
 
   // ─── Polling Setup ─────────────────────────────────────────────────────────
   useEffect(() => {
-    fetchTrip();
+    fetchData();
+    const interval = setInterval(fetchData, 5000); // Poll every 5s
 
-    // Push GPS every 10 seconds
-    const gpsInterval = setInterval(pushLocation, 10000);
-    // Check heartbeat every 5 seconds
-    const heartbeatInterval = setInterval(checkHeartbeat, 5000);
-
-    // Push initial location immediately
-    pushLocation();
+    // Safeguard: Stop loading after 15s regardless
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 15000);
 
     return () => {
-      clearInterval(gpsInterval);
-      clearInterval(heartbeatInterval);
+      clearInterval(interval);
+      clearTimeout(timeout);
     };
-  }, [fetchTrip, pushLocation, checkHeartbeat]);
+  }, [fetchData]);
 
   // ─── Loading / Error states ─────────────────────────────────────────────────
   if (loading) {
@@ -354,7 +334,7 @@ export default function LiveTrackingPage() {
                 </p>
                 {iotTelemetry && (
                   <p className="text-xs font-mono text-orange-400">
-                    IoT GPS: {iotTelemetry.location?.lat?.toFixed(6)}, {iotTelemetry.location?.lng?.toFixed(6)}
+                    IoT GPS: {iotTelemetry.lat?.toFixed(6)}, {iotTelemetry.lng?.toFixed(6)}
                   </p>
                 )}
                 <p className="text-[10px] text-white/30 mt-2">Device ID: {trip.vehicles.iot_device_id || "Unknown"}</p>

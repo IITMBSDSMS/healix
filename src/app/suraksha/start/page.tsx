@@ -25,13 +25,7 @@ function SurakshaStartContent() {
 
     const checkAuthAndVehicle = async () => {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        // Redirect to login, appending the current URL as a redirect parameter
-        router.push(`/login?redirect=/suraksha/start?vid=${vid}`);
-        return;
-      }
+      await supabase.auth.getSession();
 
       // Fetch vehicle
       const { data, error } = await supabase.from("vehicles").select("*").eq("id", vid).single();

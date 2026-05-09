@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 export async function login(formData: FormData) {
   const email = formData.get("email") as string;
@@ -16,7 +17,8 @@ export async function login(formData: FormData) {
   // If dummy URL is used, we mock success for demonstration purposes
   if (process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
     console.log("[MOCK LOGIN] Logged in as:", email);
-    // In a real scenario without valid keys, redirecting here is fine for UI testing
+    // Set a dummy cookie so middleware allows access to protected routes
+    (await cookies()).set("dummy-mock-token", "1", { path: "/" });
     redirect("/dashboard");
   }
 
@@ -59,6 +61,7 @@ export async function signup(formData: FormData) {
     } else {
         console.log("[MOCK RESEND] Sent welcome email to:", email);
     }
+    (await cookies()).set("dummy-mock-token", "1", { path: "/" });
     redirect("/dashboard");
   }
 
@@ -96,5 +99,7 @@ export async function signup(formData: FormData) {
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // Clear mock session cookie if present
+  (await cookies()).set("dummy-mock-token", "", { path: "/", maxAge: 0 });
   redirect("/");
 }

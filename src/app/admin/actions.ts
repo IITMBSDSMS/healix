@@ -5,11 +5,12 @@ import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
 
 export async function checkIsAdmin() {
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return true; // Allow admin access in demo/mock mode
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
-  // For MVP: anyone logged in can access the admin panel if no admin_email is set, 
-  // or check against a specific email if you want strict security.
   const adminEmail = process.env.ADMIN_EMAIL;
   if (adminEmail && user.email !== adminEmail) return false;
   return true;
@@ -34,11 +35,18 @@ export async function getAdminData() {
       vehicles: [
         { id: "demo-vehicle-id", driver_name: "Ramesh Kumar (Demo)", vehicle_number: "DL 01 AB 1234", qr_code: "DL-01-AB-1234" }
       ],
-      trips: []
+      trips: [],
+      announcements: [],
+      events: [],
+      news: [],
+      photos: [],
+      programs: [],
+      reels: [],
+      session_photos: []
     };
   }
 
-  const [appsRes, projRes, vehRes, tripRes, annRes, evtRes, newsRes, photoRes, progRes, reelsRes] = await Promise.all([
+  const [appsRes, projRes, vehRes, tripRes, annRes, evtRes, newsRes, photoRes, progRes, reelsRes, sessionPhotoRes] = await Promise.all([
     supabase.from("biolab_applications").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_projects").select("*").order("created_at", { ascending: false }),
     supabase.from("vehicles").select("*").order("created_at", { ascending: false }),
@@ -48,7 +56,8 @@ export async function getAdminData() {
     supabase.from("biolab_news").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_photos").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_programs").select("*").order("created_at", { ascending: true }),
-    supabase.from("community_reels").select("*").order("created_at", { ascending: false })
+    supabase.from("community_reels").select("*").order("created_at", { ascending: false }),
+    supabase.from("shesecure_session_photos").select("*").order("created_at", { ascending: false })
   ]);
 
   return {
@@ -61,7 +70,8 @@ export async function getAdminData() {
     news: newsRes.data || [],
     photos: photoRes.data || [],
     programs: progRes.data || [],
-    reels: reelsRes.data || []
+    reels: reelsRes.data || [],
+    session_photos: sessionPhotoRes.data || []
   };
 }
 
@@ -308,5 +318,35 @@ export async function deleteReel(id: string) {
   if (error) return { error: error.message };
   revalidatePath("/admin");
   revalidatePath("/");
+  return { success: true };
+}
+
+// === SheSecure Session Photos ===
+export async function addSessionPhoto(formData: FormData) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return { success: true };
+
+  const supabase = await createClient();
+  const caption = formData.get("caption") as string;
+  const image_url = formData.get("image_url") as string;
+  if (!caption || !image_url) return { error: "Caption and Image URL are required" };
+  const { error } = await supabase.from("shesecure_session_photos").insert({ caption, image_url });
+  if (error) return { error: error.message };
+  revalidatePath("/admin");
+  revalidatePath("/shesecure");
+  return { success: true };
+}
+
+export async function deleteSessionPhoto(id: string) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (isMock) return { success: true };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("shesecure_session_photos").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin");
+  revalidatePath("/shesecure");
   return { success: true };
 }
