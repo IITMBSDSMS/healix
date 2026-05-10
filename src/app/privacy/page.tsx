@@ -2,13 +2,18 @@
 
 import React from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { motion } from "framer-motion";
 
 export default function PrivacyPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16"
+    >
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
-        <p className="text-white/60">Last updated: October 2025</p>
+        <p className="text-white/60">Last updated: {new Date().getFullYear()}</p>
       </div>
 
       <GlassCard className="p-8 prose prose-invert prose-p:text-white/70 max-w-none" glowOnHover={false}>
@@ -44,6 +49,6 @@ export default function PrivacyPage() {
           We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used, or accessed in an unauthorized way, altered, or disclosed.
         </p>
       </GlassCard>
-    </div>
+    </motion.div>
   );
 }

@@ -169,9 +169,9 @@ export default function CarePage() {
               <FlaskConical className="h-6 w-6 text-purple-400" />
               Popular Health Checks
             </h2>
-            <Link href="#" className="text-primary hover:text-primary/80 text-sm font-medium flex items-center">
+            <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More packages coming soon">
               View All <ChevronRight className="h-4 w-4" />
-            </Link>
+            </span>
           </div>
           <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 gap-6 snap-x hide-scrollbar">
             {popularChecks.map((check, i) => (
@@ -202,9 +202,9 @@ export default function CarePage() {
               <TrendingUp className="h-6 w-6 text-green-400" />
               Trending Medicines
             </h2>
-            <Link href="#" className="text-primary hover:text-primary/80 text-sm font-medium flex items-center">
+            <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More medicines coming soon">
               View All <ChevronRight className="h-4 w-4" />
-            </Link>
+            </span>
           </div>
           <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 gap-6 snap-x hide-scrollbar">
             {trendingMedicines.map((med, i) => (

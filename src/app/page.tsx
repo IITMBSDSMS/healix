@@ -59,8 +59,9 @@ export default function Home() {
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 sm:pt-32">
         <div className="flex justify-center mb-8">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
             className="flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10"
           >
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -70,26 +71,26 @@ export default function Home() {
         
         <div className="mx-auto max-w-3xl text-center">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, filter: "blur(8px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-5xl font-bold tracking-tight sm:text-7xl text-white mb-6"
           >
             Healthcare & Security <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">Infrastructure</span>
           </motion.h1>
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="mt-6 text-lg leading-8 text-white/50 font-medium"
           >
             Engineered for scale. Healix unifies predictive medical diagnostics, high-performance research labs, and live IoT security ecosystems into one seamless platform.
           </motion.p>
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-10 flex items-center justify-center gap-x-6"
           >
             <Link href="/dashboard">
@@ -105,11 +106,11 @@ export default function Home() {
 
         {/* Modules Cards */}
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
           <Link href="/ai-check">
             <GlassCard className="h-full flex flex-col justify-between group cursor-pointer hover:border-purple-500/30">
               <div>
@@ -186,10 +187,10 @@ export default function Home() {
 
         {/* Infrastructure Architecture Flow */}
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="mt-32 border-t border-white/10 pt-20"
         >
           <div className="text-center mb-16">
@@ -234,10 +235,10 @@ export default function Home() {
 
         {/* Testimonials */}
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="mt-32 border-t border-white/10 pt-20"
         >
           <div className="text-center mb-16">
@@ -305,10 +306,10 @@ export default function Home() {
 
         {/* ── Mobile App Launching Soon ── */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="mt-32 border-t border-white/10 pt-20 pb-12"
         >
           <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#0a0a0a] via-[#0d0a1a] to-[#050505] p-10 md:p-16 flex flex-col lg:flex-row items-center gap-12">
@@ -386,10 +387,10 @@ export default function Home() {
             {/* Right: Mockup Image */}
             <div className="relative z-10 flex-1 flex items-center justify-center">
               <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: 20 }}
-                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.9, delay: 0.2 }}
+                transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
                 className="relative"
               >
                 {/* Glow behind mockup */}

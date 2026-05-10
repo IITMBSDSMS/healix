@@ -1,0 +1,35 @@
+api_key: "${DD_API_KEY}"
+site: "datadoghq.com"
+
+# APM Settings
+apm_config:
+  enabled: true
+  env: "production"
+  service: "healix-platform"
+
+# Logs Settings
+logs_enabled: true
+
+# Process Agent
+process_config:
+  process_collection:
+    enabled: true
+
+# Vercel integration specific tags
+tags:
+  - "env:production"
+  - "project:healix"
+  - "team:infrastructure"
+
+# Log scraping config for edge/serverless functions
+logs:
+  - type: custom
+    source: nodejs
+    service: healix-api-gateway
+    tags:
+      - "layer:api"
+  - type: custom
+    source: postgres
+    service: healix-supabase
+    tags:
+      - "layer:database"

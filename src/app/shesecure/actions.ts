@@ -9,31 +9,20 @@ export async function saveSosAlert(location: { lat: number; lng: number } | null
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-  const isMock =
-    process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" ||
-    !process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  if (isMock) {
-    console.log("[MOCK DB] SOS Alert Saved:", { location });
-    try {
-      await fetch(`${siteUrl}/api/send-sos`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Mock User", location, timestamp: new Date().toISOString(), contacts: [] }),
-      });
-    } catch (e) {}
-    return { success: true };
-  }
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "You must be logged in to send an SOS alert." };
 
   // Save to DB
-  await supabase.from("sos_alerts").insert({
+  const { error: insertError } = await supabase.from("sos_alerts").insert({
     user_id: user.id,
-    location: location ? location : null,
+    location: location || null,
     status: "active",
   });
+
+  if (insertError) {
+    console.error("Failed to save SOS alert:", insertError);
+    // Continue anyway to try sending email
+  }
 
   // Fetch saved emergency contacts
   const { data: contacts } = await supabase
@@ -78,9 +67,6 @@ export async function getSessionPhotos() {
 
 
 export async function getContacts() {
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return [];
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -95,9 +81,6 @@ export async function getContacts() {
 }
 
 export async function saveContact(formData: FormData) {
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return { success: true };
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
@@ -121,9 +104,6 @@ export async function saveContact(formData: FormData) {
 }
 
 export async function deleteContact(id: string) {
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return { success: true };
-
   const supabase = await createClient();
   const { error } = await supabase.from("contacts").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -155,12 +135,6 @@ export async function startTrip(
   location: { lat: number; lng: number } | null,
   recordingEnabled: boolean = false
 ) {
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) {
-    console.log("[MOCK] startTrip called", { vehicleId, location });
-    return { success: true, tripId: "mock-trip-" + Date.now() };
-  }
-
   const supabase = await createClient();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -239,41 +213,31 @@ export async function getTripHistory() {
 }
 
 export async function updateTripLocation(tripId: string, location: { lat: number; lng: number }) {
-
   const supabase = await createClient();
-  const timestamp = new Date().toISOString();
-
-  // Fetch current route_data
-  const { data: trip, error: fetchError } = await supabase
-    .from("trips")
-    .select("route_data")
-    .eq("id", tripId)
-    .single();
-
-  if (fetchError || !trip) return { error: "Trip not found" };
-
-  const routeData = trip.route_data || [];
-  const updatedRoute = [...routeData, { lat: location.lat, lng: location.lng, timestamp }];
-
+  
+  // High-performance insert into trip_locations table
   const { error } = await supabase
-    .from("trips")
-    .update({ route_data: updatedRoute })
-    .eq("id", tripId);
+    .from("trip_locations")
+    .insert({
+      trip_id: tripId,
+      lat: location.lat,
+      lng: location.lng
+    });
 
   if (error) return { error: error.message };
   return { success: true };
 }
 
 export async function getTripData(tripId: string) {
-
   const supabase = await createClient();
-  const { data, error } = await supabase
+  
+  // Fetch trip header data
+  const { data: trip, error: tripError } = await supabase
     .from("trips")
     .select(`
       id,
       status,
       start_location,
-      route_data,
       created_at,
       user_id,
       vehicles (driver_name, vehicle_number, iot_device_id)
@@ -281,14 +245,22 @@ export async function getTripData(tripId: string) {
     .eq("id", tripId)
     .single();
 
-  if (error || !data) return { error: "Trip not found" };
+  if (tripError || !trip) return { error: "Trip not found" };
 
-  // Fetch the user's name separately since auth.users doesn't directly join easily in all setups
-  const { data: userData } = await supabase.auth.admin.getUserById(data.user_id).catch(() => ({ data: null }));
+  // Fetch trip locations for the route
+  const { data: locations } = await supabase
+    .from("trip_locations")
+    .select("lat, lng, timestamp")
+    .eq("trip_id", tripId)
+    .order("timestamp", { ascending: true });
+
+  // Fetch the user's name separately
+  const { data: userData } = await supabase.auth.admin.getUserById(trip.user_id).catch(() => ({ data: null }));
 
   return {
     trip: {
-      ...data,
+      ...trip,
+      route_data: locations || [],
       user: { name: userData?.user?.user_metadata?.name || "Healix User" }
     }
   };

@@ -265,7 +265,7 @@ export default function AICheckPage() {
                   >
                     <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-60" />
                     <span className="ai-history-title">{sess.title}</span>
-                    <span className="ai-history-date">{formatDate(sess.timestamp)}</span>
+                    <span className="ai-history-date" suppressHydrationWarning>{formatDate(sess.timestamp)}</span>
                     <button
                       onClick={(e) => deleteSession(sess.id, e)}
                       className="ai-history-del"

@@ -1,55 +1,72 @@
 /**
- * IoT Hardware Simulator (Failsafe Tester)
+ * Healix Enterprise IoT Hardware Simulator (v2.0)
  * 
- * Run this script to simulate an onboard IoT Tracker sending GPS and Audio buffers
- * to the Healix backend API.
+ * Implements HMAC-SHA256 Zero-Trust Signature Protocol.
  * 
- * Usage: node simulate-iot.js <DEVICE_ID>
+ * Usage: 
+ *   IOT_API_SECRET=your_secret node simulate-iot.js <DEVICE_ID>
  */
+
+const crypto = require('crypto');
 
 const DEVICE_ID = process.argv[2] || "IOT-CAB-001";
 const API_URL = process.argv[3] || "http://localhost:3000/api/iot/stream";
+const SECRET = process.env.IOT_API_SECRET || "change-me-to-a-strong-random-secret";
 
-console.log(`Starting IoT Simulator for Device: ${DEVICE_ID}`);
-console.log(`Targeting: ${API_URL}`);
+console.log(`--- Healix IoT Hardware Simulator ---`);
+console.log(`Device ID: ${DEVICE_ID}`);
+console.log(`Target:    ${API_URL}`);
+console.log(`Security:  HMAC-SHA256 (Secret: ${SECRET.substring(0, 4)}***)`);
 
-// Initial coordinates (Delhi)
 let currentLat = 28.539;
 let currentLng = 77.202;
 
-// Fake a tiny 1-second silent audio buffer for demonstration (a real device sends actual microphone chunks)
 const FAKE_AUDIO_WAV_BASE64 = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
 
-setInterval(async () => {
-  // Move the car slightly
-  currentLat += 0.0001;
-  currentLng += 0.0001;
+async function pulse() {
+  currentLat += (Math.random() - 0.5) * 0.001;
+  currentLng += (Math.random() - 0.5) * 0.001;
 
+  const timestamp = new Date().toISOString();
   const payload = {
     deviceId: DEVICE_ID,
     lat: currentLat,
     lng: currentLng,
-    timestamp: new Date().toISOString(),
+    timestamp: timestamp,
     audioBase64: FAKE_AUDIO_WAV_BASE64,
-    isEmergency: true,
+    isEmergency: Math.random() > 0.9, // 10% chance of emergency pulse
   };
+
+  const bodyString = JSON.stringify(payload);
+  
+  // Zero-Trust Signature Generation
+  const signature = crypto
+    .createHmac('sha256', SECRET)
+    .update(bodyString + timestamp)
+    .digest('hex');
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "x-iot-secret": "change-me-to-a-strong-random-secret" 
+        "x-healix-signature": signature,
+        "x-healix-timestamp": timestamp
       },
-      body: JSON.stringify(payload),
+      body: bodyString,
     });
     
     if (res.ok) {
-      console.log(`[${new Date().toLocaleTimeString()}] Sent IoT Telemetry -> Lat: ${currentLat.toFixed(5)}, Lng: ${currentLng.toFixed(5)}`);
+      const result = await res.json();
+      console.log(`[${new Date().toLocaleTimeString()}] Pulse Sent | Status: ${res.status} | Buffered: ${result.buffered}`);
     } else {
-      console.error(`[${new Date().toLocaleTimeString()}] API Error:`, await res.text());
+      console.error(`[${new Date().toLocaleTimeString()}] Security/API Rejection:`, await res.text());
     }
   } catch (err) {
-    console.error("Failed to reach Healix API. Ensure the API URL is correct and reachable.");
+    console.error("Transmission Failure: Ensure the Healix Gateway is active.");
   }
-}, 5000); // Pulse every 5 seconds
+}
+
+// Start pulsing
+setInterval(pulse, 3000);
+pulse();

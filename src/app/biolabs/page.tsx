@@ -296,7 +296,7 @@ export default function BioLabsPage() {
             <div className="bg-white text-black rounded-sm overflow-hidden flex-1 flex flex-col shadow-lg">
               <div className="h-48 bg-slate-200 relative">
                 {dynamicPhotos.length > 0 && (
-                  <Image src={dynamicPhotos[0].image_url} alt={dynamicPhotos[0].title} layout="fill" objectFit="cover" className="opacity-90" />
+                  <Image src={dynamicPhotos[0].image_url} alt={dynamicPhotos[0].title} fill style={{ objectFit: 'cover' }} className="opacity-90" />
                 )}
               </div>
               <div className="p-4 flex-1 font-bold text-lg flex items-center">
@@ -318,7 +318,7 @@ export default function BioLabsPage() {
             {dynamicEvents.length > 0 && (
               <>
                 <div className="h-32 bg-slate-200 relative shrink-0">
-                  <Image src={dynamicEvents[0].image_url} alt="Event" layout="fill" objectFit="cover" />
+                  <Image src={dynamicEvents[0].image_url} alt="Event" fill style={{ objectFit: 'cover' }} />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
                   <h3 className="text-2xl font-black mb-4 tracking-tight">Events</h3>

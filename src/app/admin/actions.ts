@@ -1,18 +1,21 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
+import { recordAuditLog } from "@/lib/infrastructure/audit";
 
 export async function checkIsAdmin() {
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return true; // Allow admin access in demo/mock mode
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
+  
+  // In a real production app, check against an 'admins' table or a custom claim.
+  // For now, we'll use an environment variable for the primary admin.
   const adminEmail = process.env.ADMIN_EMAIL;
   if (adminEmail && user.email !== adminEmail) return false;
+  
   return true;
 }
 
@@ -22,41 +25,23 @@ export async function getAdminData() {
 
   const supabase = await createClient();
 
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  if (isMock) {
-    return {
-      applications: [
-        { id: "app-1", name: "Avnish", idea_title: "AI Cancer Detection", category: "AI", status: "pending", created_at: new Date().toISOString() }
-      ],
-      projects: [
-        { id: "proj-1", title: "CRISPR Target Mapping", category: "Healthcare", status: "Research", progress: 65 }
-      ],
-      vehicles: [
-        { id: "demo-vehicle-id", driver_name: "Ramesh Kumar (Demo)", vehicle_number: "DL 01 AB 1234", qr_code: "DL-01-AB-1234" }
-      ],
-      trips: [],
-      announcements: [],
-      events: [],
-      news: [],
-      photos: [],
-      programs: [],
-      reels: [],
-      session_photos: []
-    };
-  }
-
-  const [appsRes, projRes, vehRes, tripRes, annRes, evtRes, newsRes, photoRes, progRes, reelsRes, sessionPhotoRes] = await Promise.all([
+  const [
+    appsRes, projRes, vehRes, tripRes, 
+    annRes, evtRes, newsRes, photoRes, 
+    progRes, reelsRes, evidenceRes, sosRes, sessionRes
+  ] = await Promise.all([
     supabase.from("biolab_applications").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_projects").select("*").order("created_at", { ascending: false }),
     supabase.from("vehicles").select("*").order("created_at", { ascending: false }),
-    supabase.from("trips").select("*, vehicles(vehicle_number)").order("created_at", { ascending: false }).limit(10),
+    supabase.from("trips").select("*, vehicles(vehicle_number)").order("created_at", { ascending: false }).limit(20),
     supabase.from("biolab_announcements").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_events").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_news").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_photos").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_programs").select("*").order("created_at", { ascending: true }),
     supabase.from("community_reels").select("*").order("created_at", { ascending: false }),
+    supabase.from("evidence_logs").select("*, trips(user_id)").order("created_at", { ascending: false }).limit(10),
+    supabase.from("sos_alerts").select("*").order("created_at", { ascending: false }).limit(10),
     supabase.from("shesecure_session_photos").select("*").order("created_at", { ascending: false })
   ]);
 
@@ -71,7 +56,9 @@ export async function getAdminData() {
     photos: photoRes.data || [],
     programs: progRes.data || [],
     reels: reelsRes.data || [],
-    session_photos: sessionPhotoRes.data || []
+    evidence: evidenceRes.data || [],
+    sos_alerts: sosRes.data || [],
+    session_photos: sessionRes.data || []
   };
 }
 
@@ -79,9 +66,17 @@ export async function getAdminData() {
 export async function updateApplicationStatus(id: string, status: 'accepted' | 'rejected') {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   
   const { error } = await supabase.from("biolab_applications").update({ status }).eq("id", id);
   if (error) return { error: error.message };
+
+  await recordAuditLog({
+    actor_id: user?.id,
+    action: `APPLICATION_${status.toUpperCase()}`,
+    entity_type: 'biolab_application',
+    entity_id: id
+  });
 
   // If accepted, auto-create a project
   if (status === 'accepted') {
@@ -105,8 +100,18 @@ export async function updateApplicationStatus(id: string, status: 'accepted' | '
 export async function deleteProject(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { error } = await supabase.from("biolab_projects").delete().eq("id", id);
   if (error) return { error: error.message };
+
+  await recordAuditLog({
+    actor_id: user?.id,
+    action: 'DELETE_PROJECT',
+    entity_type: 'biolab_project',
+    entity_id: id
+  });
+
   revalidatePath("/admin");
   revalidatePath("/biolabs");
   return { success: true };
@@ -126,7 +131,7 @@ export async function updateProjectProgress(id: string, progress: number) {
 
 export async function addBiolabPhoto(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const title = formData.get("title") as string;
   const image_url = formData.get("image_url") as string;
   if (!title || !image_url) return { error: "Title and Image URL required" };
@@ -139,7 +144,7 @@ export async function addBiolabPhoto(formData: FormData) {
 
 export async function deleteBiolabPhoto(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("biolab_photos").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -149,7 +154,7 @@ export async function deleteBiolabPhoto(id: string) {
 
 export async function addBiolabEvent(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const image_url = formData.get("image_url") as string;
@@ -172,7 +177,7 @@ export async function addBiolabEvent(formData: FormData) {
 
 export async function deleteBiolabEvent(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("biolab_events").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -182,7 +187,7 @@ export async function deleteBiolabEvent(id: string) {
 
 export async function addBiolabAnnouncement(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const content = formData.get("content") as string;
   if (!content) return { error: "Content required" };
   const { error } = await supabase.from("biolab_announcements").insert({ content });
@@ -194,7 +199,7 @@ export async function addBiolabAnnouncement(formData: FormData) {
 
 export async function deleteBiolabAnnouncement(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("biolab_announcements").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -204,7 +209,7 @@ export async function deleteBiolabAnnouncement(id: string) {
 
 export async function addBiolabNews(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const title = formData.get("title") as string;
   const link_url = formData.get("link_url") as string || "#";
   const is_document = formData.get("is_document") === "on";
@@ -219,7 +224,7 @@ export async function addBiolabNews(formData: FormData) {
 
 export async function deleteBiolabNews(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("biolab_news").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -229,7 +234,7 @@ export async function deleteBiolabNews(id: string) {
 
 export async function addBiolabProgram(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   if (!title || !description) return { error: "Title and description required" };
@@ -242,7 +247,7 @@ export async function addBiolabProgram(formData: FormData) {
 
 export async function deleteBiolabProgram(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("biolab_programs").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -253,7 +258,8 @@ export async function deleteBiolabProgram(id: string) {
 // === SheSecure Admin Actions ===
 export async function addVehicle(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
   
   const driver_name = formData.get("driver_name") as string;
   const vehicle_number = formData.get("vehicle_number") as string;
@@ -282,6 +288,15 @@ export async function addVehicle(formData: FormData) {
     });
     
     if (error) return { error: error.message };
+
+    await recordAuditLog({
+      actor_id: user?.id,
+      action: 'ADD_VEHICLE',
+      entity_type: 'vehicle',
+      entity_id: id,
+      payload: { driver_name, vehicle_number }
+    });
+
   } catch (err: any) {
     console.error(err);
     return { error: "Failed to generate QR code" };
@@ -293,9 +308,19 @@ export async function addVehicle(formData: FormData) {
 
 export async function deleteVehicle(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { error } = await supabase.from("vehicles").delete().eq("id", id);
   if (error) return { error: error.message };
+
+  await recordAuditLog({
+    actor_id: user?.id,
+    action: 'DELETE_VEHICLE',
+    entity_type: 'vehicle',
+    entity_id: id
+  });
+
   revalidatePath("/admin");
   return { success: true };
 }
@@ -303,7 +328,7 @@ export async function deleteVehicle(id: string) {
 // === Community Reels Actions ===
 export async function addReel(data: { title: string; user_handle: string; thumbnail_url: string; video_url: string; }) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("community_reels").insert([data]);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -313,7 +338,7 @@ export async function addReel(data: { title: string; user_handle: string; thumbn
 
 export async function deleteReel(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("community_reels").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");
@@ -324,10 +349,8 @@ export async function deleteReel(id: string) {
 // === SheSecure Session Photos ===
 export async function addSessionPhoto(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return { success: true };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client to bypass RLS issues
   const caption = formData.get("caption") as string;
   const image_url = formData.get("image_url") as string;
   if (!caption || !image_url) return { error: "Caption and Image URL are required" };
@@ -340,10 +363,8 @@ export async function addSessionPhoto(formData: FormData) {
 
 export async function deleteSessionPhoto(id: string) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
-  const isMock = process.env.NEXT_PUBLIC_SUPABASE_URL === "https://dummy.supabase.co" || !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (isMock) return { success: true };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client
   const { error } = await supabase.from("shesecure_session_photos").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin");

@@ -16,6 +16,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRealtimeTelemetry } from "@/hooks/useRealtimeTelemetry";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -23,6 +24,9 @@ export default function AdminPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Realtime Integration
+  const { latestTelemetry, activeAlerts } = useRealtimeTelemetry();
 
   // Session photo drag-drop state
   const [photoDragOver, setPhotoDragOver] = useState(false);
@@ -219,13 +223,20 @@ export default function AdminPage() {
                     <p className="text-xs text-white/50">+{pendingApps} pending applications</p>
                   </GlassCard>
 
-                  <GlassCard className="border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <Car className="h-24 w-24 text-orange-500" />
+                  <GlassCard className="border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden group flex flex-col justify-between">
+                    <div>
+                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Car className="h-24 w-24 text-orange-500" />
+                      </div>
+                      <p className="text-sm text-orange-400 font-semibold uppercase tracking-wider mb-2">SheSecure Live</p>
+                      <p className="text-5xl font-bold text-white mb-2">{activeTrips}</p>
+                      <p className="text-xs text-white/50">{fleetSize} total vehicles registered</p>
                     </div>
-                    <p className="text-sm text-orange-400 font-semibold uppercase tracking-wider mb-2">SheSecure Live</p>
-                    <p className="text-5xl font-bold text-white mb-2">{activeTrips}</p>
-                    <p className="text-xs text-white/50">{fleetSize} total vehicles registered</p>
+                    <div className="mt-4 pt-4 border-t border-white/5 relative z-10">
+                       <a href="/admin/suraksha" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white bg-orange-500/20 hover:bg-orange-500/40 px-3 py-2 rounded transition-colors w-full justify-center">
+                         <Shield className="w-4 h-4" /> Open Operations Center
+                       </a>
+                    </div>
                   </GlassCard>
 
                   <GlassCard className="border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.05)] relative overflow-hidden group">
@@ -566,8 +577,30 @@ export default function AdminPage() {
                         </div>
                       )
                     })}
+
+                    {/* Realtime IoT Pulsar */}
+                    {latestTelemetry && (
+                      <div 
+                        className="absolute z-20" 
+                        style={{ 
+                          top: `calc(50% + ${Math.sin(Date.now() / 1000) * 150}px)`, 
+                          left: `calc(50% + ${Math.cos(Date.now() / 1000) * 150}px)` 
+                        }}
+                      >
+                         <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          className="absolute inset-0 bg-blue-500 rounded-full"
+                        />
+                        <div className="w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.8)] border-2 border-white relative z-10" />
+                        <div className="absolute top-6 -left-12 bg-blue-600/90 backdrop-blur-md border border-blue-400/50 px-2 py-1 rounded-md text-[10px] text-white whitespace-nowrap font-bold shadow-lg">
+                          IOT PULSE: {latestTelemetry.device_id}
+                        </div>
+                      </div>
+                    )}
                     
-                    {activeTrips === 0 && (
+                    {activeTrips === 0 && !latestTelemetry && (
                       <div className="absolute z-10 text-white/30 flex items-center gap-2 font-mono text-sm">
                         <MapPin className="h-4 w-4" /> No Active Signals
                       </div>
@@ -576,8 +609,8 @@ export default function AdminPage() {
                   
                   <div className="absolute top-4 left-4 z-10">
                     <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${activeTrips > 0 ? 'bg-orange-500 animate-pulse' : 'bg-white/20'}`} />
-                      <span className="text-xs font-mono text-white/70">GPS RADAR {activeTrips > 0 ? 'ACTIVE' : 'STANDBY'}</span>
+                      <div className={`w-2 h-2 rounded-full ${(activeTrips > 0 || latestTelemetry) ? 'bg-orange-500 animate-pulse' : 'bg-white/20'}`} />
+                      <span className="text-xs font-mono text-white/70">GPS RADAR {(activeTrips > 0 || latestTelemetry) ? 'ACTIVE' : 'STANDBY'}</span>
                     </div>
                   </div>
                 </GlassCard>
