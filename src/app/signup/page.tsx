@@ -6,6 +6,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { signup } from "@/app/auth/actions";
 import { HealixLogo } from "@/components/ui/HealixLogo";
+import { motion } from "framer-motion";
+import { Shield, User, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
@@ -22,71 +24,116 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <GlassCard className="w-full max-w-md p-8" glowOnHover={false}>
-        <div className="flex justify-center mb-8">
-          <div className="shadow-[0_0_24px_rgba(99,102,241,0.25)]">
-            <HealixLogo size={64} />
-          </div>
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 overflow-hidden bg-[#050505]">
+      {/* Background Cinematic Elements */}
+      <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <div className="flex flex-col items-center mb-10">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="mb-6"
+          >
+            <HealixLogo size={72} />
+          </motion.div>
+          <h1 className="text-3xl font-bold text-white tracking-tight text-center">Join Healix Ecosystem</h1>
+          <p className="text-white/40 text-sm mt-2 font-mono uppercase tracking-widest text-center">Provision New Research Account</p>
         </div>
-        <h2 className="text-2xl font-bold text-center mb-6">Create your Healix Technologies Pvt Ltd Account</h2>
-        
-        <form action={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-1" htmlFor="name">
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-              placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-1" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-1" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-              placeholder="••••••••"
-              minLength={6}
-            />
-          </div>
 
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        <GlassCard className="p-10 border-white/10" glowOnHover={true}>
+          <form action={handleSubmit} className="space-y-5">
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block pl-1">Full Legal Name</label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
+                  <User className="w-4 h-4" />
+                </div>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  placeholder="Researcher Name"
+                />
+              </div>
+            </div>
 
-          <Button type="submit" className="w-full mt-6" isLoading={loading}>
-            Sign Up
-          </Button>
-        </form>
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block pl-1">Protocol Identifier (Email)</label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  placeholder="name@agency.com"
+                />
+              </div>
+            </div>
 
-        <p className="mt-6 text-center text-sm text-white/60">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
-            Sign in
-          </Link>
-        </p>
-      </GlassCard>
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block pl-1">Security Credential (Password)</label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-xs"
+              >
+                <Shield className="w-4 h-4" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+
+            <Button type="submit" className="w-full py-6 text-sm font-bold uppercase tracking-widest group" isLoading={loading}>
+              Initialize Account
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </form>
+
+          <div className="mt-8 pt-8 border-t border-white/5 text-center">
+            <p className="text-sm text-white/40">
+              Already have an active session? <br />
+              <Link href="/login" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
+                Sign in to Gateway
+              </Link>
+            </p>
+          </div>
+        </GlassCard>
+
+        <div className="mt-12 flex justify-center gap-8 text-[10px] font-mono text-white/20 uppercase tracking-widest">
+          <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-white/20" /> SOC2 COMPLIANT</span>
+          <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-white/20" /> GDPR READY</span>
+          <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-white/20" /> ZERO TRUST</span>
+        </div>
+      </motion.div>
     </div>
   );
 }

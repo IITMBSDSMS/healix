@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Activity, HeartPulse, ShieldAlert, FileText, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { DashboardCharts } from "@/components/ui/DashboardCharts";
 
 export default function DashboardPage() {
   const container = {
@@ -83,6 +84,16 @@ export default function DashboardPage() {
             </GlassCard>
           </Link>
         </motion.div>
+      </motion.div>
+
+      {/* Analytics Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-12"
+      >
+        <DashboardCharts />
       </motion.div>
 
       {/* Recent Activity Section (Mock) */}

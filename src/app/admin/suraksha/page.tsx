@@ -10,6 +10,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { PredictiveAnalytics } from "@/components/ui/PredictiveAnalytics";
 import { generateInitialState, generateNextState, TelemetryState } from "@/lib/suraksha/simulator";
 
 const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
@@ -25,7 +26,7 @@ const BrandedQRCard = dynamic(() => import("@/components/ui/BrandedQRCard"), {
 export default function SurakshaAdminPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"registry" | "map" | "incidents">("registry");
+  const [activeTab, setActiveTab] = useState<"registry" | "map" | "incidents" | "analytics">("registry");
   const [globalAlert, setGlobalAlert] = useState<{deviceId: string, description: string} | null>(null);
   const [alarmPlaying, setAlarmPlaying] = useState(false);
 
@@ -36,7 +37,7 @@ export default function SurakshaAdminPage() {
   const fetchData = async () => {
     setLoading(true);
     const res = await getSurakshaData();
-    if (!res.error) {
+    if (res && !("error" in res)) {
       setData(res);
     }
     setLoading(false);
@@ -223,24 +224,46 @@ export default function SurakshaAdminPage() {
 
         {/* Navigation */}
         <div className="flex gap-4">
-          {[
-            { id: "registry", label: "Virtual Registry", icon: Server },
-            { id: "map", label: "Live Fleet Map", icon: MapPin },
-            { id: "incidents", label: "Incident Reports", icon: AlertTriangle }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === tab.id 
-                  ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]" 
-                  : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
+          <button
+            onClick={() => setActiveTab("registry")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "registry" 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]" 
+                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <Server className="w-4 h-4" /> Virtual Registry
+          </button>
+          <button
+            onClick={() => setActiveTab("map")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "map" 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]" 
+                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <MapPin className="w-4 h-4" /> Live Fleet Map
+          </button>
+          <button
+            onClick={() => setActiveTab("incidents")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "incidents" 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]" 
+                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4" /> Incident Reports
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "analytics" 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]" 
+                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <Zap className="w-4 h-4" /> AI Analytics
+          </button>
         </div>
 
         {/* Content */}
@@ -401,6 +424,28 @@ export default function SurakshaAdminPage() {
                 </table>
               </div>
             </GlassCard>
+          )}
+
+          {/* Analytics View */}
+          {activeTab === "analytics" && (
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <PredictiveAnalytics devices={data?.devices || []} />
+                </div>
+                <GlassCard className="p-6">
+                  <h3 className="text-sm font-mono text-purple-400 uppercase tracking-widest mb-4">Inference engine</h3>
+                  <div className="space-y-4 text-xs font-mono text-white/50">
+                    <p>Model: Healix-Predictor-v4</p>
+                    <p>Uptime: 432h 12m</p>
+                    <p>Precision: 0.9982</p>
+                    <p>Recall: 0.9945</p>
+                    <div className="h-[1px] bg-white/10 w-full my-2" />
+                    <p className="text-purple-400">STATUS: RECURRING TRAINING ACTIVE</p>
+                  </div>
+                </GlassCard>
+              </div>
+            </div>
           )}
 
         </div>
