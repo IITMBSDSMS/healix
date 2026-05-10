@@ -17,6 +17,11 @@ const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
   loading: () => <div className="flex items-center justify-center h-full w-full text-gray-500 font-mono text-sm">Initializing Tracking Subsystem...</div>
 });
 
+const BrandedQRCard = dynamic(() => import("@/components/ui/BrandedQRCard"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-64 text-gray-500 text-sm font-mono">Rendering QR Card...</div>
+});
+
 export default function SurakshaAdminPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +31,7 @@ export default function SurakshaAdminPage() {
 
   // Simulation Engine State
   const [activeSimulations, setActiveSimulations] = useState<Record<string, TelemetryState>>({});
+  const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -296,8 +302,13 @@ export default function SurakshaAdminPage() {
                       <div className="flex items-center justify-between border-t border-white/5 pt-4">
                         {device.qr_code && (
                           <div className="flex items-center gap-2">
-                            <Image src={device.qr_code} alt="QR" width={40} height={40} className="rounded-md" />
-                            <a href={`/ride/${device.id}`} target="_blank" className="text-xs text-blue-400 hover:underline">Scan / Open Trip</a>
+                            <button
+                              onClick={() => setQrModal({ deviceId: device.id, vehicleReg: device.vehicle_reg, driverName: device.driver_name })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 text-xs font-medium rounded-lg transition-all"
+                            >
+                              🏷 Branded QR Card
+                            </button>
+                            <a href={`/ride/${device.id}`} target="_blank" className="text-xs text-gray-500 hover:text-blue-400 transition-colors">Open Trip ↗</a>
                           </div>
                         )}
                         <div className="flex gap-2">
@@ -372,6 +383,51 @@ export default function SurakshaAdminPage() {
 
         </div>
       </div>
+
+      {/* Branded QR Card Modal */}
+      {qrModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          onClick={() => setQrModal(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 max-w-sm w-full"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="flex items-center gap-2 justify-center text-blue-400 mb-1">
+                <Shield className="w-4 h-4" />
+                <span className="font-mono text-xs tracking-wider uppercase">Project Suraksha</span>
+              </div>
+              <h2 className="text-lg font-bold text-white">Branded QR Card</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Print or display this for <span className="text-blue-400 font-mono">{qrModal.deviceId}</span>
+              </p>
+            </div>
+
+            <BrandedQRCard
+              deviceId={qrModal.deviceId}
+              vehicleReg={qrModal.vehicleReg}
+              driverName={qrModal.driverName}
+              rideUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/ride/${qrModal.deviceId}`}
+              downloadable={true}
+            />
+
+            <button
+              onClick={() => setQrModal(null)}
+              className="text-sm text-gray-500 hover:text-white transition-colors"
+            >
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
