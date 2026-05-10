@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Shield, MapPin, AlertCircle, Clock, CheckCircle2, ChevronRight, Phone, AlertTriangle } from "lucide-react";
 import dynamic from "next/dynamic";
+import { generateInitialState, generateNextState } from "@/lib/suraksha/simulator";
 
 const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
   ssr: false,
@@ -46,6 +47,29 @@ export default function PassengerRidePage() {
     // Timer
     const timer = setInterval(() => setTripTime(t => t + 1), 60000); // 1 min
 
+    // Passenger Side Telemetry Pulse (Client Simulator)
+    let currentSimState = generateInitialState();
+    const telemetryInterval = setInterval(async () => {
+      // If hardware override engaged or SOS is active, stop simulating from passenger phone
+      // The admin interface or hardware takes over in real-world scenarios.
+      if (failsafeActive || sosActive) return;
+
+      currentSimState = generateNextState(currentSimState);
+      
+      try {
+        await fetch('/api/suraksha/telemetry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId: deviceId,
+            ...currentSimState
+          })
+        });
+      } catch (e) {
+        console.error("Passenger telemetry push failed:", e);
+      }
+    }, 5000);
+
     // Realtime Subs
     const supabase = createClient();
     const channel = supabase
@@ -63,9 +87,10 @@ export default function PassengerRidePage() {
 
     return () => {
       clearInterval(timer);
+      clearInterval(telemetryInterval);
       supabase.removeChannel(channel);
     };
-  }, [step, deviceId]);
+  }, [step, deviceId, failsafeActive, sosActive]);
 
   const triggerSOS = async () => {
     if (confirm("Trigger Emergency SOS? This will alert Healix Response Centers immediately.")) {
@@ -180,13 +205,13 @@ export default function PassengerRidePage() {
             </div>
 
             {/* SOS Button */}
-            <div className="pt-6">
+            <div className="pt-6 relative z-10">
               <button 
                 onClick={triggerSOS}
-                disabled={sosActive}
+                disabled={sosActive || failsafeActive}
                 className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                  sosActive 
-                    ? "bg-red-500/20 text-red-500 border border-red-500/50" 
+                  sosActive || failsafeActive
+                    ? "bg-red-500/20 text-red-500 border border-red-500/50 cursor-not-allowed" 
                     : "bg-red-600 hover:bg-red-500 text-white shadow-[0_0_30px_rgba(220,38,38,0.3)]"
                 }`}
               >
@@ -194,6 +219,24 @@ export default function PassengerRidePage() {
                 {sosActive ? "EMERGENCY PROTOCOL ENGAGED" : "SLIDE TO SOS"}
               </button>
             </div>
+
+            {/* Failsafe Overlay */}
+            {failsafeActive && (
+              <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-500">
+                <div className="bg-purple-900/40 border border-purple-500/50 rounded-2xl p-8 text-center max-w-sm">
+                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/50">
+                    <Shield className="w-8 h-8 text-purple-400 animate-pulse" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Hardware Override</h2>
+                  <p className="text-purple-200/80 text-sm mb-6">
+                    Connection with this device has been superseded by the vehicle's Healix IoT System due to a system failsafe trigger.
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-black/50 rounded-lg border border-white/10 text-xs font-mono text-gray-400">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Secure Link Established
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         )}

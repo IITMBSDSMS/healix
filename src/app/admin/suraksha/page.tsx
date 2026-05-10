@@ -21,6 +21,7 @@ export default function SurakshaAdminPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"registry" | "map" | "incidents">("registry");
+  const [globalAlert, setGlobalAlert] = useState<{deviceId: string, description: string} | null>(null);
 
   // Simulation Engine State
   const [activeSimulations, setActiveSimulations] = useState<Record<string, TelemetryState>>({});
@@ -45,7 +46,13 @@ export default function SurakshaAdminPage() {
       .channel("suraksha_admin_changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "iot_devices" }, fetchData)
       .on("postgres_changes", { event: "*", schema: "public", table: "failsafe_events" }, fetchData)
-      .on("postgres_changes", { event: "*", schema: "public", table: "incident_reports" }, fetchData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "incident_reports" }, (payload) => {
+        fetchData();
+        if (payload.eventType === 'INSERT' && payload.new.type === 'SOS') {
+          setGlobalAlert({ deviceId: payload.new.device_id, description: payload.new.description });
+          setActiveTab("map"); // auto-switch to map to track them
+        }
+      })
       .subscribe();
 
     return () => {
@@ -130,6 +137,30 @@ export default function SurakshaAdminPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 p-8 font-sans selection:bg-blue-500/30">
+      
+      {/* Global SOS Alert */}
+      {globalAlert && (
+        <motion.div 
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-3xl bg-red-600 border-2 border-red-400 text-white p-4 rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.6)] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <AlertTriangle className="w-8 h-8 animate-pulse" />
+            <div>
+              <h2 className="text-xl font-bold tracking-widest">CRITICAL SOS ENGAGED</h2>
+              <p className="text-sm text-red-100 font-mono">DEVICE: {globalAlert.deviceId} — {globalAlert.description}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setGlobalAlert(null)}
+            className="bg-black/20 hover:bg-black/40 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+          >
+            ACKNOWLEDGE
+          </button>
+        </motion.div>
+      )}
+
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header */}
