@@ -1,14 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Shield, AlertTriangle, MapPin, X, Users, Calendar, Phone, Mail, Trash2, Plus, QrCode, Car, CheckCircle, Clock, ShieldCheck } from "lucide-react";
+import { Shield, AlertTriangle, MapPin, X, Users, Calendar, Phone, Mail, Trash2, Plus, QrCode, Car, CheckCircle, Clock, ShieldCheck, Play, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { saveSosAlert, saveContact, deleteContact, lookupVehicle, startTrip, endTrip, updateTripLocation, getContacts, getTripHistory, getSessionPhotos } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import dynamic from "next/dynamic";
+import { generateInitialState, generateNextState } from "@/lib/suraksha/simulator";
+
+const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">Loading radar...</div>,
+});
 
 const initiatives = [
   { id: 1, title: "Women's Safety Awareness Seminar", description: "A comprehensive seminar covering self-defense techniques, legal rights, and digital safety for women in urban environments.", date: "October 15, 2025", image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
@@ -34,6 +41,11 @@ export default function SheSecurePage() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sosError, setSosError] = useState<string | null>(null);
   const [selectedInitiative, setSelectedInitiative] = useState<typeof initiatives[0] | null>(null);
+
+  // Live Radar Demo state (Feature 2)
+  const [radarRunning, setRadarRunning] = useState(false);
+  const [radarState, setRadarState] = useState(generateInitialState());
+  const [radarTelemetry, setRadarTelemetry] = useState<any[]>([]);
 
   // Contacts
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -82,6 +94,22 @@ export default function SheSecurePage() {
     };
     fetchData();
   }, [router]);
+
+  // Radar Demo simulation loop
+  useEffect(() => {
+    if (!radarRunning) return;
+    const interval = setInterval(() => {
+      setRadarState(prev => {
+        const next = generateNextState(prev);
+        setRadarTelemetry(log => [
+          { ...next, device_id: "DEMO-VEHICLE", timestamp: new Date().toISOString() },
+          ...log.slice(0, 4),
+        ]);
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [radarRunning]);
 
   // Background Location Polling for Live Tracking
   useEffect(() => {
@@ -392,18 +420,90 @@ export default function SheSecurePage() {
         </GlassCard>
       </div>
 
-      {/* Animated SVG wave divider */}
-      <div className="relative mb-16 -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden h-16">
-        <svg viewBox="0 0 1440 64" preserveAspectRatio="none" className="absolute inset-0 w-full h-full opacity-30">
-          <path d="M0,32 C180,60 360,0 540,32 C720,60 900,0 1080,32 C1260,60 1380,20 1440,32 L1440,64 L0,64 Z" fill="url(#wave-grad)"/>
-          <defs>
-            <linearGradient id="wave-grad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3"/>
-              <stop offset="50%" stopColor="#f97316" stopOpacity="0.5"/>
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.3"/>
-            </linearGradient>
-          </defs>
-        </svg>
+      {/* Feature 2: Live Radar Demo */}
+      <div className="mb-16">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-xl bg-blue-500/20 border border-blue-500/30">
+            <Shield className="h-6 w-6 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">See It Work — Live Demo</h2>
+          </div>
+          <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 animate-pulse">Interactive</span>
+        </div>
+        <p className="text-white/50 text-sm mb-6 ml-14">
+          This is a real-time simulation of Healix Suraksha tracking a vehicle. Watch it move across the map.
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Map */}
+          <div className="lg:col-span-2 h-80 rounded-2xl overflow-hidden border border-white/10 relative">
+            <VehicleMap telemetryData={radarTelemetry} />
+            {!radarRunning && (
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-10">
+                <button
+                  onClick={() => setRadarRunning(true)}
+                  className="flex items-center gap-3 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all"
+                >
+                  <Play className="w-5 h-5" /> Launch Live Radar
+                </button>
+              </div>
+            )}
+            {radarRunning && (
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-xs font-mono text-green-400">LIVE TRACKING</span>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar stats + CTA */}
+          <div className="flex flex-col gap-4">
+            <GlassCard className="p-5 flex-1">
+              <h3 className="text-sm font-semibold text-white mb-4">Vehicle Telemetry</h3>
+              {radarRunning ? (
+                <div className="space-y-3">
+                  {[
+                    { label: "Speed", value: `${radarState.speed} km/h`, color: "text-yellow-400" },
+                    { label: "Battery", value: `${radarState.battery}%`, color: "text-green-400" },
+                    { label: "Signal", value: `${radarState.signal} bars`, color: "text-blue-400" },
+                    { label: "Status", value: "ACTIVE", color: "text-green-400" },
+                  ].map(s => (
+                    <div key={s.label} className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500 font-mono">{s.label}</span>
+                      <span className={`text-sm font-bold ${s.color}`}>{s.value}</span>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-white/10">
+                    <button
+                      onClick={() => { setRadarRunning(false); setRadarTelemetry([]); }}
+                      className="text-xs text-gray-500 hover:text-white transition-colors"
+                    >
+                      Stop demo
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-xs leading-relaxed">
+                  Click "Launch Live Radar" to watch a simulated Healix-protected vehicle broadcast its location in real-time.
+                </p>
+              )}
+            </GlassCard>
+
+            <a
+              href="/admin/suraksha/sandbox"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between p-4 bg-white/5 border border-white/10 hover:border-blue-500/30 hover:bg-blue-500/5 rounded-xl transition-all group"
+            >
+              <div>
+                <p className="text-sm font-semibold text-white">Open Full Sandbox</p>
+                <p className="text-xs text-gray-500 mt-0.5">Split-screen interactive demo</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Project Suraksha */}

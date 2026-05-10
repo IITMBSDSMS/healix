@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Shield, Server, Activity, AlertTriangle, MapPin, 
-  Battery, Signal, CheckCircle, Zap, ShieldAlert, Play, Square
+  Battery, Signal, CheckCircle, Zap, ShieldAlert, Play, Square, ExternalLink
 } from "lucide-react";
 import { getSurakshaData, createVirtualDevice, triggerSimulationEvent } from "./actions";
 import { createClient } from "@/utils/supabase/client";
@@ -22,6 +22,7 @@ export default function SurakshaAdminPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"registry" | "map" | "incidents">("registry");
   const [globalAlert, setGlobalAlert] = useState<{deviceId: string, description: string} | null>(null);
+  const [alarmPlaying, setAlarmPlaying] = useState(false);
 
   // Simulation Engine State
   const [activeSimulations, setActiveSimulations] = useState<Record<string, TelemetryState>>({});
@@ -50,6 +51,8 @@ export default function SurakshaAdminPage() {
         fetchData();
         if (payload.eventType === 'INSERT' && payload.new.type === 'SOS') {
           setGlobalAlert({ deviceId: payload.new.device_id, description: payload.new.description });
+          setAlarmPlaying(true);
+          setTimeout(() => setAlarmPlaying(false), 4000); // reset after 4s
           setActiveTab("map"); // auto-switch to map to track them
         }
       })
@@ -173,9 +176,20 @@ export default function SurakshaAdminPage() {
             <h1 className="text-3xl font-light tracking-tight text-white">Device Operations Center</h1>
             <p className="text-gray-500 mt-1">Enterprise digital twin simulation and hardware telemetry control.</p>
           </div>
-          <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-mono text-green-400">SYSTEM OPERATIONAL</span>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/suraksha/sandbox"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 rounded-full text-xs font-medium transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open Sandbox
+            </a>
+            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs font-mono text-green-400">SYSTEM OPERATIONAL</span>
+            </div>
           </div>
         </div>
 
@@ -318,7 +332,7 @@ export default function SurakshaAdminPage() {
                 Live Fleet Telemetry Map
               </h2>
               <div className="flex-1 bg-black/50 rounded-xl border border-white/10 overflow-hidden relative flex items-center justify-center">
-                 <VehicleMap telemetryData={data?.telemetry || []} />
+                 <VehicleMap telemetryData={data?.telemetry || []} sosActive={!!globalAlert} playAlarm={alarmPlaying} />
               </div>
             </GlassCard>
           )}
