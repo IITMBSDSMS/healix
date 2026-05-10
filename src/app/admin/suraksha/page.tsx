@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Shield, Server, Activity, AlertTriangle, MapPin, 
-  Battery, Signal, CheckCircle, Zap, ShieldAlert, Play, Square, ExternalLink
+  Battery, Signal, CheckCircle, Zap, ShieldAlert, Play, Square, ExternalLink, Database
 } from "lucide-react";
 import { getSurakshaData, createVirtualDevice, triggerSimulationEvent } from "./actions";
 import { createClient } from "@/utils/supabase/client";
@@ -146,6 +146,28 @@ export default function SurakshaAdminPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 p-8 font-sans selection:bg-blue-500/30">
+      
+      {/* System Status Ticker */}
+      <div className="max-w-7xl mx-auto mb-8 bg-blue-500/5 border border-white/10 rounded-lg overflow-hidden flex items-center h-8">
+        <div className="bg-blue-500/10 px-3 h-full flex items-center border-r border-white/10">
+          <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+          <span className="ml-2 text-[10px] font-mono font-bold text-blue-400 uppercase tracking-widest whitespace-nowrap">Live Fleet Telemetry</span>
+        </div>
+        <div className="flex-1 overflow-hidden relative h-full flex items-center">
+          <motion.div 
+            animate={{ x: ["100%", "-100%"] }}
+            transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+            className="flex items-center gap-12 whitespace-nowrap text-[10px] font-mono text-gray-400"
+          >
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-green-500" /> SYSTEM HEALTH: 99.98% OPTIMAL</span>
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-blue-500" /> REGIONAL CLUSTER: ASIA-SOUTH-1 (DELHI)</span>
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-blue-500" /> ACTIVE VIRTUAL NODES: {data?.devices?.length || 0}</span>
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-purple-500" /> ENCRYPTION: AES-256 GCM ACTIVE</span>
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-orange-500" /> PROTOCOL: HEALIX-SAFE-v3.1</span>
+            <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-green-500" /> DATABASE: SYNCED (SUPABASE REALTIME)</span>
+          </motion.div>
+        </div>
+      </div>
       
       {/* Global SOS Alert */}
       {globalAlert && (

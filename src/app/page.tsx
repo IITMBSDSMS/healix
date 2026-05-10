@@ -6,6 +6,7 @@ import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { HealixLogo } from "@/components/ui/HealixLogo";
+import { HealixIntro } from "@/components/ui/HealixIntro";
 import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
@@ -13,6 +14,7 @@ import { createClient } from "@/utils/supabase/client";
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<{url: string, title: string} | null>(null);
+  const [introComplete, setIntroComplete] = useState(false);
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -53,8 +55,18 @@ export default function Home() {
 
 
   return (
-    <div className="relative isolate min-h-[calc(100vh-100px)] flex flex-col justify-center pb-20 bg-grid-pattern">
-      <div className="absolute inset-0 bg-[#050505]/90 mask-image:linear-gradient(to_bottom,transparent,black)" />
+    <>
+      <HealixIntro onComplete={() => setIntroComplete(true)} />
+      
+      <AnimatePresence>
+        {introComplete && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="relative isolate min-h-[calc(100vh-100px)] flex flex-col justify-center pb-20 bg-grid-pattern"
+          >
+            <div className="absolute inset-0 bg-[#050505]/90 mask-image:linear-gradient(to_bottom,transparent,black)" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 sm:pt-32">
         <div className="flex justify-center mb-8">
@@ -446,6 +458,9 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

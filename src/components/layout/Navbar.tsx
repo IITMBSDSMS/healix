@@ -76,9 +76,15 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2.5 group">
               <HealixLogo size={36} className="transition-transform duration-300 group-hover:scale-110" />
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-                Healix
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 leading-none">
+                  Healix
+                </span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[8px] font-mono text-green-500/80 uppercase tracking-widest">System Live</span>
+                </div>
+              </div>
             </Link>
           </div>
           
