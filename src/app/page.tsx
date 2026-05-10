@@ -64,9 +64,18 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
-            className="relative isolate min-h-[calc(100vh-100px)] flex flex-col justify-center pb-20 bg-grid-pattern"
+            className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-hidden"
           >
-            <div className="absolute inset-0 bg-[#050505]/90 mask-image:linear-gradient(to_bottom,transparent,black)" />
+            {/* Cinematic Background */}
+            <div className="absolute inset-0 bg-[#050505]" />
+            <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
+            
+            {/* Animated Glow Orbs */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-blue-500/[0.02] to-transparent pointer-events-none" />
+
+            <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 sm:pt-32">
         <div className="flex justify-center mb-8">
@@ -81,121 +90,174 @@ export default function Home() {
           </motion.div>
         </div>
         
-        <div className="mx-auto max-w-3xl text-center">
-          <motion.h1 
-            initial={{ opacity: 0, filter: "blur(8px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl font-bold tracking-tight sm:text-7xl text-white mb-6"
+        <div className="mx-auto max-w-4xl text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
           >
-            Healthcare & Security <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">Infrastructure</span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">Healix OS v2.4.0 — Now Online</span>
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-6xl font-bold tracking-tight sm:text-8xl text-white mb-8 leading-[1.1]"
+          >
+            Building the <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400">Future of Care.</span>
           </motion.h1>
+          
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-6 text-lg leading-8 text-white/50 font-medium"
+            className="mt-6 text-xl leading-8 text-white/50 font-medium max-w-2xl mx-auto"
           >
-            Engineered for scale. Healix unifies predictive medical diagnostics, high-performance research labs, and live IoT security ecosystems into one seamless platform.
+            Unifying predictive medical diagnostics, high-performance labs, and real-time security into a singular, high-performance infrastructure.
           </motion.p>
+
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-10 flex items-center justify-center gap-x-6"
+            className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/dashboard">
-              <button className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors">
-                Enter Dashboard <ArrowRight className="h-4 w-4" />
+              <button className="group relative flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                Deploy Dashboard <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
             </Link>
-            <Link href="/ai-check" className="text-sm font-semibold leading-6 text-white/70 hover:text-white transition-colors">
-              Try Healix AI <span aria-hidden="true">→</span>
+            <Link href="/ai-check">
+              <button className="px-8 py-4 rounded-full font-bold border border-white/10 hover:bg-white/5 transition-all">
+                Try AI Engine
+              </button>
             </Link>
           </motion.div>
         </div>
 
-        {/* Modules Cards */}
-        <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-          >
-          <Link href="/ai-check">
-            <GlassCard className="h-full flex flex-col justify-between group cursor-pointer hover:border-purple-500/30">
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <div className="p-2 bg-black rounded-full border border-white/10">
-                    <HealixLogo size={24} />
+        {/* Bento Grid Modules */}
+        <div className="mt-32">
+          <div className="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-auto md:h-[600px]">
+            {/* AI Check - Large Bento Card */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="md:col-span-8 md:row-span-1"
+            >
+              <Link href="/ai-check" className="h-full block">
+                <GlassCard className="h-full p-8 flex flex-col justify-between group overflow-hidden relative">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Activity className="w-48 h-48" />
                   </div>
-                  <span className="text-[10px] font-mono text-purple-400 uppercase">Live Node</span>
-                </div>
-                <h3 className="text-lg font-bold mb-2">Healix AI Engine</h3>
-                <p className="text-xs text-white/50 mb-6">Predictive symptom pipeline and diagnostic guidance models.</p>
-              </div>
-              <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs font-mono text-white/40">
-                <span>v2.4.1</span>
-                <span className="group-hover:text-purple-400 transition-colors flex items-center gap-1">Access <ArrowRight className="h-3 w-3" /></span>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/care">
-            <GlassCard className="h-full flex flex-col justify-between group cursor-pointer hover:border-blue-500/30">
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <div className="p-2 bg-black rounded-full border border-white/10 w-10 h-10 overflow-hidden">
-                    <Image src="/care-logo-new.png" alt="Care" width={24} height={24} className="object-contain" />
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                        <Activity className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">Medical Intelligence</span>
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-4">Healix AI Diagnostic Engine</h3>
+                    <p className="text-white/50 max-w-md text-sm leading-relaxed">
+                      Analyze complex symptoms through our high-performance neural pipeline. Get instant, infrastructure-backed medical guidance with zero-knowledge privacy.
+                    </p>
                   </div>
-                  <span className="text-[10px] font-mono text-blue-400 uppercase">Active</span>
-                </div>
-                <h3 className="text-lg font-bold mb-2">Healix Care Network</h3>
-                <p className="text-xs text-white/50 mb-6">Encrypted medical scheduling and practitioner interoperability.</p>
-              </div>
-              <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs font-mono text-white/40">
-                <span>Routing</span>
-                <span className="group-hover:text-blue-400 transition-colors flex items-center gap-1">Access <ArrowRight className="h-3 w-3" /></span>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/biolabs">
-            <GlassCard className="h-full flex flex-col justify-between group cursor-pointer hover:border-green-500/30">
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <div className="p-2 bg-black rounded-full border border-white/10 w-10 h-10 overflow-hidden">
-                    <Image src="/biolabs-logo.png" alt="BioLabs" width={24} height={24} className="object-contain" />
+                  <div className="relative z-10 flex items-center gap-2 text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
+                    Access Engine <ArrowRight className="w-4 h-4" />
                   </div>
-                  <span className="text-[10px] font-mono text-green-400 uppercase">Operational</span>
-                </div>
-                <h3 className="text-lg font-bold mb-2">HPC BioLabs</h3>
-                <p className="text-xs text-white/50 mb-6">High-performance computing clusters for genomic sequencing and modeling.</p>
-              </div>
-              <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs font-mono text-white/40">
-                <span>Cluster A</span>
-                <span className="group-hover:text-green-400 transition-colors flex items-center gap-1">Access <ArrowRight className="h-3 w-3" /></span>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/shesecure">
-            <GlassCard className="h-full flex flex-col justify-between group cursor-pointer hover:border-red-500/30">
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <div className="p-2 bg-black rounded-full border border-white/10 w-10 h-10 overflow-hidden">
-                    <Image src="/shesecure-logo-new.png" alt="SheSecure" width={24} height={24} className="object-contain" />
+                </GlassCard>
+              </Link>
+            </motion.div>
+
+            {/* BioLabs - Vertical Bento Card */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="md:col-span-4 md:row-span-2"
+            >
+              <Link href="/biolabs" className="h-full block">
+                <GlassCard className="h-full p-8 flex flex-col group relative overflow-hidden bg-gradient-to-b from-transparent to-purple-500/5">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-purple-500/20 rounded-lg border border-purple-500/30">
+                      <Database className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest">Research Lab</span>
                   </div>
-                  <span className="text-[10px] font-mono text-red-400 uppercase">Monitoring</span>
-                </div>
-                <h3 className="text-lg font-bold mb-2">SheSecure IoT Layer</h3>
-                <p className="text-xs text-white/50 mb-6">Encrypted travel safety pipelines and QR telemetry tracking.</p>
-              </div>
-              <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs font-mono text-white/40">
-                <span>Telemetry</span>
-                <span className="group-hover:text-red-400 transition-colors flex items-center gap-1">Access <ArrowRight className="h-3 w-3" /></span>
-              </div>
-            </GlassCard>
-          </Link>
-        </motion.div>
+                  <h3 className="text-3xl font-bold text-white mb-4">Healix <br />BioLabs</h3>
+                  <p className="text-white/50 text-sm leading-relaxed mb-8">
+                    World-class laboratory facilities for advanced genomic sequencing, AI diagnostic modeling, and high-performance computing research.
+                  </p>
+                  <div className="flex-1 border-y border-white/5 py-6 my-6 flex flex-col justify-center space-y-4">
+                    {["Next-Gen Sequencing", "HPC Clusters", "AI Diagnostics"].map(item => (
+                      <div key={item} className="flex items-center gap-2 text-[10px] font-mono text-white/30 uppercase">
+                        <div className="w-1 h-1 rounded-full bg-purple-500" /> {item}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-bold text-white group-hover:text-purple-400 transition-colors">
+                    View Lab <ArrowRight className="w-4 h-4" />
+                  </div>
+                </GlassCard>
+              </Link>
+            </motion.div>
+
+            {/* SheSecure - Horizontal Bento Card */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="md:col-span-4 md:row-span-1"
+            >
+              <Link href="/shesecure" className="h-full block">
+                <GlassCard className="h-full p-8 flex flex-col justify-between group border-orange-500/10 hover:border-orange-500/30">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-orange-500/20 rounded-lg">
+                        <Shield className="w-5 h-5 text-orange-400" />
+                      </div>
+                      <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">IoT Safety</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">SheSecure SOS</h3>
+                    <p className="text-xs text-white/50 leading-relaxed">
+                      Real-time travel safety with Project Suraksha QR tracking.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
+                    Learn More <ArrowRight className="w-3 h-3" />
+                  </div>
+                </GlassCard>
+              </Link>
+            </motion.div>
+
+            {/* Care - Horizontal Bento Card */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="md:col-span-4 md:row-span-1"
+            >
+              <Link href="/care" className="h-full block">
+                <GlassCard className="h-full p-8 flex flex-col justify-between group border-teal-500/10 hover:border-teal-500/30">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-teal-500/20 rounded-lg">
+                        <Activity className="w-5 h-5 text-teal-400" />
+                      </div>
+                      <span className="text-[10px] font-mono text-teal-400 uppercase tracking-widest">Healthcare</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Healix Care</h3>
+                    <p className="text-xs text-white/50 leading-relaxed">
+                      High-fidelity medical booking and provider orchestration.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-teal-400 transition-colors">
+                    Find Care <ArrowRight className="w-3 h-3" />
+                  </div>
+                </GlassCard>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
 
         {/* Infrastructure Architecture Flow */}
         <motion.div 

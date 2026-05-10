@@ -32,17 +32,17 @@ export function HealixIntro({ onComplete }: { onComplete: () => void }) {
           setTimeout(() => {
             setIsExiting(true);
             sessionStorage.setItem("healix_intro_seen", "true");
-            setTimeout(onComplete, 800);
-          }, 500);
+            setTimeout(onComplete, 500);
+          }, 300);
           return 100;
         }
-        return prev + 1;
+        return prev + 2; // Faster progress
       });
-    }, 20);
+    }, 15); // Faster interval
 
     const stepTimer = setInterval(() => {
       setStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
-    }, 600);
+    }, 300); // Faster steps
 
     return () => {
       clearInterval(timer);
@@ -55,9 +55,9 @@ export function HealixIntro({ onComplete }: { onComplete: () => void }) {
       {!isExiting && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, filter: "blur(20px)" }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050505] text-white overflow-hidden"
+          exit={{ opacity: 0, filter: "blur(20px)", scale: 1.1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#050505] text-white overflow-hidden"
         >
           {/* Ambient Background Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
