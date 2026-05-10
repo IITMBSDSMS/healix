@@ -6,7 +6,6 @@ import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { HealixLogo } from "@/components/ui/HealixLogo";
-import { HealixIntro } from "@/components/ui/HealixIntro";
 import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
@@ -14,7 +13,6 @@ import { createClient } from "@/utils/supabase/client";
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<{url: string, title: string} | null>(null);
-  const [introComplete, setIntroComplete] = useState(false);
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -55,27 +53,17 @@ export default function Home() {
 
 
   return (
-    <>
-      <HealixIntro onComplete={() => setIntroComplete(true)} />
+    <div className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-hidden">
+      {/* Cinematic Background */}
+      <div className="absolute inset-0 bg-[#050505]" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
       
-      <AnimatePresence>
-        {introComplete && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-hidden"
-          >
-            {/* Cinematic Background */}
-            <div className="absolute inset-0 bg-[#050505]" />
-            <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
-            
-            {/* Animated Glow Orbs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-blue-500/[0.02] to-transparent pointer-events-none" />
+      {/* Animated Glow Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-blue-500/[0.02] to-transparent pointer-events-none" />
 
-            <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 sm:pt-32">
         <div className="flex justify-center mb-8">
@@ -520,9 +508,6 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+    </div>
   );
 }
