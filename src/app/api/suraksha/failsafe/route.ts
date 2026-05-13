@@ -4,10 +4,10 @@ import { Resend } from "resend";
 
 export async function POST(req: Request) {
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy_key'
   );
-  const resend = new Resend(process.env.RESEND_API_KEY!);
+  const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
   try {
     const { tripId } = await req.json();
     if (!tripId || typeof tripId !== "string" || !/^[0-9a-f-]{36}$/i.test(tripId)) {

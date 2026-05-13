@@ -200,20 +200,41 @@ export default function Home() {
             >
               <Link href="/shesecure" className="h-full block">
                 <GlassCard className="h-full p-8 flex flex-col justify-between group border-orange-500/10 hover:border-orange-500/30">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-orange-500/20 rounded-lg">
-                        <Shield className="w-5 h-5 text-orange-400" />
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                          <Shield className="w-5 h-5 text-orange-400" />
+                        </div>
+                        <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">IoT Safety</span>
                       </div>
-                      <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">IoT Safety</span>
+                      <h3 className="text-xl font-bold text-white mb-2">SheSecure SOS</h3>
+                      <p className="text-xs text-white/50 leading-relaxed mb-4">
+                        Real-time travel safety with Project Suraksha QR tracking and uncompromised telemetry.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
+                        Learn More <ArrowRight className="w-3 h-3" />
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">SheSecure SOS</h3>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      Real-time travel safety with Project Suraksha QR tracking.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
-                    Learn More <ArrowRight className="w-3 h-3" />
+                    
+                    {/* Scannable Logo Tech Demo - Connected */}
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      className="shrink-0 p-3 bg-black/40 rounded-xl border border-white/5 flex items-center gap-3 group/qr transition-all hover:border-orange-500/30 relative"
+                    >
+                      <div className="absolute -top-1 -right-1 flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                        <span className="text-[8px] font-mono text-orange-400 font-bold uppercase tracking-widest">Live</span>
+                      </div>
+
+                      <div className="w-12 h-12 bg-white rounded-md p-1.5 flex items-center justify-center">
+                        <div className="w-full h-full bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://healix-nu.vercel.app/ride/HEALIX-SAFE-DEMO')] bg-contain" />
+                      </div>
+                      <div className="hidden sm:block">
+                        <p className="text-[10px] font-mono text-orange-400 font-bold uppercase tracking-tighter">Verified Identity</p>
+                        <p className="text-[9px] text-white/40">ID: HEALIX-SAFE-DEMO</p>
+                      </div>
+                    </motion.div>
                   </div>
                 </GlassCard>
               </Link>

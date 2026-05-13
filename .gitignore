@@ -1,4 +1,15 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.venv/
+__pycache__/
+*.pyc
+*.tar
+*.log
+.next/
+node_modules/
+.env*
+predictions.json
+server.log
+build.log
+GSE42568_RAW*# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules

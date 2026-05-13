@@ -365,6 +365,43 @@ export default function BioLabsPage() {
           </div>
 
         </div>
+
+        {/* --- GENOMIC INTELLIGENCE ENGINE SECTION --- */}
+        <section className="mt-20">
+          <div className="relative overflow-hidden rounded-sm border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-purple-900/20 p-8 md:p-12 shadow-2xl">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500" />
+            
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-600/20 rounded">
+                    <Activity className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <span className="text-purple-400 font-bold uppercase tracking-widest text-[10px]">AI Research Platform</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight font-mono">Healix BioLabs Genomic Intelligence Engine</h2>
+                <p className="text-white/60 max-w-2xl text-sm md:text-base leading-relaxed">
+                  Unlock the power of AI-driven genomic analysis. Our high-performance engine provides deep insights into genetic markers, enabling precision medicine and accelerated research in oncology and rare diseases.
+                </p>
+              </div>
+              
+              <div className="shrink-0">
+                <Link 
+                  href="/genomics-research" 
+                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-sm transition-all shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  <span className="uppercase tracking-wider text-xs">Access Engine</span>
+                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Background Decorative Elements */}
+            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl" />
+            <div className="absolute -top-12 -left-12 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl" />
+          </div>
+        </section>
       </div>
     </div>
   );

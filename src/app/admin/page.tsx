@@ -13,6 +13,8 @@ import {
   addBiolabProgram, deleteBiolabProgram, addReel, deleteReel,
   addSessionPhoto, deleteSessionPhoto
 } from "./actions";
+import BrandedQRCard from "@/components/ui/BrandedQRCard";
+import { Copy, ExternalLink, Download as DownloadIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +22,7 @@ import { useRealtimeTelemetry } from "@/hooks/useRealtimeTelemetry";
 
 export default function AdminPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "shesecure" | "system" | "reels">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "shesecure" | "branding" | "system" | "reels">("overview");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,6 +141,7 @@ export default function AdminPage() {
     { id: "overview", label: "Overview", icon: LayoutDashboard, color: "text-blue-400", bg: "bg-blue-500/10" },
     { id: "biolabs", label: "BioLabs", icon: TestTube, color: "text-purple-400", bg: "bg-purple-500/10" },
     { id: "shesecure", label: "SheSecure", icon: Car, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { id: "branding", label: "Branding", icon: ImageIcon, color: "text-blue-400", bg: "bg-blue-500/10" },
     { id: "reels", label: "Comm. Reels", icon: PlayCircle, color: "text-pink-400", bg: "bg-pink-500/10" },
     { id: "system", label: "System Health", icon: Server, color: "text-green-400", bg: "bg-green-500/10" }
   ] as const;
@@ -891,6 +894,75 @@ export default function AdminPage() {
                       <p>[{new Date(Date.now() - 86400000).toISOString().split('T')[1].substring(0,8)}] Database index rebuilt successfully.</p>
                     </div>
                   </GlassCard>
+                </div>
+              </motion.div>
+            )}
+
+            {/* BRANDING TAB */}
+            {activeTab === "branding" && (
+              <motion.div key="branding" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Identity & Branding</h2>
+                  <p className="text-white/50">Manage your scannable branded assets and infrastructure logos.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                  {/* Preview Section */}
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <BrandedQRCard 
+                      deviceId="HEALIX-SAFE-001"
+                      vehicleReg="DL-1-SAFE-2026"
+                      driverName="Healix Safety Driver"
+                      rideUrl="https://healix-nu.vercel.app/ride/HEALIX-SAFE-001"
+                    />
+                  </motion.div>
+
+                  {/* Configuration / Details */}
+                  <div className="space-y-6">
+                    <GlassCard className="p-6">
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <Shield className="text-blue-400 w-5 h-5" /> Infrastructure Logo
+                      </h3>
+                      <p className="text-xs text-white/50 mb-6 leading-relaxed">
+                        This scannable identity card combines the **Healix Shield** with high-error-correction QR logic. Engineered for visibility in high-stress emergency environments.
+                      </p>
+
+                      <div className="space-y-3">
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Standard Print Density</p>
+                          <p className="text-base font-bold">300 DPI / Matte Finish</p>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Error Correction</p>
+                          <p className="text-base font-bold">Level H (30% Resilience)</p>
+                        </div>
+                      </div>
+
+                      <button className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+                        <DownloadIcon className="w-4 h-4" /> Export Branding Kit
+                      </button>
+                    </GlassCard>
+
+                    <GlassCard className="p-6 border-purple-500/10">
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-purple-400">
+                         Deployment Guide
+                      </h3>
+                      <ul className="space-y-3 text-xs text-white/60">
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
+                          Download the high-resolution PNG asset.
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
+                          Apply as a 4x6" vinyl sticker on the vehicle dashboard.
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
+                          Passengers scan this to initialize the safety pipeline.
+                        </li>
+                      </ul>
+                    </GlassCard>
+                  </div>
                 </div>
               </motion.div>
             )}
