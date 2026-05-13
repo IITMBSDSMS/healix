@@ -48,9 +48,15 @@ export default function GenomicsResearch() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [engineOnline, setEngineOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    // Check engine health on mount
+    fetch("/api/predict/health")
+      .then(res => res.json())
+      .then(data => setEngineOnline(data.status === "healthy"))
+      .catch(() => setEngineOnline(false));
   }, []);
 
   const uploadFile = async (file: File) => {
@@ -59,7 +65,7 @@ export default function GenomicsResearch() {
     setLoading(true);
     setError(null);
     setProgress(0);
-    setStatus("Initializing Healix Intelligence Engine...");
+    setStatus("Analyzing genomic signatures...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -378,10 +384,14 @@ export default function GenomicsResearch() {
         <div className="p-6 space-y-4 border-t border-white/5 relative z-10">
           <div className="bg-emerald-500/5 rounded-2xl p-4 border border-emerald-500/10 mb-2 group hover:border-emerald-500/20 transition-all duration-500 cursor-help">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,1)]" />
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">System Live</span>
+              <div className={`w-2 h-2 rounded-full ${engineOnline ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,1)]' : 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,1)]'}`} />
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${engineOnline ? 'text-emerald-400' : 'text-red-400'}`}>
+                {engineOnline === null ? "Scanning..." : engineOnline ? "System Live" : "Engine Offline"}
+              </span>
             </div>
-            <p className="text-[10px] text-slate-500 leading-relaxed font-medium">Genomic Intelligence Engine v4.2 actively monitoring research vectors.</p>
+            <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+              {engineOnline === false ? "Healix inference engine offline. Check connection." : "Genomic Intelligence Engine v4.2 actively monitoring research vectors."}
+            </p>
           </div>
           
           <button className="w-full flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-500 hover:text-white transition-all">
@@ -724,6 +734,8 @@ export default function GenomicsResearch() {
                               <th className="px-8 py-4 border-b border-white/5">Sample Identifier</th>
                               <th className="px-8 py-4 border-b border-white/5">Clinical Inference</th>
                               <th className="px-8 py-4 border-b border-white/5">Confidence</th>
+                              <th className="px-8 py-4 border-b border-white/5">Risk</th>
+                              <th className="px-8 py-4 border-b border-white/5">Benign Score</th>
                               <th className="px-8 py-4 border-b border-white/5 text-right">Reference</th>
                             </tr>
                           </thead>
@@ -745,6 +757,8 @@ export default function GenomicsResearch() {
                                     </div>
                                   </div>
                                 </td>
+                                <td className="px-8 py-5 font-mono text-xs text-slate-400">{p.risk || "0.0"}</td>
+                                <td className="px-8 py-5 font-mono text-xs text-slate-400">{p.benignScore || "0.0"}</td>
                                 <td className="px-8 py-5 text-right">
                                   <button className="text-slate-600 hover:text-white transition-colors p-1"><ChevronRight className="w-4 h-4" /></button>
                                 </td>

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-// Flask API runs on 8080 — macOS ControlCenter permanently blocks 5000 & 5001
-const FLASK_URL = process.env.FLASK_API_URL ?? "http://127.0.0.1:5000";
+// Production Backend URL (Render)
+const FLASK_URL = process.env.FLASK_API_URL ?? "https://healix-biolabs.onrender.com";
 
 export async function POST(req: Request) {
   try {
