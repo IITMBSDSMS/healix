@@ -6,13 +6,16 @@ import Image from "next/image";
 
 interface MentorCardProps {
   mentor: {
+    id: string;
     name: string;
     role: string;
     institution: string;
     specialization: string;
-    experience: number;
-    photo_url: string;
-    linkedin_url?: string;
+    experience: string;
+    photoUrl: string;
+    linkedinUrl?: string;
+    companies?: string[];
+    bio?: string;
   };
 }
 
@@ -52,8 +55,8 @@ export const MentorCard = ({ mentor }: MentorCardProps) => {
         
         <div className="p-4 bg-white/[0.02] flex justify-between items-center border-t border-white/5">
           <div className="flex gap-4">
-            {mentor.linkedin_url && (
-              <a href={mentor.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-[#eab308] transition-colors">
+            {mentor.linkedinUrl && (
+              <a href={mentor.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-[#eab308] transition-colors">
                 <Linkedin className="w-4 h-4" />
               </a>
             )}

@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
-  ArrowRight, Code2, GraduationCap, Laptop, 
+  ArrowRight, Code2, GraduationCap, Monitor, 
   Sparkles, Terminal, Users, Play, 
-  Zap, ShieldCheck, Globe, Star,
+  Zap, Shield, Globe, Star,
   MessageSquare, BarChart, Rocket
 } from "lucide-react";
 import { MentorMarquee } from "@/components/academy/MentorMarquee";

@@ -10,7 +10,7 @@ import {
   Clock, BarChart, Users, CheckCircle2, 
   ArrowRight, Play, BookOpen, GraduationCap,
   Award, Zap, ChevronDown, MessageSquare,
-  Linkedin, Star, ShieldCheck, Laptop
+  Linkedin, Star, Shield, Monitor
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -67,7 +67,7 @@ export default function CourseDetailPage() {
                 transition={{ duration: 0.8 }}
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-6">
-                  <ShieldCheck className="h-4 w-4 text-[#eab308]" />
+                  <Shield className="h-4 w-4 text-[#eab308]" />
                   <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Healix Certified Program</span>
                 </div>
                 
@@ -269,7 +269,7 @@ export default function CourseDetailPage() {
                 </GlassCard>
                 
                 <GlassCard className="p-8 border-blue-500/10 bg-gradient-to-br from-blue-500/5 to-transparent">
-                  <Laptop className="w-8 h-8 text-blue-400 mb-6" />
+                  <Monitor className="w-8 h-8 text-blue-400 mb-6" />
                   <h4 className="text-xl font-bold mb-4">Capstone Projects</h4>
                   <ul className="space-y-3">
                     {course.projects?.map((project: string, idx: number) => (
