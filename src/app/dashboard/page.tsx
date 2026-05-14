@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Activity, HeartPulse, ShieldAlert, FileText, ArrowRight } from "lucide-react";
+import { Activity, HeartPulse, ShieldAlert, FileText, ArrowRight, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
 import { DashboardCharts } from "@/components/ui/DashboardCharts";
 import { createClient } from "@/utils/supabase/client";
@@ -108,6 +108,28 @@ export default function DashboardPage() {
                 <p className="text-sm text-white/60 mb-6">Quickly alert your emergency contacts with your live location.</p>
               </div>
               <span className="relative z-10 text-red-500 text-sm font-medium flex items-center gap-1">Configure Safety <ArrowRight className="h-4 w-4" /></span>
+            </GlassCard>
+          </Link>
+        </motion.div>
+
+        {/* Academy: Student Dashboard */}
+        <motion.div variants={item}>
+          <Link href="/academy" className="block h-full">
+            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors border-[#eab308]/10 hover:border-[#eab308]/30">
+              <div className="relative z-10">
+                <div className="bg-[#eab308]/20 p-3 rounded-lg w-fit mb-4 border border-[#eab308]/30">
+                  <GraduationCap className="h-6 w-6 text-[#eab308]" />
+                </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-semibold">Healix Academy</h3>
+                  <span className="text-[10px] bg-[#eab308]/20 text-[#eab308] px-2 py-1 rounded font-mono">ENROLLED</span>
+                </div>
+                <p className="text-sm text-white/60 mb-4">AI Systems Engineering cohort. Next session tomorrow at 10 AM.</p>
+                <div className="w-full bg-white/10 rounded-full h-1.5 mb-4 overflow-hidden">
+                  <div className="bg-[#eab308] h-1.5 rounded-full w-[45%]" />
+                </div>
+              </div>
+              <span className="relative z-10 text-[#eab308] text-sm font-medium flex items-center gap-1">Continue Learning <ArrowRight className="h-4 w-4" /></span>
             </GlassCard>
           </Link>
         </motion.div>

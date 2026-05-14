@@ -246,6 +246,66 @@ export default function Home() {
           </motion.div>
         </div>
 
+        {/* Healix Academy Premium Banner */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mt-20 border border-[#eab308]/20 rounded-3xl overflow-hidden relative group cursor-pointer bg-gradient-to-r from-black via-[#111111] to-black"
+        >
+          <Link href="/academy" className="block relative">
+            <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#eab308]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#eab308]/5 to-transparent pointer-events-none" />
+            
+            <div className="flex flex-col md:flex-row items-center justify-between p-10 md:p-16 relative z-10">
+              <div className="flex-1 mb-8 md:mb-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                    <Rocket className="w-6 h-6 text-[#eab308]" />
+                  </div>
+                  <span className="text-sm font-mono text-[#eab308] font-bold uppercase tracking-widest drop-shadow-sm">Healix Academy</span>
+                </div>
+                
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
+                  Learn Real Engineering. <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
+                    Build Real Systems.
+                  </span>
+                </h2>
+                
+                <p className="text-lg text-white/60 max-w-xl mb-8 leading-relaxed">
+                  1:1 mentorship from elite engineers building production-grade systems. Elite engineering institution authority.
+                </p>
+                
+                <button className="px-8 py-4 bg-white text-black font-bold rounded-xl flex items-center gap-3 hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                  Explore Programs <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Academy Mockup / Graphic */}
+              <div className="flex-1 flex justify-center md:justify-end relative">
+                {/* Abstract animated elements */}
+                <div className="relative w-64 h-64 md:w-80 md:h-80">
+                  <div className="absolute inset-0 border border-[#eab308]/30 rounded-full animate-[spin_10s_linear_infinite]" />
+                  <div className="absolute inset-4 border border-dashed border-[#eab308]/20 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 bg-gradient-to-br from-[#eab308]/20 to-transparent rounded-2xl border border-[#eab308]/30 transform rotate-12 backdrop-blur-sm shadow-2xl flex items-center justify-center group-hover:rotate-0 transition-transform duration-700">
+                      <Rocket className="w-12 h-12 text-[#eab308]/80" />
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 bg-black rounded-2xl border border-white/10 transform -rotate-12 backdrop-blur-md shadow-2xl flex items-center justify-center group-hover:rotate-0 transition-transform duration-700">
+                      <span className="font-mono text-[#eab308] text-xl font-bold">&lt;/&gt;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+
         {/* Infrastructure Architecture Flow */}
         <motion.div 
           initial={{ opacity: 0 }}

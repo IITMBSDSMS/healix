@@ -17,6 +17,7 @@ const navLinks = [
   { name: "BioLabs", href: "/biolabs" },
   { name: "SheSecure", href: "/shesecure" },
   { name: "Contact", href: "/contact" },
+  { name: "Academy", href: "/academy" },
 ];
 
 export function Navbar() {
