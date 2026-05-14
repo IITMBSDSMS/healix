@@ -89,8 +89,8 @@ export function Navbar() {
             </Link>
           </div>
           
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+          <div className="hidden lg:block">
+            <div className="ml-6 flex items-baseline space-x-2 xl:space-x-6">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -117,7 +117,7 @@ export function Navbar() {
           
           <div className="flex items-center gap-4">
             {user ? (
-              <div className="hidden sm:flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-4">
                 <Link
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 glow-hover transition-all"
@@ -131,7 +131,7 @@ export function Navbar() {
                 </form>
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-4">
                 <Link
                   href="/login"
                   className="text-sm font-medium text-white/70 hover:text-white transition-colors"
@@ -150,7 +150,7 @@ export function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -165,7 +165,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/10 bg-black/90 backdrop-blur-xl overflow-hidden"
+            className="lg:hidden border-t border-white/10 bg-black/90 backdrop-blur-xl overflow-hidden"
           >
             <div className="px-4 pt-2 pb-6 space-y-2">
               {navLinks.map((link) => (
