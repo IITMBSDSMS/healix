@@ -6,7 +6,7 @@ import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { HealixLogo } from "@/components/ui/HealixLogo";
-import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper, HelpCircle, Camera, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
@@ -423,6 +423,111 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#050505] to-transparent" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#050505] to-transparent" />
           </div>
+        </div>
+        {/* ── Global Impact Statistics ── */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mt-32 mb-20"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { label: "Users Protected", value: "50,000+", sub: "SheSecure Active Network", icon: Shield, color: "text-orange-400" },
+              { label: "Research Points", value: "5M+", sub: "BioLabs Genomic Data", icon: Database, color: "text-blue-400" },
+              { label: "Elite Mentors", value: "120+", sub: "Healix Academy Faculty", icon: Rocket, color: "text-[#eab308]" },
+            ].map((stat, i) => (
+              <GlassCard key={i} className="text-center p-10 group hover:border-[#eab308]/30 transition-all duration-500">
+                <div className={`mx-auto w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${stat.color}`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-4xl font-bold text-white mb-2 tracking-tight">{stat.value}</h3>
+                <p className="text-sm font-mono uppercase tracking-[0.2em] text-white/40 mb-1">{stat.label}</p>
+                <p className="text-[10px] text-white/20">{stat.sub}</p>
+              </GlassCard>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── FAQ & Tech Showcase ── */}
+        <div className="mt-32 grid grid-cols-1 lg:grid-cols-2 gap-16">
+          {/* Left: FAQ */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                <HelpCircle className="w-5 h-5 text-white/60" />
+              </div>
+              <h2 className="text-3xl font-bold text-white tracking-tight">Frequently Asked Questions</h2>
+            </div>
+            
+            <div className="space-y-4">
+              {[
+                { q: "How secure is the SheSecure SOS system?", a: "SheSecure uses zero-knowledge telemetry. Your live location is only decrypted and transmitted to emergency contacts or authorities when you trigger an active SOS or fail to check-in at a verified destination." },
+                { q: "What makes Healix BioLabs different?", a: "Unlike standard labs, BioLabs integrates high-performance compute clusters directly with genomic sequencing, allowing for real-time AI-powered diagnostic modeling that would traditionally take weeks." },
+                { q: "Can I apply to the Academy without prior experience?", a: "Healix Academy is designed for engineers seeking to reach the elite level. While we have foundational tracks, our core programs are built for those who have a base understanding of engineering and want to master production-grade systems." },
+                { q: "Is my medical data sold to third parties?", a: "Never. Our infrastructure is built on the principle of data sovereignty. Your medical intelligence is processed on our isolated nodes and encrypted with keys that only you control." }
+              ].map((faq, i) => (
+                <GlassCard key={i} className="p-0 overflow-hidden border-white/5 hover:border-white/10">
+                  <details className="group">
+                    <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+                      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{faq.q}</span>
+                      <ChevronDown className="w-4 h-4 text-white/30 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-6 text-sm text-white/50 leading-relaxed border-t border-white/5 pt-4">
+                      {faq.a}
+                    </div>
+                  </details>
+                </GlassCard>
+              ))}
+            </div>
+            
+            <Link href="/contact" className="inline-flex items-center gap-2 mt-8 text-xs font-mono text-[#eab308] hover:gap-3 transition-all">
+              Still have questions? Contact our team <ArrowRight className="w-3 h-3" />
+            </Link>
+          </motion.div>
+
+          {/* Right: Gallery / Showcase */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                  <Camera className="w-5 h-5 text-white/60" />
+                </div>
+                <h2 className="text-3xl font-bold text-white tracking-tight">Tech Showcase</h2>
+              </div>
+              <Link href="/biolabs" className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-mono hover:bg-white/10 transition-colors">
+                View All
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400", label: "IoT Infrastructure" },
+                { url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400", label: "Genomic Analytics" },
+                { url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=400", label: "Engineering Hub" },
+                { url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400", label: "Neural Network" },
+              ].map((img, i) => (
+                <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-white/10">
+                  <img src={img.url} alt={img.label} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 duration-500">
+                    <p className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">{img.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
 
         {/* ── Mobile App Launching Soon ── */}
