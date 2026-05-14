@@ -54,7 +54,7 @@ export default function Home() {
 
 
   return (
-    <div className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-hidden">
+    <div className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-x-hidden w-full">
       {/* Cinematic Background */}
       <div className="absolute inset-0 bg-[#050505]" />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
@@ -392,7 +392,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative w-full overflow-hidden">
             <div className="flex gap-6 animate-marquee" style={{ animationDirection: 'reverse', width: 'max-content' }}>
               {[...reels, ...reels, ...reels].map((reel, idx) => (
                 <div 
