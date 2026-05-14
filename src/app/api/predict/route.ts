@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 
 // Production Backend URL (Render)
-const FLASK_URL = process.env.FLASK_API_URL ?? "https://healix-biolabs.onrender.com";
+const FLASK_URL = process.env.NEXT_PUBLIC_FLASK_API_URL ?? process.env.FLASK_API_URL ?? "https://healix-biolabs.onrender.com";
 
 export async function POST(req: Request) {
   try {

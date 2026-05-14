@@ -53,10 +53,19 @@ export default function GenomicsResearch() {
   useEffect(() => {
     setMounted(true);
     // Check engine health on mount
-    fetch("/api/predict/health")
+    const healthUrl = `${process.env.NEXT_PUBLIC_FLASK_API_URL || 'https://healix-biolabs.onrender.com'}/health`;
+    console.log("Checking engine health at:", healthUrl);
+    
+    fetch(healthUrl)
       .then(res => res.json())
-      .then(data => setEngineOnline(data.status === "healthy"))
-      .catch(() => setEngineOnline(false));
+      .then(data => {
+        console.log("Engine health response:", data);
+        setEngineOnline(data.status === "ok" || data.status === "healthy");
+      })
+      .catch((err) => {
+        console.error("Engine health check failed:", err);
+        setEngineOnline(false);
+      });
   }, []);
 
   const uploadFile = async (file: File) => {
@@ -90,17 +99,21 @@ export default function GenomicsResearch() {
     }, 2000);
 
     try {
-      const response = await fetch("/api/predict", {
+      const apiUrl = process.env.NEXT_PUBLIC_FLASK_API_URL || "https://healix-biolabs.onrender.com";
+      console.log("Initiating inference at:", `${apiUrl}/predict`);
+
+      const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to process genomic data.");
+        console.error("Inference server returned error:", response.status);
+        throw new Error(`Prediction failed: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("Inference successful:", data);
       
       clearInterval(progressInterval);
       setProgress(100);
@@ -112,8 +125,11 @@ export default function GenomicsResearch() {
       }, 500);
 
     } catch (err: any) {
+      console.error("Genomic inference pipeline crash:", err);
       clearInterval(progressInterval);
       setError(err.message || "An unexpected error occurred during analysis.");
+      setLoading(false);
+    } finally {
       setLoading(false);
     }
   };
