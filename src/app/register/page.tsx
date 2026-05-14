@@ -26,6 +26,8 @@ function RegisterForm() {
   const preselectedCourse = searchParams.get("course") || "";
   const router = useRouter();
 
+  const isSheSecure = searchParams.get("discount") === "shesecure";
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
@@ -133,15 +135,18 @@ function RegisterForm() {
           {errors.experienceLevel && <p className="text-red-400 text-xs mt-1">{errors.experienceLevel.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-white/70 mb-2">Program</label>
+          <label className="block text-sm font-medium text-white/70 mb-2">Program {isSheSecure && <span className="text-green-400 text-xs font-bold ml-2">(SheSecure 50% Applied)</span>}</label>
           <select
             {...register("courseId")}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#eab308]/50 transition-colors appearance-none"
           >
             <option value="" className="bg-[#111]">Select Program</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id} className="bg-[#111]">{c.title} (₹{c.price.toLocaleString()})</option>
-            ))}
+            {courses.map((c) => {
+              const displayPrice = isSheSecure ? Math.floor(c.price / 2) : c.price;
+              return (
+                <option key={c.id} value={c.id} className="bg-[#111]">{c.title} (₹{displayPrice.toLocaleString()})</option>
+              );
+            })}
           </select>
           {errors.courseId && <p className="text-red-400 text-xs mt-1">{errors.courseId.message}</p>}
         </div>

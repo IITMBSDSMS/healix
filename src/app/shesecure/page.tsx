@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Shield, AlertTriangle, MapPin, X, Users, Calendar, Phone, Mail, Trash2, Plus, QrCode, Car, CheckCircle, Clock, ShieldCheck, Play, ExternalLink } from "lucide-react";
+import { Shield, AlertTriangle, MapPin, X, Users, Calendar, Phone, Mail, Trash2, Plus, QrCode, Car, CheckCircle, Clock, ShieldCheck, Play, ExternalLink, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { saveSosAlert, saveContact, deleteContact, lookupVehicle, startTrip, endTrip, updateTripLocation, getContacts, getTripHistory, getSessionPhotos } from "./actions";
 import { createClient } from "@/utils/supabase/client";
@@ -11,17 +11,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import dynamic from "next/dynamic";
 import { generateInitialState, generateNextState } from "@/lib/suraksha/simulator";
+import { getCourses } from "@/lib/academy/db";
 
 const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
   ssr: false,
   loading: () => <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">Loading radar...</div>,
 });
-
-const initiatives = [
-  { id: 1, title: "Women's Safety Awareness Seminar", description: "A comprehensive seminar covering self-defense techniques, legal rights, and digital safety for women in urban environments.", date: "October 15, 2025", image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" },
-  { id: 2, title: "Community Defense Workshop", description: "Interactive workshop teaching practical physical defense maneuvers led by professional martial artists.", date: "November 5, 2025", image: "https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop" },
-  { id: 3, title: "Digital Security Training", description: "Learn how to protect your personal data, secure your devices, and identify online threats in this expert-led session.", date: "December 12, 2025", image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=800&auto=format&fit=crop" },
-];
 
 const sessionPhotos = [
   { id: 1, src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop", caption: "Self-Defence Workshop, Delhi" },
@@ -40,7 +35,7 @@ export default function SheSecurePage() {
   const [sosStatus, setSosStatus] = useState<"idle" | "locating" | "sending" | "active">("idle");
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sosError, setSosError] = useState<string | null>(null);
-  const [selectedInitiative, setSelectedInitiative] = useState<typeof initiatives[0] | null>(null);
+  const [academyCourses, setAcademyCourses] = useState<any[]>([]);
 
   // Live Radar Demo state (Feature 2)
   const [radarRunning, setRadarRunning] = useState(false);
@@ -80,8 +75,10 @@ export default function SheSecurePage() {
       const fetchedContacts = await getContacts();
       const fetchedTrips = await getTripHistory();
       const fetchedPhotos = await getSessionPhotos();
+      const courses = await getCourses();
       setContacts(fetchedContacts);
       setTripHistory(fetchedTrips);
+      setAcademyCourses(courses);
       
       // Merge local storage photos for mock/demo mode
       let allPhotos = [...fetchedPhotos];
@@ -700,31 +697,33 @@ export default function SheSecurePage() {
         </svg>
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2 rounded-xl bg-[#eab308]/15 border border-[#eab308]/25">
-            <Users className="h-5 w-5 text-[#eab308]" />
+            <GraduationCap className="h-5 w-5 text-[#eab308]" />
           </div>
-          <h2 className="text-2xl font-bold">Community Awareness & Safety Programs</h2>
+          <h2 className="text-2xl font-bold">Empowering Women with Knowledge</h2>
         </div>
+        <p className="text-white/50 text-sm mb-6 ml-14">Special 50% discount on all Healix Academy engineering courses for women.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initiatives.map(initiative => (
-            <GlassCard key={initiative.id} className="overflow-hidden group cursor-pointer p-0 border-white/10 hover:border-red-500/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)]" onClick={() => setSelectedInitiative(initiative)}>
+          {academyCourses.slice(0, 3).map(course => (
+            <GlassCard key={course.id} className="overflow-hidden group cursor-pointer p-0 border-white/10 hover:border-red-500/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(239,68,68,0.1)]" onClick={() => router.push(`/academy/course/${course.slug}?discount=shesecure`)}>
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="h-52 overflow-hidden relative">
-                <img src={initiative.image} alt={initiative.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute top-3 right-3">
-                  <span className="text-[10px] px-2 py-0.5 bg-black/60 border border-white/10 text-white/60 rounded-full backdrop-blur-md">Event</span>
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+                  <span className="text-[10px] px-2 py-0.5 bg-green-500/20 border border-green-500/40 text-green-400 rounded-full backdrop-blur-md font-bold">50% OFF</span>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4">
-                  <div className="flex items-center gap-1.5 text-red-300 text-xs font-medium mb-1.5">
-                    <Calendar className="h-3 w-3" />{initiative.date}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-white/40 line-through text-xs">₹{course.originalPrice}</span>
+                    <span className="text-[#eab308] font-bold text-sm">₹{Math.floor(course.price / 2)}</span>
                   </div>
-                  <h3 className="font-bold text-base line-clamp-2 leading-snug">{initiative.title}</h3>
+                  <h3 className="font-bold text-base line-clamp-2 leading-snug">{course.title}</h3>
                 </div>
               </div>
               <div className="p-4">
-                <p className="text-sm text-white/55 line-clamp-2 leading-relaxed">{initiative.description}</p>
+                <p className="text-sm text-white/55 line-clamp-2 leading-relaxed">{course.shortDescription}</p>
                 <div className="flex items-center gap-1 text-[#eab308] text-sm font-semibold mt-4 group-hover:gap-2 transition-all">
-                  <span>Read more</span>
+                  <span>Enroll Now</span>
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
               </div>
@@ -766,30 +765,6 @@ export default function SheSecurePage() {
           </div>
         </div>
       </div>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {selectedInitiative && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => setSelectedInitiative(null)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              className="bg-[#111] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl"
-              onClick={e => e.stopPropagation()}>
-              <div className="relative h-64">
-                <img src={selectedInitiative.image} alt={selectedInitiative.title} className="w-full h-full object-cover" />
-                <button onClick={() => setSelectedInitiative(null)} className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white backdrop-blur-md transition-colors"><X className="h-5 w-5" /></button>
-              </div>
-              <div className="p-8">
-                <div className="flex items-center gap-2 text-red-400 text-sm font-medium mb-3"><Calendar className="h-4 w-4" />{selectedInitiative.date}</div>
-                <h2 className="text-2xl font-bold mb-4">{selectedInitiative.title}</h2>
-                <p className="text-white/70 leading-relaxed mb-8">{selectedInitiative.description}<br /><br />This initiative is part of Healix's ongoing commitment to building safer communities through education, awareness, and technology.</p>
-                <button className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors" onClick={() => { alert("Registration flow coming soon."); setSelectedInitiative(null); }}>Register for Event</button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

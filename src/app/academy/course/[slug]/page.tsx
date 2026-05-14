@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { getCourses, getMentors } from "@/lib/academy/db";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -9,6 +9,8 @@ import React from "react";
 
 export default function CourseDetail() {
   const { slug } = useParams();
+  const searchParams = useSearchParams();
+  const isSheSecure = searchParams.get("discount") === "shesecure";
   const [course, setCourse] = React.useState<any>(null);
   const [mentors, setMentors] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -65,9 +67,12 @@ export default function CourseDetail() {
               <div className="flex items-center gap-6">
                 <div>
                   <div className="text-sm text-white/40 line-through">₹{course.originalPrice.toLocaleString()}</div>
-                  <div className="text-3xl font-bold text-white">₹{course.price.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-white flex items-center gap-3">
+                    ₹{isSheSecure ? Math.floor(course.price / 2).toLocaleString() : course.price.toLocaleString()}
+                    {isSheSecure && <span className="text-sm px-2 py-1 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">SheSecure Applied</span>}
+                  </div>
                 </div>
-                <Link href={`/register?course=${course.id}`}>
+                <Link href={`/register?course=${course.id}${isSheSecure ? '&discount=shesecure' : ''}`}>
                   <button className="px-8 py-4 bg-[#eab308] text-black font-bold rounded-xl hover:bg-[#ca8a04] transition-all shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
                     Enroll Now <ArrowRight className="w-5 h-5" />
                   </button>
