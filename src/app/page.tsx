@@ -634,34 +634,33 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
-
-        {/* ── Broad Animated Yellow Gear Strip ── */}
-        <div className="relative h-12 w-full bg-[#eab308]/5 my-32 overflow-hidden border-y border-[#eab308]/10 flex items-center">
-          <motion.div 
-            animate={{ x: ["-20%", "120%"] }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute top-0 left-0 h-full w-64 bg-gradient-to-r from-transparent via-[#eab308]/20 to-transparent"
-          />
-          <motion.div
-            animate={{ 
-              x: ["-10%", "110%"],
-              rotate: [0, 360 * 8]
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute left-0 text-[#eab308]"
-          >
-            <Settings className="w-12 h-12 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
-          </motion.div>
-          {/* Subtle repeating pattern background */}
-          <div className="absolute inset-0 opacity-[0.03] flex items-center gap-8 px-8 overflow-hidden pointer-events-none">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <Settings key={i} className="w-6 h-6 shrink-0" />
-            ))}
-          </div>
-        </div>
-
-
       </div>
+
+      {/* ── End-to-End Animated Black Gear Strip ── */}
+      <div className="relative h-12 w-full bg-[#eab308] overflow-hidden border-y border-[#eab308] flex items-center z-[5]">
+        <motion.div 
+          animate={{ x: ["-20%", "120%"] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute top-0 left-0 h-full w-96 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+        />
+        <motion.div
+          animate={{ 
+            x: ["-10%", "110%"],
+            rotate: [0, 360 * 8]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 text-black z-10"
+        >
+          <Settings className="w-12 h-12 fill-black/10" />
+        </motion.div>
+        {/* Subtle repeating pattern background */}
+        <div className="absolute inset-0 opacity-[0.15] flex items-center gap-8 px-8 overflow-hidden pointer-events-none">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <Settings key={i} className="w-6 h-6 shrink-0 text-black" />
+          ))}
+        </div>
+      </div>
+
 
       {/* Video Player Modal */}
       <AnimatePresence>
