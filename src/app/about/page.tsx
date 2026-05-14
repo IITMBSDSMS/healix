@@ -6,8 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   Shield, Activity, Server, Database, Users, CheckCircle, 
   ChevronRight, Calendar, Lock, Code, Microscope, 
-  ArrowRight, Heart, Brain, Zap, Globe, Github,
-  BadgeCheck, Workflow, Terminal, Layers
+  ArrowRight, Heart, Brain, Zap, Globe
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,7 +43,7 @@ export default function AboutPage() {
             className="flex-1 text-center lg:text-left"
           >
             <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-6">
-              <BadgeCheck className="h-3.5 w-3.5 text-[#eab308]" />
+              <CheckCircle className="h-3.5 w-3.5 text-[#eab308]" />
               <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Our Genesis</span>
             </motion.div>
             
@@ -232,13 +231,13 @@ export default function AboutPage() {
               { 
                 title: "Unified Intelligence Layer", 
                 desc: "Turn fragmented systems into one standardized patient graph.", 
-                icon: Layers, 
+                icon: Database, 
                 color: "text-[#eab308]" 
               },
               { 
                 title: "Developer First", 
                 desc: "Deploy integrations in hours, not months via our robust SDKs.", 
-                icon: Terminal, 
+                icon: Code, 
                 color: "text-blue-400" 
               },
               { 
@@ -302,7 +301,7 @@ export default function AboutPage() {
                   <div className="p-4 bg-white/[0.02] flex justify-between items-center">
                     <div className="flex gap-3">
                       <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#eab308] hover:text-black transition-colors cursor-pointer">
-                        <Github className="h-3 w-3" />
+                        <Globe className="h-3 w-3" />
                       </div>
                       <div className="w-6 h-6 rounded-md bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#eab308] hover:text-black transition-colors cursor-pointer">
                         <Globe className="h-3 w-3" />
@@ -322,7 +321,7 @@ export default function AboutPage() {
             <div className="bg-[#050505] rounded-[22px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 justify-between">
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-4">
-                  <BadgeCheck className="h-3.5 w-3.5 text-[#eab308]" />
+                  <CheckCircle className="h-3.5 w-3.5 text-[#eab308]" />
                   <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Expert Backed</span>
                 </div>
                 <h2 className="text-3xl font-bold text-white mb-2">Supported by expert builders and advisors</h2>
