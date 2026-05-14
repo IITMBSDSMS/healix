@@ -109,7 +109,7 @@ export default function RootLayout({
                 "An intelligent human-care platform combining AI healthcare, BioLabs research, and SheSecure women's safety systems.",
               sameAs: [
                 "https://twitter.com/HealixTech",
-                "https://www.linkedin.com/company/healix-tech",
+                "https://www.linkedin.com/company/quick-healix/",
               ],
               contactPoint: {
                 "@type": "ContactPoint",
