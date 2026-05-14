@@ -169,6 +169,9 @@ export default function GenomicsResearch() {
       const logoBase64 = await loadImage("/biolabs-logo.png");
       doc.addImage(logoBase64, 'PNG', 15, 12, 28, 28);
       
+      const logo2Base64 = await loadImage("/official-logo.png");
+      doc.addImage(logo2Base64, 'PNG', pageWidth - 43, 12, 28, 28);
+      
       // Company Name next to logo
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
@@ -180,6 +183,10 @@ export default function GenomicsResearch() {
       doc.setTextColor(100, 116, 139);
       doc.text("Clinical Genomic Intelligence Division", 48, 30);
       doc.text("Precision Oncology Research Facility", 48, 35);
+      
+      // Hindi Tagline under official logo on right
+      doc.setFontSize(7);
+      doc.text("जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र", pageWidth - 15, 42, { align: 'right' });
       
       // Header Divider
       doc.setDrawColor(16, 185, 129);
@@ -300,7 +307,7 @@ export default function GenomicsResearch() {
 
     // Draw Data Trend
     const points = result.predictions.slice(0, 20).map((p: any) => parseFloat(p.confidence));
-    const stepX = cW / (points.length - 1);
+    const stepX = points.length > 1 ? cW / (points.length - 1) : 0;
     const minVal = 85;
     const maxVal = 100;
     
@@ -310,7 +317,10 @@ export default function GenomicsResearch() {
     let lastX = 0, lastY = 0;
     points.forEach((p: number, i: number) => {
       const curX = cX + i * stepX;
-      const curY = cY + cH - ((p - minVal) / (maxVal - minVal)) * cH;
+      // Clamp curY within chart boundaries
+      const rawY = cY + cH - ((p - minVal) / (maxVal - minVal)) * cH;
+      const curY = Math.max(cY, Math.min(cY + cH, rawY));
+      
       if (i > 0) doc.line(lastX, lastY, curX, curY);
       
       // X-Axis Labels
