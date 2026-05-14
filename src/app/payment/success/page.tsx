@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
@@ -8,7 +8,7 @@ import { CheckCircle2, ArrowRight, Download, Share2, Sparkles } from "lucide-rea
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id") || "PAY-" + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -88,5 +88,17 @@ export default function PaymentSuccessPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#eab308]/20 border-t-[#eab308] rounded-full animate-spin" />
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
