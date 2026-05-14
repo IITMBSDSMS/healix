@@ -130,7 +130,7 @@ export default function PassengerRidePage() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <div className="text-sm text-gray-400">Vehicle</div>
-              <div className="text-xl font-bold tracking-wider">{device.vehicle_reg}</div>
+              <div className="text-xl font-bold tracking-wider">{device.vehicle_reg || 'NOT REGISTERED'}</div>
             </div>
             <div className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-mono font-medium">
               {device.id}
@@ -139,11 +139,11 @@ export default function PassengerRidePage() {
           
           <div className="flex items-center gap-4 py-4 border-y border-white/10">
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl font-medium">
-              {device.driver_name.charAt(0)}
+              {device.driver_name ? device.driver_name.charAt(0) : '?'}
             </div>
             <div>
               <div className="text-sm text-gray-400">Driver</div>
-              <div className="font-medium text-lg">{device.driver_name}</div>
+              <div className="font-medium text-lg">{device.driver_name || 'Assigned Driver'}</div>
             </div>
             <div className="ml-auto">
               <CheckCircle2 className="w-6 h-6 text-green-500" />
