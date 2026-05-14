@@ -12,9 +12,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, mocked: true });
     }
 
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
+    const recipient = process.env.RESEND_DOMAIN_VERIFIED === 'true' ? email : ADMIN_EMAIL;
     const data = await resend.emails.send({
-      from: 'Healix BioLabs <research@resend.dev>', // Update to verified domain in prod
-      to: [email],
+      from: 'Healix BioLabs <onboarding@resend.dev>',
+      to: [recipient],
       subject: `Application Received: ${idea_title}`,
       html: `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #9333ea; color: white; padding: 40px; border-radius: 12px;">

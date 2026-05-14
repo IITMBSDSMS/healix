@@ -16,9 +16,10 @@ export async function POST(request: Request) {
     // Instead of a static Maps link, we now send them to our Live Tracking Dashboard
     const trackingLink = `${siteUrl}/track/${vehicleId}`;
 
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
     const data = await resend.emails.send({
-      from: 'Healix Suraksha <safety@resend.dev>', // Use verified domain in prod
-      to: ['admin@healix.tech'], // In prod, map over contacts
+      from: 'Healix Suraksha <onboarding@resend.dev>',
+      to: [ADMIN_EMAIL],
       subject: `🚨 SURAKSHA ALERT: ${userName} has started a trip.`,
       html: `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #f97316; color: white; padding: 40px; border-radius: 12px;">

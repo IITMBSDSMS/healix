@@ -16,9 +16,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, mocked: true });
     }
 
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
     const data = await resend.emails.send({
-      from: 'Healix Contact <onboarding@resend.dev>', // Use a verified domain in production
-      to: ['admin@healix.tech'], // Send to admin email
+      from: 'Healix Contact <onboarding@resend.dev>',
+      to: [ADMIN_EMAIL],
       subject: `New Contact Form Submission from ${name}`,
       html: `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #f9f9f9; color: #333; padding: 40px; border-radius: 12px; border: 1px solid #eaeaea;">

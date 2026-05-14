@@ -16,9 +16,10 @@ export async function POST(request: Request) {
       ? `https://maps.google.com/?q=${location.lat},${location.lng}` 
       : 'Location unavailable';
 
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
     const data = await resend.emails.send({
-      from: 'Healix SOS <emergency@resend.dev>', // Use a verified domain in production
-      to: ['admin@healix.tech'], // In a real app, this would be an array of the user's emergency contacts
+      from: 'Healix SOS <onboarding@resend.dev>',
+      to: [ADMIN_EMAIL],
       subject: `🚨 EMERGENCY SOS ALERT: ${name || 'A User'} Needs Help!`,
       html: `
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #ef4444; color: white; padding: 40px; border-radius: 12px;">
