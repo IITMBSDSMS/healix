@@ -1,56 +1,92 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/Button";
+import { CheckCircle2, ArrowRight, Download, Share2, Sparkles } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect } from "react";
-import confetti from "canvas-confetti";
 
-export default function PaymentSuccess() {
+export default function PaymentSuccessPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const paymentId = searchParams.get("payment_id") || "PAY-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#eab308', '#ffffff', '#ca8a04']
-    });
+    setMounted(true);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-10 max-w-md w-full text-center shadow-2xl relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#eab308]/10 to-transparent pointer-events-none" />
-        
-        <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
-          <CheckCircle2 className="w-10 h-10 text-green-500" />
-        </div>
-        
-        <h1 className="text-3xl font-bold mb-4">Payment Successful!</h1>
-        <p className="text-white/60 mb-8">
-          Welcome to Healix Academy. Your transaction has been verified and your student account is now active.
-        </p>
-        
-        <div className="bg-black/50 border border-white/5 rounded-xl p-4 mb-8 text-left">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-white/50">Transaction ID</span>
-            <span className="font-mono">HX-{Math.floor(Math.random() * 10000000)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-white/50">Status</span>
-            <span className="text-green-400 font-bold">Verified</span>
-          </div>
-        </div>
+  if (!mounted) return null;
 
-        <Link href="/dashboard">
-          <button className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
-            Go to Dashboard <ArrowRight className="w-5 h-5" />
-          </button>
-        </Link>
-      </motion.div>
+  return (
+    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#eab308]/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-2xl w-full relative z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <GlassCard className="p-12 text-center border-emerald-500/20 bg-emerald-500/[0.02]">
+            <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+            </div>
+
+            <h1 className="text-4xl font-bold tracking-tighter mb-4">Registration Successful!</h1>
+            <p className="text-white/50 text-lg mb-10">
+              Welcome to the cohort. Your seat is confirmed and your learning journey begins now.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 mb-12">
+              <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-left">
+                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-1">Payment ID</p>
+                <p className="text-sm font-bold truncate">{paymentId}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-left">
+                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-1">Status</p>
+                <p className="text-sm font-bold text-emerald-400">Confirmed</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <Button size="lg" className="h-14 text-lg" onClick={() => router.push("/academy/dashboard")}>
+                Go to Student Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <div className="flex gap-4">
+                <Button variant="outline" className="flex-1 gap-2">
+                  <Download className="w-4 h-4" /> Invoice
+                </Button>
+                <Button variant="outline" className="flex-1 gap-2">
+                  <Share2 className="w-4 h-4" /> Share
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-12 pt-12 border-t border-white/5 flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#eab308]" />
+              <p className="text-xs font-mono text-white/30 uppercase tracking-widest">
+                Check your email for orientation details
+              </p>
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center mt-12"
+        >
+          <Link href="/academy" className="text-sm font-mono text-white/20 hover:text-white transition-colors uppercase tracking-widest">
+            Back to Academy Home
+          </Link>
+        </motion.div>
+      </div>
     </div>
   );
 }

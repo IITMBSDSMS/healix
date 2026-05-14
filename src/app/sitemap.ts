@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/care`,                  lastModified: now, changeFrequency: "monthly", priority: 0.8 },
 
     // Academy sub-pages
+    { url: `${siteUrl}/academy/courses`,       lastModified: now, changeFrequency: "weekly",  priority: 0.85 },
     { url: `${siteUrl}/academy/mentors`,       lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: `${siteUrl}/register`,              lastModified: now, changeFrequency: "monthly", priority: 0.75 },
 
