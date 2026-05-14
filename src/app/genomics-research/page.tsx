@@ -67,6 +67,9 @@ export default function GenomicsResearch() {
     setProgress(0);
     setStatus("Analyzing genomic signatures...");
 
+    const formData = new FormData();
+    formData.append("file", file);
+
     const stages = [
       { p: 10, s: "Initializing secure tunnel..." },
       { p: 20, s: "Scanning microarray vectors..." },
