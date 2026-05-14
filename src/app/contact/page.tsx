@@ -89,8 +89,8 @@ export default function ContactPage() {
             <div>
               <h3 className="text-xl font-semibold mb-2">Email</h3>
               <p className="text-white/60">
-                General: contact@healix.tech<br />
-                Support: help@healix.tech
+                General: healixtechnologies@gmail.com<br />
+                Support: healixtechnologies@gmail.com
               </p>
             </div>
           </GlassCard>

@@ -74,7 +74,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3 hover:text-white transition-colors group">
                 <Mail className="h-5 w-5 shrink-0 text-[#eab308] group-hover:scale-110 transition-transform" /> 
-                <span>contact@healix.tech</span>
+                <span>healixtechnologies@gmail.com</span>
               </li>
             </ul>
             

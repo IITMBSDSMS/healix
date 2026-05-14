@@ -81,7 +81,7 @@ export default function PrivacyPage() {
             <p className="text-xs text-white/30 text-center italic">
               Healix Technologies Pvt Ltd. <br />
               Enterprise Security Division, HQ-1 <br />
-              security@healix.tech
+              healixtechnologies@gmail.com
             </p>
           </div>
         </GlassCard>

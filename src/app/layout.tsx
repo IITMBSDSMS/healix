@@ -114,7 +114,7 @@ export default function RootLayout({
               contactPoint: {
                 "@type": "ContactPoint",
                 contactType: "Customer Support",
-                email: "support@healix.tech",
+                email: "healixtechnologies@gmail.com",
               },
             }),
           }}
