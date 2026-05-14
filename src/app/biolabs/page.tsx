@@ -28,10 +28,10 @@ const sliderImages = [
 
 // Research Areas (IUAC style)
 const researchAreas = [
-  { title: "AI in Healthcare", icon: <Cpu className="h-6 w-6 text-blue-400" />, desc: "Predictive diagnostics and generative models for oncology and rare diseases." },
-  { title: "Genomics & Sequencing", icon: <Dna className="h-6 w-6 text-purple-400" />, desc: "High-throughput sequencing and personalized genetic medicine profiling." },
-  { title: "Safety Systems (IoT)", icon: <Shield className="h-6 w-6 text-orange-400" />, desc: "IoT and behavioral analysis for real-time personal security monitoring." },
-  { title: "Data Intelligence", icon: <Database className="h-6 w-6 text-green-400" />, desc: "Secure interoperability and scalable health data lakes for ML training." },
+  { title: "AI in Healthcare", icon: <Cpu className="h-6 w-6 text-[#eab308]" />, desc: "Predictive diagnostics and generative models for oncology and rare diseases." },
+  { title: "Genomics & Sequencing", icon: <Dna className="h-6 w-6 text-[#ca8a04]" />, desc: "High-throughput sequencing and personalized genetic medicine profiling." },
+  { title: "Safety Systems (IoT)", icon: <Shield className="h-6 w-6 text-[#eab308]" />, desc: "IoT and behavioral analysis for real-time personal security monitoring." },
+  { title: "Data Intelligence", icon: <Database className="h-6 w-6 text-[#ca8a04]" />, desc: "Secure interoperability and scalable health data lakes for ML training." },
 ];
 
 // Facilities (Kept static as it wasn't moved to DB)
@@ -43,6 +43,7 @@ const facilities = [
 
 export default function BioLabsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentEvent, setCurrentEvent] = useState(0);
 
   // Dynamic Data State
   const [dynamicAnnouncements, setDynamicAnnouncements] = useState<any[]>([]);
@@ -76,8 +77,8 @@ export default function BioLabsPage() {
     <div className="min-h-screen bg-[#050505] text-white/90 font-sans pb-24">
       
       {/* 1. Announcements Ticker (IUAC Style) */}
-      <div className="bg-purple-900/40 border-b border-purple-500/20 py-2 overflow-hidden flex items-center">
-        <div className="bg-purple-600 px-4 py-1 text-xs font-bold uppercase tracking-wider shrink-0 z-10 relative shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+      <div className="bg-[#eab308]/10 border-b border-[#eab308]/20 py-2 overflow-hidden flex items-center">
+        <div className="bg-[#eab308] px-4 py-1 text-xs font-bold text-black uppercase tracking-wider shrink-0 z-10 relative shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
           Announcements
         </div>
         <div className="flex-1 overflow-hidden relative h-6">
@@ -95,7 +96,7 @@ export default function BioLabsPage() {
               animation-play-state: paused;
             }
           `}</style>
-          <div className="animate-marquee text-sm text-purple-200 absolute w-full flex">
+          <div className="animate-marquee text-sm text-[#eab308]/80 absolute w-full flex">
             {dynamicAnnouncements.map((announcement, idx) => (
               <span key={idx} className="mx-8 whitespace-nowrap">
                 • {announcement.content}
@@ -140,7 +141,7 @@ export default function BioLabsPage() {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="text-white font-bold text-2xl tracking-wide border-l-4 border-purple-500 pl-4"
+                    className="text-white font-bold text-2xl tracking-wide border-l-4 border-[#eab308] pl-4"
                   >
                     {dynamicPhotos[currentSlide].title}
                   </motion.h2>
@@ -149,16 +150,16 @@ export default function BioLabsPage() {
             </AnimatePresence>
           )}
           
-          <button onClick={() => setCurrentSlide(prev => (prev === 0 ? dynamicPhotos.length - 1 : prev - 1))} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-purple-600 transition-colors text-white rounded">
+          <button onClick={() => setCurrentSlide(prev => (prev === 0 ? dynamicPhotos.length - 1 : prev - 1))} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <button onClick={() => setCurrentSlide(prev => (prev + 1) % dynamicPhotos.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-purple-600 transition-colors text-white rounded">
+          <button onClick={() => setCurrentSlide(prev => (prev + 1) % dynamicPhotos.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
             <ChevronRight className="h-6 w-6" />
           </button>
           
           <div className="absolute bottom-4 right-8 flex gap-2">
             {dynamicPhotos.map((_, idx) => (
-              <button key={idx} onClick={() => setCurrentSlide(idx)} className={`w-3 h-3 transition-colors ${idx === currentSlide ? 'bg-purple-500' : 'bg-white/30 hover:bg-white/60'}`} />
+              <button key={idx} onClick={() => setCurrentSlide(idx)} className={`w-3 h-3 transition-colors ${idx === currentSlide ? 'bg-[#eab308]' : 'bg-white/30 hover:bg-white/60'}`} />
             ))}
           </div>
         </div>
@@ -170,7 +171,7 @@ export default function BioLabsPage() {
             
             {/* About Section */}
             <section className="prose prose-invert max-w-none">
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-purple-400">About Healix BioLabs</h2>
+              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">About Healix BioLabs</h2>
               <p className="text-white/70 leading-relaxed text-justify mb-4">
                 Healix BioLabs was established as a premier inter-disciplinary research centre to provide front-ranking, technology-driven research facilities. Its primary objective is to create possibilities for internationally competitive research in Artificial Intelligence, predictive healthcare, and advanced personal safety systems.
               </p>
@@ -179,14 +180,14 @@ export default function BioLabsPage() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                <GlassCard className="p-6 border-blue-500/20 bg-blue-900/10 rounded-sm">
-                  <h3 className="text-lg font-bold text-blue-400 mb-2">Our Vision</h3>
+                <GlassCard className="p-6 border-[#ca8a04]/20 bg-[#ca8a04]/5 rounded-sm">
+                  <h3 className="text-lg font-bold text-[#ca8a04] mb-2">Our Vision</h3>
                   <p className="text-sm text-white/70">
                     We open new windows to young minds and strengthen the pool of scientists by building a brighter future through technological understanding and AI-driven biological research.
                   </p>
                 </GlassCard>
-                <GlassCard className="p-6 border-purple-500/20 bg-purple-900/10 rounded-sm">
-                  <h3 className="text-lg font-bold text-purple-400 mb-2">Our Mission</h3>
+                <GlassCard className="p-6 border-[#eab308]/20 bg-[#eab308]/5 rounded-sm">
+                  <h3 className="text-lg font-bold text-[#eab308] mb-2">Our Mission</h3>
                   <p className="text-sm text-white/70">
                     In the quest for innovation and capacity building, our mission is to provide necessary powerful computing tools used by scientists to understand the complexities of modern healthcare data.
                   </p>
@@ -196,13 +197,13 @@ export default function BioLabsPage() {
 
             {/* Research Areas */}
             <section>
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-purple-400">Core Research Areas</h2>
+              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">Core Research Areas</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {researchAreas.map((area, idx) => (
                   <div key={idx} className="flex gap-4 p-4 bg-white/5 border border-white/5 hover:border-purple-500/30 transition-colors rounded-sm group">
                     <div className="mt-1 p-2 bg-black rounded shrink-0">{area.icon}</div>
                     <div>
-                      <h3 className="font-bold text-base group-hover:text-purple-300 transition-colors">{area.title}</h3>
+                      <h3 className="font-bold text-base group-hover:text-[#eab308] transition-colors">{area.title}</h3>
                       <p className="text-sm text-white/60 mt-2 leading-relaxed">{area.desc}</p>
                     </div>
                   </div>
@@ -212,7 +213,7 @@ export default function BioLabsPage() {
 
             {/* Outreach & Training */}
             <section>
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-purple-400">Outreach Programs</h2>
+              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">Outreach Programs</h2>
               <div className="space-y-4">
                 {dynamicPrograms.map((prog, idx) => (
                   <div key={idx} className="p-5 border-l-4 border-blue-500 bg-white/5 flex justify-between items-center group hover:bg-white/10 transition-colors">
@@ -220,7 +221,7 @@ export default function BioLabsPage() {
                       <h3 className="font-bold text-lg group-hover:text-blue-400 transition-colors">{prog.title}</h3>
                       <p className="text-sm text-white/60 mt-1">{prog.description}</p>
                     </div>
-                    <Link href="/biolabs/dashboard" className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-blue-600/20 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <Link href="/biolabs/dashboard" className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-[#eab308]/20 text-[#eab308] group-hover:bg-[#eab308] group-hover:text-black transition-colors">
                       Apply / Details
                     </Link>
                   </div>
@@ -235,9 +236,9 @@ export default function BioLabsPage() {
             
             {/* Director's Message */}
             <GlassCard className="p-6 border-white/10 rounded-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#eab308] to-[#ca8a04]" />
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5 text-purple-400" /> Director's Message
+                <Users className="h-5 w-5 text-[#eab308]" /> Director's Message
               </h3>
               <div className="flex gap-4 mb-4">
                 <div className="w-16 h-16 bg-white/10 rounded border border-white/20 shrink-0 flex items-center justify-center">
@@ -245,24 +246,24 @@ export default function BioLabsPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm">Dr. A. C. Research Director</p>
-                  <p className="text-xs text-blue-400">Head of Healix BioLabs</p>
+                  <p className="text-xs text-[#eab308]">Head of Healix BioLabs</p>
                 </div>
               </div>
               <p className="text-xs text-white/70 italic leading-relaxed text-justify mb-4">
                 "With experience in the field of AI-driven science, Healix BioLabs has earned its reputation of excellence. Our primary objective is to establish world-class facilities for accelerator-based research, promoting group activities and human research development."
               </p>
-              <Link href="/about" className="text-xs text-purple-400 hover:text-purple-300 font-bold uppercase tracking-wider">Read Full Message →</Link>
+              <Link href="/about" className="text-xs text-[#eab308] hover:text-[#ca8a04] font-bold uppercase tracking-wider">Read Full Message →</Link>
             </GlassCard>
 
             {/* Quick Links / Facilities */}
             <GlassCard className="p-6 border-white/10 rounded-sm">
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Network className="h-5 w-5 text-blue-400" /> Research Facilities
+                <Network className="h-5 w-5 text-[#ca8a04]" /> Research Facilities
               </h3>
               <ul className="space-y-2">
                 {facilities.map((fac, idx) => (
                   <li key={idx} className="text-sm text-white/70 hover:text-white hover:bg-white/5 p-2 rounded cursor-pointer transition-colors border-b border-white/5 last:border-0 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" />
+                    <span className="w-1.5 h-1.5 bg-[#eab308] rounded-full inline-block" />
                     {fac}
                   </li>
                 ))}
@@ -274,7 +275,7 @@ export default function BioLabsPage() {
               <GraduationCap className="h-10 w-10 text-white/80 mx-auto mb-3" />
               <h3 className="font-bold text-lg mb-2">User Application Portal</h3>
               <p className="text-xs text-white/60 mb-4">Access the user dashboard to submit research proposals and view facility schedules.</p>
-              <Link href="/biolabs/dashboard" className="block w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm uppercase tracking-wider transition-colors shadow-lg rounded-sm">
+              <Link href="/biolabs/dashboard" className="block w-full py-2 bg-[#eab308] hover:bg-[#ca8a04] text-black font-bold text-sm uppercase tracking-wider transition-colors shadow-lg rounded-sm">
                 Login to Dashboard
               </Link>
             </div>
@@ -287,7 +288,7 @@ export default function BioLabsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 mt-20 shadow-2xl relative">
           
           {/* Left Column: Photos / Videos */}
-          <div className="lg:col-span-5 bg-[#0b2341] p-8 text-white min-h-[450px] flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-[#1a1a1a] p-8 text-white min-h-[450px] flex flex-col justify-between border border-white/5">
             <div className="flex gap-6 mb-6">
               <h3 className="text-2xl font-bold border-b-2 border-white pb-1">Photos</h3>
               <h3 className="text-2xl font-bold text-white/50 hover:text-white/80 cursor-pointer pb-1 transition-colors">Videos</h3>
@@ -318,23 +319,36 @@ export default function BioLabsPage() {
             {dynamicEvents.length > 0 && (
               <>
                 <div className="h-32 bg-slate-200 relative shrink-0">
-                  <Image src={dynamicEvents[0].image_url} alt="Event" fill style={{ objectFit: 'cover' }} />
+                  <Image src={dynamicEvents[currentEvent].image_url} alt="Event" fill style={{ objectFit: 'cover' }} />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-2xl font-black mb-4 tracking-tight">Events</h3>
-                  <h4 className="font-bold text-sm mb-3">{dynamicEvents[0].title}</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-2xl font-black tracking-tight">Events</h3>
+                    <span className="text-xs text-slate-400 font-mono">{currentEvent + 1} / {dynamicEvents.length}</span>
+                  </div>
+                  <h4 className="font-bold text-sm mb-3">{dynamicEvents[currentEvent].title}</h4>
                   <p className="text-xs text-slate-600 mb-6 leading-relaxed flex-1">
-                    {dynamicEvents[0].description}
+                    {dynamicEvents[currentEvent].description}
                   </p>
                   <p className="text-xs font-semibold text-orange-600 mb-6">
-                    {new Date(dynamicEvents[0].start_date).toLocaleDateString()} to {new Date(dynamicEvents[0].end_date).toLocaleDateString()}
+                    {new Date(dynamicEvents[currentEvent].start_date).toLocaleDateString()} to {new Date(dynamicEvents[currentEvent].end_date).toLocaleDateString()}
                   </p>
                   
                   <div className="flex justify-between items-center">
                     <button className="px-5 py-1.5 border border-orange-500 text-orange-600 rounded-full hover:bg-orange-50 transition-colors text-xs font-semibold">View All</button>
                     <div className="flex gap-2">
-                      <button className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"><ChevronLeft className="h-4 w-4" /></button>
-                      <button className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"><ChevronRight className="h-4 w-4" /></button>
+                      <button
+                        onClick={() => setCurrentEvent(prev => (prev === 0 ? dynamicEvents.length - 1 : prev - 1))}
+                        className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentEvent(prev => (prev + 1) % dynamicEvents.length)}
+                        className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -368,16 +382,16 @@ export default function BioLabsPage() {
 
         {/* --- GENOMIC INTELLIGENCE ENGINE SECTION --- */}
         <section className="mt-20">
-          <div className="relative overflow-hidden rounded-sm border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-purple-900/20 p-8 md:p-12 shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500" />
+          <div className="relative overflow-hidden rounded-sm border border-[#eab308]/30 bg-gradient-to-r from-[#eab308]/5 via-[#ca8a04]/10 to-[#eab308]/5 p-8 md:p-12 shadow-2xl">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#eab308] via-[#ca8a04] to-[#eab308]" />
             
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-purple-600/20 rounded">
-                    <Activity className="h-6 w-6 text-purple-400" />
+                  <div className="p-2 bg-[#eab308]/20 rounded">
+                    <Activity className="h-6 w-6 text-[#eab308]" />
                   </div>
-                  <span className="text-purple-400 font-bold uppercase tracking-widest text-[10px]">AI Research Platform</span>
+                  <span className="text-[#eab308] font-bold uppercase tracking-widest text-[10px]">AI Research Platform</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight font-mono">Healix BioLabs Genomic Intelligence Engine</h2>
                 <p className="text-white/60 max-w-2xl text-sm md:text-base leading-relaxed">
@@ -388,7 +402,7 @@ export default function BioLabsPage() {
               <div className="shrink-0">
                 <Link 
                   href="/genomics-research" 
-                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-sm transition-all shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] overflow-hidden"
+                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#eab308] hover:bg-[#ca8a04] text-black font-bold rounded-sm transition-all shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <span className="uppercase tracking-wider text-xs">Access Engine</span>
@@ -398,8 +412,8 @@ export default function BioLabsPage() {
             </div>
 
             {/* Background Decorative Elements */}
-            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl" />
-            <div className="absolute -top-12 -left-12 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-[#eab308]/5 rounded-full blur-3xl" />
+            <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#ca8a04]/5 rounded-full blur-3xl" />
           </div>
         </section>
       </div>

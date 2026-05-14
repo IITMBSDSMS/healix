@@ -73,165 +73,191 @@ export default function BrandedQRCard({
       ctx.fillRect(0, 0, w, 4);
 
       // ── 5. Header section ─────────────────────────────────────────
-      // HEALIX wordmark
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
-      ctx.font = `600 ${11}px 'Arial', sans-serif`;
-      ctx.textAlign = "left";
-      ctx.letterSpacing = "4px";
-      ctx.fillText("H E A L I X", 28, 42);
+      // We will load the official logo and draw it.
+      const img = new Image();
+      img.src = "/official-logo.png";
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
 
-      // "Project Suraksha" title
+      const logoY = 36;
+      let targetH = 48;
+      
+      if (img.width > 0) {
+        const aspect = img.width / img.height;
+        let targetW = targetH * aspect;
+        
+        // If logo is extremely wide, constrain width
+        if (targetW > 200) {
+           targetW = 200;
+           targetH = targetW / aspect;
+        }
+
+        ctx.drawImage(img, w / 2 - targetW / 2, logoY, targetW, targetH);
+      }
+
       ctx.fillStyle = "#FFFFFF";
-      ctx.font = `bold ${32}px 'Arial', sans-serif`;
-      ctx.letterSpacing = "0px";
-      ctx.fillText("Project Suraksha", 28, 82);
+      ctx.font = `bold ${16}px 'Arial', sans-serif`;
+      ctx.textAlign = "center";
+      ctx.letterSpacing = "1.5px";
+      ctx.fillText("HEALIX TECHNOLOGIES PVT. LTD.", w / 2, logoY + targetH + 24);
 
-      // Shield icon (top-right)
-      drawShieldIcon(ctx, 380, 52, 34);
-
-      // ── 6. Thin divider ───────────────────────────────────────────
-      const divGrad = ctx.createLinearGradient(28, 0, w - 28, 0);
-      divGrad.addColorStop(0, "rgba(59,130,246,0.8)");
-      divGrad.addColorStop(1, "rgba(59,130,246,0.1)");
-      ctx.strokeStyle = divGrad;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(28, 102);
-      ctx.lineTo(w - 28, 102);
-      ctx.stroke();
-
-      // Device ID chip
+      // ── 6. Device ID Chip (Centered) ──────────────────────────────
+      const infoYStart = logoY + targetH + 42;
+      const chipW = 180;
       ctx.fillStyle = "rgba(59,130,246,0.12)";
       ctx.strokeStyle = "rgba(59,130,246,0.35)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      rRect(ctx, 28, 114, 160, 26, 6);
+      rRect(ctx, w / 2 - chipW / 2, infoYStart, chipW, 26, 6);
       ctx.fill();
       ctx.stroke();
+      
       ctx.fillStyle = "#60A5FA";
-      ctx.font = `600 ${10}px 'Courier New', monospace`;
+      ctx.font = `600 ${11}px 'Courier New', monospace`;
       ctx.letterSpacing = "1.5px";
-      ctx.textAlign = "left";
-      ctx.fillText(deviceId, 38, 131);
+      ctx.textAlign = "center";
+      ctx.fillText(deviceId, w / 2, infoYStart + 17);
 
-      // ── 7. QR Code with shield logo overlay ──────────────────────
-      const qrSize = 260;
+      // ── 7. QR Code with logo overlay ────────────────────────────────
+      const qrSize = 250;
       const qrX = (w - qrSize) / 2;
-      const qrY = 158;
+      const qrY = infoYStart + 46;
 
       // QR container card with glow
       ctx.save();
-      ctx.shadowColor = "rgba(59,130,246,0.5)";
-      ctx.shadowBlur = 28;
+      ctx.shadowColor = "rgba(59,130,246,0.3)";
+      ctx.shadowBlur = 24;
       ctx.fillStyle = "#111827";
       ctx.beginPath();
-      rRect(ctx, qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 16);
+      rRect(ctx, qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 16);
       ctx.fill();
       ctx.restore();
 
       // Outer glowing border
-      ctx.strokeStyle = "rgba(59,130,246,0.6)";
+      ctx.strokeStyle = "rgba(59,130,246,0.5)";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      rRect(ctx, qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 16);
+      rRect(ctx, qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 16);
       ctx.stroke();
 
       // Generate actual QR
       const qrCanvas = document.createElement("canvas");
       await QRCode.toCanvas(qrCanvas, rideUrl, {
-        errorCorrectionLevel: "H", // High — allows 30% damage for logo overlay
+        errorCorrectionLevel: "H",
         width: qrSize,
         margin: 0,
         color: { dark: "#FFFFFF", light: "#111827" },
       });
       ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
 
-      // Shield logo overlaid in QR center (safe with H error correction)
-      const logoSize = 44;
+      // Logo overlaid in QR center
+      const qrLogoSize = 46;
       const lx = qrX + qrSize / 2;
       const ly = qrY + qrSize / 2;
 
-      // White circle background for logo
       ctx.fillStyle = "#111827";
       ctx.beginPath();
-      ctx.arc(lx, ly, logoSize / 2 + 4, 0, Math.PI * 2);
+      ctx.arc(lx, ly, qrLogoSize / 2 + 4, 0, Math.PI * 2);
       ctx.fill();
 
-      drawShieldIcon(ctx, lx, ly, logoSize / 2 - 2);
+      if (img.width > 0) {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(lx, ly, qrLogoSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw square/circle bounded logo
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(lx, ly, qrLogoSize / 2, 0, Math.PI * 2);
+        ctx.clip();
+        
+        const aspect = img.width / img.height;
+        // Scale to cover the circle
+        let iw = qrLogoSize;
+        let ih = qrLogoSize;
+        if (aspect > 1) {
+           iw = ih * aspect;
+        } else {
+           ih = iw / aspect;
+        }
+        ctx.drawImage(img, lx - iw / 2, ly - ih / 2, iw, ih);
+        ctx.restore();
+      } else {
+        drawShieldIcon(ctx, lx, ly, qrLogoSize / 2 - 2);
+      }
 
       // ── 8. "SCAN TO VERIFY VEHICLE" instruction ───────────────────
       ctx.fillStyle = "rgba(255,255,255,0.4)";
       ctx.font = `500 ${10}px 'Arial', sans-serif`;
       ctx.letterSpacing = "3px";
       ctx.textAlign = "center";
-      ctx.fillText("SCAN TO VERIFY YOUR VEHICLE", w / 2, qrY + qrSize + 34);
+      ctx.fillText("SCAN TO VERIFY YOUR VEHICLE", w / 2, qrY + qrSize + 32);
 
       // ── 9. Divider before info block ──────────────────────────────
-      const infoY = qrY + qrSize + 52;
+      const infoBlockY = qrY + qrSize + 54;
       ctx.strokeStyle = "rgba(255,255,255,0.07)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(28, infoY - 12);
-      ctx.lineTo(w - 28, infoY - 12);
+      ctx.moveTo(32, infoBlockY - 10);
+      ctx.lineTo(w - 32, infoBlockY - 10);
       ctx.stroke();
 
       // ── 10. Two-column info block ─────────────────────────────────
-      const col1X = 28 + (w / 2 - 28) / 2;
-      const col2X = w / 2 + (w / 2 - 28) / 2;
+      const col1X = 32 + (w / 2 - 32) / 2;
+      const col2X = w / 2 + (w / 2 - 32) / 2;
 
-      // Vertical divider between columns
       ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(w / 2, infoY - 4);
-      ctx.lineTo(w / 2, infoY + 52);
+      ctx.moveTo(w / 2, infoBlockY - 2);
+      ctx.lineTo(w / 2, infoBlockY + 48);
       ctx.stroke();
 
-      // Column labels
       ctx.fillStyle = "rgba(255,255,255,0.35)";
       ctx.font = `600 ${9}px 'Arial', sans-serif`;
       ctx.letterSpacing = "2px";
       ctx.textAlign = "center";
-      ctx.fillText("VEHICLE", col1X, infoY + 8);
-      ctx.fillText("DRIVER", col2X, infoY + 8);
+      ctx.fillText("VEHICLE", col1X, infoBlockY + 8);
+      ctx.fillText("DRIVER", col2X, infoBlockY + 8);
 
-      // Column values
       ctx.fillStyle = "#FFFFFF";
       ctx.font = `bold ${14}px 'Courier New', monospace`;
       ctx.letterSpacing = "0.5px";
-      ctx.textAlign = "center";
-      // Truncate if too long
       const truncReg = vehicleReg.length > 12 ? vehicleReg.substring(0, 12) + "…" : vehicleReg;
-      const truncDriver = driverName.split(" ")[0]; // first name only for space
-      ctx.fillText(truncReg, col1X, infoY + 30);
+      const truncDriver = driverName.split(" ")[0];
+      ctx.fillText(truncReg, col1X, infoBlockY + 28);
       ctx.fillStyle = "#E2E8F0";
-      ctx.fillText(truncDriver, col2X, infoY + 30);
+      ctx.fillText(truncDriver, col2X, infoBlockY + 28);
 
-      // Full driver name below (smaller)
       if (driverName.split(" ").length > 1) {
         ctx.fillStyle = "rgba(255,255,255,0.45)";
         ctx.font = `400 ${10}px 'Courier New', monospace`;
-        ctx.letterSpacing = "0px";
-        ctx.fillText(driverName.split(" ").slice(1).join(" "), col2X, infoY + 46);
+        ctx.fillText(driverName.split(" ").slice(1).join(" "), col2X, infoBlockY + 44);
       }
 
       // ── 11. Bottom footer ─────────────────────────────────────────
-      const footerY = h - 26;
+      const footerY = h - 42;
 
-      // Footer divider
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(28, footerY - 16);
-      ctx.lineTo(w - 28, footerY - 16);
+      ctx.moveTo(32, footerY - 28);
+      ctx.lineTo(w - 32, footerY - 28);
       ctx.stroke();
 
-      // Shield tiny icon + text
-      ctx.fillStyle = "rgba(255,255,255,0.22)";
-      ctx.font = `400 ${9}px 'Arial', sans-serif`;
-      ctx.letterSpacing = "0.5px";
+      ctx.fillStyle = "#F97316"; // Orange for Project Suraksha
+      ctx.font = `bold ${18}px 'Arial', sans-serif`;
+      ctx.letterSpacing = "3px";
       ctx.textAlign = "center";
-      ctx.fillText("🛡  Protected by Healix Technologies", w / 2, footerY);
+      ctx.fillText("PROJECT SURAKSHA", w / 2, footerY - 4);
+
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = `400 ${12}px 'Arial', sans-serif`;
+      ctx.letterSpacing = "0.5px";
+      ctx.fillText("जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र", w / 2, footerY + 18);
 
       // ── 12. Corner accent dots ────────────────────────────────────
       [[w - 28, 18], [w - 28, h - 18]].forEach(([x, y]) => {

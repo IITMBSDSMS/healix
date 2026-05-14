@@ -3,8 +3,8 @@
 :root {
   --background: #050505;
   --foreground: #ededed;
-  --primary: #6366f1;
-  --primary-glow: rgba(99, 102, 241, 0.5);
+  --primary: #eab308;
+  --primary-glow: rgba(234, 179, 8, 0.35);
   --surface: rgba(255, 255, 255, 0.03);
   --surface-border: rgba(255, 255, 255, 0.08);
 }
@@ -307,13 +307,13 @@ button, a {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #eab308, #ca8a04);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
   flex-shrink: 0;
 }
 
@@ -505,13 +505,13 @@ button, a {
   justify-content: center;
 }
 .ai-avatar.user {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #eab308, #ca8a04);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
   overflow: visible;
   border: none;
 }
@@ -525,7 +525,7 @@ button, a {
   gap: 4px;
 }
 .ai-bubble.user {
-  background: #6366f1;
+  background: linear-gradient(135deg, #eab308, #ca8a04);
   border-radius: 18px 18px 4px 18px;
 }
 .ai-bubble.ai {
@@ -648,13 +648,13 @@ button, a {
   display: inline-block;
 }
 .ai-action-btn.primary {
-  background: rgba(99,102,241,0.2);
-  color: #a5b4fc;
-  border: 1px solid rgba(99,102,241,0.3);
+  background: rgba(234,179,8,0.15);
+  color: #eab308;
+  border: 1px solid rgba(234,179,8,0.3);
 }
 .ai-action-btn.primary:hover {
-  background: rgba(99,102,241,0.35);
-  color: #c7d2fe;
+  background: rgba(234,179,8,0.3);
+  color: #fde047;
 }
 .ai-action-btn.danger {
   background: rgba(239,68,68,0.15);
@@ -690,11 +690,11 @@ button, a {
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid rgba(99,102,241,0.35);
+  background: rgba(234,179,8,0.15);
+  border: 1px solid rgba(234,179,8,0.35);
   border-radius: 20px;
   font-size: 12px;
-  color: #a5b4fc;
+  color: #eab308;
   font-weight: 500;
 }
 .ai-chip-remove {
@@ -746,9 +746,9 @@ button, a {
   color: #fff;
 }
 .ai-chip-btn.active {
-  background: rgba(99,102,241,0.2);
-  border-color: rgba(99,102,241,0.4);
-  color: #a5b4fc;
+  background: rgba(234,179,8,0.15);
+  border-color: rgba(234,179,8,0.4);
+  color: #eab308;
 }
 
 /* Input box */
@@ -763,8 +763,8 @@ button, a {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .ai-input-box:focus-within {
-  border-color: rgba(99,102,241,0.5);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  border-color: rgba(234,179,8,0.5);
+  box-shadow: 0 0 0 3px rgba(234,179,8,0.1);
 }
 
 .ai-input-field {
@@ -799,9 +799,9 @@ button, a {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: #6366f1;
+  background: #eab308;
   border: none;
-  color: #fff;
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -810,11 +810,11 @@ button, a {
   flex-shrink: 0;
 }
 .ai-send-btn:hover:not(:disabled) {
-  background: #818cf8;
+  background: #ca8a04;
   transform: scale(1.05);
 }
 .ai-send-btn:disabled {
-  background: rgba(99,102,241,0.2);
+  background: rgba(234,179,8,0.15);
   color: rgba(255,255,255,0.3);
   cursor: not-allowed;
   transform: none;

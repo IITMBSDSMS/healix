@@ -242,19 +242,19 @@ export default function SheSecurePage() {
 
           <h1 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
             <span className="text-white">A </span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-orange-300">FREE</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#eab308] to-[#ca8a04]">FREE</span>
             <span className="text-white"> Initiative</span>
             <br />
             <span className="text-white">for Women Safety</span>
           </h1>
-          <div className="w-10 h-0.5 bg-gradient-to-r from-red-500 to-orange-400 mb-8 rounded-full" />
+          <div className="w-10 h-0.5 bg-gradient-to-r from-[#eab308] to-[#ca8a04] mb-8 rounded-full" />
 
           {/* Feature list — like image 2 */}
           <div className="space-y-5 mb-10">
             {[
-              { icon: <Shield className="h-5 w-5" />, label: "PROTECT", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
-              { icon: <MapPin className="h-5 w-5" />, label: "EMPOWER", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
-              { icon: <Users className="h-5 w-5" />, label: "SUPPORT", color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/20" },
+              { icon: <Shield className="h-5 w-5" />, label: "PROTECT", color: "text-[#eab308]", bg: "bg-[#eab308]/10 border-[#eab308]/20" },
+              { icon: <MapPin className="h-5 w-5" />, label: "EMPOWER", color: "text-[#ca8a04]", bg: "bg-[#ca8a04]/10 border-[#ca8a04]/20" },
+              { icon: <Users className="h-5 w-5" />, label: "SUPPORT", color: "text-[#eab308]", bg: "bg-[#eab308]/10 border-[#eab308]/20" },
             ].map(f => (
               <div key={f.label} className="flex items-center gap-4 group">
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${f.bg} ${f.color} shrink-0`}>
@@ -274,7 +274,7 @@ export default function SheSecurePage() {
               { val: "10s", label: "Response" },
             ].map(s => (
               <div key={s.label} className="stat-card rounded-2xl p-3 text-center">
-                <p className="text-xl font-black text-red-400">{s.val}</p>
+                <p className="text-xl font-black text-[#eab308]">{s.val}</p>
                 <p className="text-white/50 text-xs mt-0.5 font-medium">{s.label}</p>
               </div>
             ))}
@@ -423,13 +423,13 @@ export default function SheSecurePage() {
       {/* Feature 2: Live Radar Demo */}
       <div className="mb-16">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-xl bg-blue-500/20 border border-blue-500/30">
-            <Shield className="h-6 w-6 text-blue-400" />
+          <div className="p-2 rounded-xl bg-[#eab308]/15 border border-[#eab308]/25">
+            <Shield className="h-6 w-6 text-[#eab308]" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">See It Work — Live Demo</h2>
           </div>
-          <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 animate-pulse">Interactive</span>
+          <span className="text-xs px-2 py-0.5 bg-[#eab308]/15 text-[#eab308] rounded-full border border-[#eab308]/25 animate-pulse">Interactive</span>
         </div>
         <p className="text-white/50 text-sm mb-6 ml-14">
           This is a real-time simulation of Healix Suraksha tracking a vehicle. Watch it move across the map.
@@ -443,7 +443,7 @@ export default function SheSecurePage() {
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-10">
                 <button
                   onClick={() => setRadarRunning(true)}
-                  className="flex items-center gap-3 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all"
+                  className="flex items-center gap-3 px-6 py-3 bg-[#eab308] hover:bg-[#ca8a04] text-black font-semibold rounded-xl shadow-[0_0_25px_rgba(234,179,8,0.3)] transition-all"
                 >
                   <Play className="w-5 h-5" /> Launch Live Radar
                 </button>
@@ -464,9 +464,9 @@ export default function SheSecurePage() {
               {radarRunning ? (
                 <div className="space-y-3">
                   {[
-                    { label: "Speed", value: `${radarState.speed} km/h`, color: "text-yellow-400" },
+                    { label: "Speed", value: `${radarState.speed} km/h`, color: "text-[#eab308]" },
                     { label: "Battery", value: `${radarState.battery}%`, color: "text-green-400" },
-                    { label: "Signal", value: `${radarState.signal} bars`, color: "text-blue-400" },
+                    { label: "Signal", value: `${radarState.signal} bars`, color: "text-[#ca8a04]" },
                     { label: "Status", value: "ACTIVE", color: "text-green-400" },
                   ].map(s => (
                     <div key={s.label} className="flex justify-between items-center">
@@ -500,7 +500,7 @@ export default function SheSecurePage() {
                 <p className="text-sm font-semibold text-white">Open Full Sandbox</p>
                 <p className="text-xs text-gray-500 mt-0.5">Split-screen interactive demo</p>
               </div>
-              <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+              <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-[#eab308] transition-colors" />
             </a>
           </div>
         </div>
@@ -509,13 +509,13 @@ export default function SheSecurePage() {
       {/* Project Suraksha */}
       <div className="mb-16">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-xl bg-orange-500/20 border border-orange-500/30">
-            <QrCode className="h-6 w-6 text-orange-400" />
+          <div className="p-2 rounded-xl bg-[#ca8a04]/15 border border-[#ca8a04]/25">
+            <QrCode className="h-6 w-6 text-[#ca8a04]" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">Project Suraksha</h2>
           </div>
-          <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded-full border border-orange-500/30 animate-pulse">QR Travel Safety</span>
+          <span className="text-xs px-2 py-0.5 bg-[#ca8a04]/15 text-[#ca8a04] rounded-full border border-[#ca8a04]/25 animate-pulse">QR Travel Safety</span>
         </div>
         <p className="text-white/50 text-sm mb-8 ml-14">Scan or enter the vehicle QR code before your ride. Your trip is tracked and your contacts are alerted automatically.</p>
 
@@ -532,7 +532,7 @@ export default function SheSecurePage() {
                     placeholder="e.g. A1B2C3D4 or DL-01-AB-1234" 
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-colors uppercase font-mono tracking-widest" 
                   />
-                  <button type="submit" className="px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors">
+                  <button type="submit" className="px-6 bg-[#eab308] hover:bg-[#ca8a04] text-black rounded-xl font-medium transition-colors">
                     Look Up
                   </button>
                 </div>
@@ -546,7 +546,7 @@ export default function SheSecurePage() {
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl mb-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Car className="h-5 w-5 text-orange-400" />
-                  <p className="font-semibold text-orange-300">Vehicle Found</p>
+                  <p className="font-semibold text-[#eab308]">Vehicle Found</p>
                 </div>
                 <p className="text-sm text-white/70"><span className="text-white/40">Driver:</span> {vehicle.driver_name}</p>
                 <p className="text-sm text-white/70"><span className="text-white/40">Vehicle No:</span> {vehicle.vehicle_number}</p>
@@ -570,9 +570,9 @@ export default function SheSecurePage() {
                 </button>
 
                 <button onClick={() => handleStartTrip(true)} disabled={tripLoading}
-                  className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl hover:opacity-90 shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all disabled:opacity-50 flex flex-col items-center justify-center">
+                  className="w-full py-3 bg-gradient-to-r from-[#eab308] to-[#ca8a04] text-black font-semibold rounded-xl hover:opacity-90 shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all disabled:opacity-50 flex flex-col items-center justify-center">
                   <span>Start Trip + Safety Recording</span>
-                  <span className="text-[10px] text-white/80 font-normal mt-0.5">Records 10s audio loops if SOS or Failsafe triggers.</span>
+                  <span className="text-[10px] text-black/60 font-normal mt-0.5">Records 10s audio loops if SOS or Failsafe triggers.</span>
                 </button>
                 {tripLoading && <p className="text-center text-xs text-orange-400 animate-pulse">Starting trip & alerting contacts...</p>}
                 {tripError && <p className="text-center text-xs text-red-400">{tripError}</p>}
@@ -591,7 +591,7 @@ export default function SheSecurePage() {
                   href={`/track/${tripId}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl text-sm font-medium flex justify-center items-center gap-2 hover:bg-blue-500/30 transition-colors"
+                  className="w-full py-2.5 bg-[#eab308]/15 text-[#eab308] border border-[#eab308]/25 rounded-xl text-sm font-medium flex justify-center items-center gap-2 hover:bg-[#eab308]/25 transition-colors"
                 >
                   <MapPin className="h-4 w-4" /> Open Live Tracking Dashboard
                 </a>
@@ -699,8 +699,8 @@ export default function SheSecurePage() {
           )))}
         </svg>
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 rounded-xl bg-red-500/15 border border-red-500/25">
-            <Users className="h-5 w-5 text-red-400" />
+          <div className="p-2 rounded-xl bg-[#eab308]/15 border border-[#eab308]/25">
+            <Users className="h-5 w-5 text-[#eab308]" />
           </div>
           <h2 className="text-2xl font-bold">Community Awareness & Safety Programs</h2>
         </div>
@@ -723,7 +723,7 @@ export default function SheSecurePage() {
               </div>
               <div className="p-4">
                 <p className="text-sm text-white/55 line-clamp-2 leading-relaxed">{initiative.description}</p>
-                <div className="flex items-center gap-1 text-red-400 text-sm font-semibold mt-4 group-hover:gap-2 transition-all">
+                <div className="flex items-center gap-1 text-[#eab308] text-sm font-semibold mt-4 group-hover:gap-2 transition-all">
                   <span>Read more</span>
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
@@ -744,8 +744,8 @@ export default function SheSecurePage() {
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent"/>
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"/>
           <div className="relative z-10">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/30 mb-5 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-              <Shield className="h-7 w-7 text-red-400" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#eab308]/15 border border-[#eab308]/25 mb-5 shadow-[0_0_30px_rgba(234,179,8,0.15)]">
+              <Shield className="h-7 w-7 text-[#eab308]" />
             </div>
             <h3 className="text-2xl font-bold mb-3">Together, We Build Safer Communities</h3>
             <p className="text-white/50 text-sm max-w-xl mx-auto mb-6">Join thousands of women across India who use SheSecure for real-time protection, emergency response, and community safety.</p>

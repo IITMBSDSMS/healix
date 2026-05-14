@@ -34,14 +34,14 @@ export default function AboutPage() {
       {/* Header */}
       <div className="text-center mb-16 relative">
         <div className="absolute inset-x-0 -top-20 -z-10 transform-gpu overflow-hidden blur-3xl" aria-hidden="true">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary to-[#9089fc] opacity-20" />
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#eab308] to-[#ca8a04] opacity-10" />
         </div>
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center justify-center p-3 bg-white/5 rounded-full mb-6 border border-white/10"
         >
-          <Building2 className="h-6 w-6 text-white/70" />
+          <Building2 className="h-6 w-6 text-[#eab308]" />
         </motion.div>
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -65,7 +65,7 @@ export default function AboutPage() {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
           <GlassCard className="h-full p-8" glowOnHover={false}>
             <div className="flex items-center gap-3 mb-4">
-              <Target className="h-6 w-6 text-primary" />
+              <Target className="h-6 w-6 text-[#eab308]" />
               <h2 className="text-2xl font-bold">Our Mission</h2>
             </div>
             <p className="text-white/70 leading-relaxed text-lg">
@@ -77,7 +77,7 @@ export default function AboutPage() {
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
           <GlassCard className="h-full p-8" glowOnHover={false}>
             <div className="flex items-center gap-3 mb-4">
-              <MapPin className="h-6 w-6 text-primary" />
+              <MapPin className="h-6 w-6 text-[#eab308]" />
               <h2 className="text-2xl font-bold">Location</h2>
             </div>
             <div className="space-y-4">
@@ -89,7 +89,7 @@ export default function AboutPage() {
                 href="https://maps.google.com/?q=Ansari+Nagar+New+Delhi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary text-sm hover:bg-white/10 transition-colors cursor-pointer"
+                className="h-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#eab308] text-sm hover:bg-white/10 transition-colors cursor-pointer"
               >
                 📍 View on Google Maps →
               </a>
@@ -105,30 +105,29 @@ export default function AboutPage() {
         transition={{ delay: 0.5 }}
       >
         <div className="flex items-center justify-center gap-3 mb-10">
-          <Users className="h-6 w-6 text-primary" />
+          <Users className="h-6 w-6 text-[#eab308]" />
           <h2 className="text-3xl font-bold text-center">Our Leadership</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {team.map((member, index) => (
-            <GlassCard key={index} className="p-0 overflow-hidden group">
-              <div className="relative h-64 w-full">
+            <motion.div 
+              key={index}
+              whileHover={{ y: -5 }}
+              className="flex flex-col items-center text-center"
+            >
+              <div className="relative h-48 w-48 mb-6 rounded-full overflow-hidden border-2 border-[#eab308]/20 group-hover:border-[#eab308]/50 transition-colors shadow-2xl">
                 <Image 
                   src={member.image} 
                   alt={member.name} 
                   fill 
-                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                  className="object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-110 hover:scale-100" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-80" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-xl font-bold">{member.name}</h3>
-                  <p className="text-primary text-sm font-medium">{member.role}</p>
-                </div>
               </div>
-              <div className="p-6">
-                <p className="text-sm text-white/60 leading-relaxed">{member.bio}</p>
-              </div>
-            </GlassCard>
+              <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+              <p className="text-[#eab308] text-sm font-medium mb-4 uppercase tracking-widest">{member.role}</p>
+              <p className="text-sm text-white/50 leading-relaxed max-w-[250px]">{member.bio}</p>
+            </motion.div>
           ))}
         </div>
       </motion.div>

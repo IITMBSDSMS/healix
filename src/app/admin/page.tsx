@@ -37,6 +37,18 @@ export default function AdminPage() {
   const [photoAdding, setPhotoAdding] = useState(false);
   const photoFileRef = React.useRef<HTMLInputElement>(null);
 
+  // BioLabs drag-drop states
+  const [heroPhotoDragOver, setHeroPhotoDragOver] = useState(false);
+  const [heroPhotoPreview, setHeroPhotoPreview] = useState<string | null>(null);
+  const [heroPhotoTitle, setHeroPhotoTitle] = useState("");
+  const heroPhotoRef = React.useRef<HTMLInputElement>(null);
+
+  const [eventDragOver, setEventDragOver] = useState(false);
+  const [eventPreview, setEventPreview] = useState<string | null>(null);
+  const eventPhotoRef = React.useRef<HTMLInputElement>(null);
+
+  const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
+
   const fetchData = async () => {
     setLoading(true);
     const res = await getAdminData();
@@ -421,10 +433,77 @@ export default function AdminPage() {
                     {/* Photos */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><ImageIcon className="h-4 w-4 text-blue-400"/> Hero Photos</h4>
-                      <form onSubmit={(e) => handleAddContent(e, addBiolabPhoto)} className="flex gap-2 mb-4">
-                        <input name="title" required placeholder="Image Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
-                        <input name="image_url" required placeholder="Image URL (/biolabs/hero.png)" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
-                        <button type="submit" className="px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold"><Plus className="h-4 w-4"/> Add</button>
+                      <form onSubmit={(e) => {
+                        handleAddContent(e, addBiolabPhoto);
+                        setHeroPhotoPreview(null);
+                        setHeroPhotoTitle("");
+                      }} className="space-y-4 mb-4">
+                        <div
+                          className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
+                            heroPhotoDragOver
+                              ? "border-purple-500 bg-purple-500/10"
+                              : heroPhotoPreview
+                              ? "border-purple-500/40 bg-[#0a0a0a]"
+                              : "border-white/10 bg-[#0a0a0a] hover:border-purple-500/40 hover:bg-purple-500/5"
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setHeroPhotoDragOver(true); }}
+                          onDragLeave={() => setHeroPhotoDragOver(false)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setHeroPhotoDragOver(false);
+                            const file = e.dataTransfer.files?.[0];
+                            if (file && file.type.startsWith("image/")) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setHeroPhotoPreview(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          onClick={() => heroPhotoRef.current?.click()}
+                        >
+                          <input
+                            ref={heroPhotoRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => setHeroPhotoPreview(ev.target?.result as string);
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          {heroPhotoPreview ? (
+                            <div className="relative">
+                              <img src={heroPhotoPreview} alt="Preview" className="w-full h-32 object-cover rounded-xl" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl" />
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setHeroPhotoPreview(null); }}
+                                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-6 px-4">
+                              <ImageIcon className={`h-6 w-6 mb-2 transition-colors ${heroPhotoDragOver ? "text-purple-400" : "text-white/30"}`} />
+                              <p className="text-xs font-semibold text-white/70">{heroPhotoDragOver ? "Drop to upload" : "Drag & drop image"}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex gap-2">
+                          <input name="title" value={heroPhotoTitle} onChange={e => setHeroPhotoTitle(e.target.value)} required placeholder="Image Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
+                          {!heroPhotoPreview && (
+                             <input name="image_url" required={!heroPhotoPreview} placeholder="Or paste Image URL (/biolabs/hero.png)" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
+                          )}
+                          {heroPhotoPreview && (
+                             <input type="hidden" name="image_url" value={heroPhotoPreview} />
+                          )}
+                          <button type="submit" className="px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold"><Plus className="h-4 w-4"/> Add</button>
+                        </div>
                       </form>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[200px] overflow-y-auto custom-scrollbar">
                         {data.photos?.map((p: any) => (
@@ -442,15 +521,83 @@ export default function AdminPage() {
                     {/* Events */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><Calendar className="h-4 w-4 text-orange-400"/> Events</h4>
-                      <form onSubmit={(e) => handleAddContent(e, addBiolabEvent)} className="space-y-3 mb-4">
-                        <div className="flex gap-2">
-                          <input name="title" required placeholder="Event Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
-                          <input name="image_url" required placeholder="Image URL" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                      <form onSubmit={(e) => {
+                        handleAddContent(e, addBiolabEvent);
+                        setEventPreview(null);
+                      }} className="space-y-3 mb-4">
+                        <div className="flex gap-4">
+                          <div
+                            className={`relative w-1/3 rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
+                              eventDragOver
+                                ? "border-orange-500 bg-orange-500/10"
+                                : eventPreview
+                                ? "border-orange-500/40 bg-[#0a0a0a]"
+                                : "border-white/10 bg-[#0a0a0a] hover:border-orange-500/40 hover:bg-orange-500/5"
+                            }`}
+                            onDragOver={(e) => { e.preventDefault(); setEventDragOver(true); }}
+                            onDragLeave={() => setEventDragOver(false)}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              setEventDragOver(false);
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && file.type.startsWith("image/")) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => setEventPreview(ev.target?.result as string);
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            onClick={() => eventPhotoRef.current?.click()}
+                          >
+                            <input
+                              ref={eventPhotoRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (ev) => setEventPreview(ev.target?.result as string);
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                            {eventPreview ? (
+                              <div className="relative h-full w-full">
+                                <img src={eventPreview} alt="Preview" className="w-full h-full object-cover rounded-xl absolute inset-0" />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setEventPreview(null); }}
+                                  className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors z-10"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-full min-h-[100px] px-2 text-center">
+                                <ImageIcon className={`h-5 w-5 mb-1 transition-colors ${eventDragOver ? "text-orange-400" : "text-white/30"}`} />
+                                <p className="text-[10px] font-semibold text-white/70">{eventDragOver ? "Drop!" : "Drag Image"}</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 space-y-3">
+                            <div className="flex gap-2">
+                              <input name="title" required placeholder="Event Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                              {!eventPreview && (
+                                <input name="image_url" required={!eventPreview} placeholder="Image URL" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                              )}
+                              {eventPreview && (
+                                <input type="hidden" name="image_url" value={eventPreview} />
+                              )}
+                            </div>
+                            <textarea name="description" required placeholder="Event Description..." className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-16" />
+                          </div>
                         </div>
-                        <textarea name="description" required placeholder="Event Description..." className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-20" />
+                        
                         <div className="flex gap-2">
-                          <input type="datetime-local" name="start_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
-                          <input type="datetime-local" name="end_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
+                          <input type="date" name="start_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
+                          <input type="date" name="end_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
                           <button type="submit" className="px-6 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm">Add Event</button>
                         </div>
                       </form>
@@ -654,31 +801,24 @@ export default function AdminPage() {
                             </div>
                             <button onClick={() => handleDeleteVehicle(v.id)} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="h-4 w-4" /></button>
                           </div>
-                          {v.qr_data_url && (
-                            <div className="flex items-center gap-4 bg-white/5 p-2 rounded-lg border border-white/5">
-                              <img src={v.qr_data_url} alt="QR Code" className="w-12 h-12 rounded-md bg-white p-1" />
-                              <div className="flex-1">
-                                <p className="text-xs text-white/60">Scan to activate tracking</p>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <a 
-                                    href={v.qr_data_url} 
-                                    download={`QR_${v.vehicle_number.replace(/\s+/g, '_')}.png`}
-                                    className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 font-medium w-fit bg-orange-500/10 px-2 py-1 rounded-md"
-                                  >
-                                    <Download className="h-3 w-3" /> Download Sticker
-                                  </a>
-                                  <button
-                                    onClick={() => {
-                                      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-                                      navigator.clipboard.writeText(`${siteUrl}/suraksha/start?vid=${v.id}`);
-                                      alert("Test link copied to clipboard!");
-                                    }}
-                                    className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium w-fit bg-blue-500/10 px-2 py-1 rounded-md"
-                                  >
-                                    <LinkIcon className="h-3 w-3" /> Copy Test Link
-                                  </button>
-                                </div>
-                              </div>
+                          {v.qr_code && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <button
+                                onClick={() => setQrModal({ deviceId: v.iot_device_id || v.id, vehicleReg: v.vehicle_number, driverName: v.driver_name })}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 text-xs font-medium rounded-lg transition-all"
+                              >
+                                🏷 Branded QR Card
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+                                  navigator.clipboard.writeText(`${siteUrl}/suraksha/start?vid=${v.id}`);
+                                  alert("Test link copied to clipboard!");
+                                }}
+                                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium w-fit bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/30"
+                              >
+                                <LinkIcon className="h-3 w-3" /> Copy Test Link
+                              </button>
                             </div>
                           )}
                         </div>
@@ -1040,6 +1180,53 @@ export default function AdminPage() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Branded QR Card Modal */}
+      <AnimatePresence>
+        {qrModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setQrModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 max-w-sm w-full"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="flex items-center gap-2 justify-center text-orange-400 mb-1">
+                  <Shield className="w-4 h-4" />
+                  <span className="font-mono text-xs tracking-wider uppercase">Project Suraksha</span>
+                </div>
+                <h2 className="text-lg font-bold text-white">Branded QR Card</h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Print or display this for <span className="text-orange-400 font-mono">{qrModal.deviceId}</span>
+                </p>
+              </div>
+
+              <BrandedQRCard
+                deviceId={qrModal.deviceId}
+                vehicleReg={qrModal.vehicleReg}
+                driverName={qrModal.driverName}
+                rideUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/ride/${qrModal.deviceId}`}
+                downloadable={true}
+              />
+
+              <button
+                onClick={() => setQrModal(null)}
+                className="text-sm text-gray-500 hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }

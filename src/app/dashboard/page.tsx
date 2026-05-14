@@ -1,13 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Activity, HeartPulse, ShieldAlert, FileText, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { DashboardCharts } from "@/components/ui/DashboardCharts";
+import { createClient } from "@/utils/supabase/client";
+import { isAdmin } from "@/lib/admin";
 
 export default function DashboardPage() {
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      // Check mock token fast path
+      const hasMock = document.cookie.split(";").some((c) =>
+        c.trim().startsWith("dummy-mock-token=")
+      );
+      
+      if (hasMock) {
+        setIsUserAdmin(isAdmin("demo@healix.tech"));
+        return;
+      }
+
+      // Real auth check
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setIsUserAdmin(isAdmin(user.email));
+      }
+    };
+    
+    checkAdminStatus();
+  }, [supabase.auth]);
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -84,6 +111,24 @@ export default function DashboardPage() {
             </GlassCard>
           </Link>
         </motion.div>
+
+        {/* Admin Action: Manage Hero Banners */}
+        {isUserAdmin && (
+          <motion.div variants={item}>
+            <Link href="/dashboard/hero-manager" className="block h-full">
+              <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors border-[#eab308]/10 hover:border-[#eab308]/30">
+                <div className="relative z-10">
+                  <div className="bg-[#eab308]/20 p-3 rounded-lg w-fit mb-4">
+                    <FileText className="h-6 w-6 text-[#eab308]" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Content Manager</h3>
+                  <p className="text-sm text-white/60 mb-6">Upload photos and videos directly to the homepage Hero Carousel.</p>
+                </div>
+                <span className="relative z-10 text-[#eab308] text-sm font-medium flex items-center gap-1">Manage Banners <ArrowRight className="h-4 w-4" /></span>
+              </GlassCard>
+            </Link>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Analytics Section */}

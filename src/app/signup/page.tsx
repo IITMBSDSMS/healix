@@ -26,8 +26,8 @@ export default function SignupPage() {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 overflow-hidden bg-[#050505]">
       {/* Background Cinematic Elements */}
-      <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] bg-[#eab308]/8 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-[#ca8a04]/8 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
 
       <motion.div
@@ -60,7 +60,7 @@ export default function SignupPage() {
                   name="name"
                   type="text"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/30 transition-all text-sm"
                   placeholder="Researcher Name"
                 />
               </div>
@@ -77,7 +77,7 @@ export default function SignupPage() {
                   name="email"
                   type="email"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/30 transition-all text-sm"
                   placeholder="name@agency.com"
                 />
               </div>
@@ -94,7 +94,7 @@ export default function SignupPage() {
                   name="password"
                   type="password"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/30 transition-all text-sm"
                   placeholder="••••••••"
                   minLength={6}
                 />
@@ -121,7 +121,7 @@ export default function SignupPage() {
           <div className="mt-8 pt-8 border-t border-white/5 text-center">
             <p className="text-sm text-white/40">
               Already have an active session? <br />
-              <Link href="/login" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
+              <Link href="/login" className="text-[#eab308] hover:text-[#fde047] font-bold transition-colors">
                 Sign in to Gateway
               </Link>
             </p>

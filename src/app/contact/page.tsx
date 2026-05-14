@@ -57,8 +57,8 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div className="space-y-8">
           <GlassCard className="flex items-start gap-4 p-6" glowOnHover={false}>
-            <div className="p-3 bg-primary/20 rounded-xl">
-              <MapPin className="h-6 w-6 text-primary" />
+            <div className="p-3 bg-[#eab308]/15 rounded-xl">
+              <MapPin className="h-6 w-6 text-[#eab308]" />
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-2">Our Office</h3>
@@ -71,8 +71,8 @@ export default function ContactPage() {
           </GlassCard>
 
           <GlassCard className="flex items-start gap-4 p-6" glowOnHover={false}>
-            <div className="p-3 bg-green-500/20 rounded-xl">
-              <Phone className="h-6 w-6 text-green-500" />
+            <div className="p-3 bg-[#eab308]/15 rounded-xl">
+              <Phone className="h-6 w-6 text-[#eab308]" />
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-2">Phone</h3>
@@ -83,8 +83,8 @@ export default function ContactPage() {
           </GlassCard>
 
           <GlassCard className="flex items-start gap-4 p-6" glowOnHover={false}>
-            <div className="p-3 bg-purple-500/20 rounded-xl">
-              <Mail className="h-6 w-6 text-purple-500" />
+            <div className="p-3 bg-[#eab308]/15 rounded-xl">
+              <Mail className="h-6 w-6 text-[#eab308]" />
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-2">Email</h3>
@@ -125,7 +125,7 @@ export default function ContactPage() {
                     name="name"
                     type="text"
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/25 transition-colors"
                     placeholder="Jane Doe"
                   />
                 </div>
@@ -138,7 +138,7 @@ export default function ContactPage() {
                     name="email"
                     type="email"
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308]/25 transition-colors"
                     placeholder="jane@example.com"
                   />
                 </div>

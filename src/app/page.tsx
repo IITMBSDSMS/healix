@@ -6,9 +6,10 @@ import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { HealixLogo } from "@/components/ui/HealixLogo";
-import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { HeroCarousel } from "@/components/ui/HeroCarousel";
 
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
@@ -59,104 +60,61 @@ export default function Home() {
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
       
       {/* Animated Glow Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-blue-500/[0.02] to-transparent pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#eab308]/5 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#ca8a04]/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-[#eab308]/[0.01] to-transparent pointer-events-none" />
 
       <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8 pt-24 sm:pt-32">
-        <div className="flex justify-center mb-8">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
+
+      {/* High-Class Media Display (Full Width Hero) */}
+      <div className="pt-16">
+        <HeroCarousel />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+        {/* Premium Dark Bento Grid Modules */}
+        <div className="mt-16 mb-32">
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+              hidden: { opacity: 0 }
+            }}
+            className="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-auto md:h-[600px]"
           >
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-mono text-green-400 uppercase tracking-widest">All Systems Operational</span>
-          </motion.div>
-        </div>
-        
-        <div className="mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">Healix OS v2.4.0 — Now Online</span>
-          </motion.div>
-
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-6xl font-bold tracking-tight sm:text-8xl text-white mb-8 leading-[1.1]"
-          >
-            Building the <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400">Future of Care.</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-6 text-xl leading-8 text-white/50 font-medium max-w-2xl mx-auto"
-          >
-            Unifying predictive medical diagnostics, high-performance labs, and real-time security into a singular, high-performance infrastructure.
-          </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link href="/dashboard">
-              <button className="group relative flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                Deploy Dashboard <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </button>
-            </Link>
-            <Link href="/ai-check">
-              <button className="px-8 py-4 rounded-full font-bold border border-white/10 hover:bg-white/5 transition-all">
-                Try AI Engine
-              </button>
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* Bento Grid Modules */}
-        <div className="mt-32">
-          <div className="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-auto md:h-[600px]">
             {/* AI Check - Large Bento Card */}
             <motion.div 
-              whileHover={{ y: -5 }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+              whileHover={{ y: -5, scale: 1.01 }}
               className="md:col-span-8 md:row-span-1"
             >
               <Link href="/ai-check" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col justify-between group overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Activity className="w-48 h-48" />
+                <GlassCard className="h-full p-8 flex flex-col justify-between group overflow-hidden relative border-[#eab308]/10 hover:border-[#eab308]/30">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#eab308]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform group-hover:scale-110 group-hover:rotate-3">
+                    <Activity className="w-48 h-48 text-[#eab308]" />
                   </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
-                        <Activity className="w-5 h-5 text-blue-400" />
+                      <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20">
+                        <Activity className="w-5 h-5 text-[#eab308]" />
                       </div>
-                      <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">Medical Intelligence</span>
+                      <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Medical Intelligence</span>
                     </div>
                     <h3 className="text-3xl font-bold text-white mb-4">Healix AI Diagnostic Engine</h3>
                     <p className="text-white/50 max-w-md text-sm leading-relaxed">
                       Analyze complex symptoms through our high-performance neural pipeline. Get instant, infrastructure-backed medical guidance with zero-knowledge privacy.
                     </p>
                   </div>
-                  <div className="relative z-10 flex items-center gap-2 text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
-                    Access Engine <ArrowRight className="w-4 h-4" />
+                  <div className="relative z-10 flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#eab308] transition-colors mt-8">
+                    Access Engine <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </GlassCard>
               </Link>
@@ -164,30 +122,40 @@ export default function Home() {
 
             {/* BioLabs - Vertical Bento Card */}
             <motion.div 
-              whileHover={{ y: -5 }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+              whileHover={{ y: -5, scale: 1.02 }}
               className="md:col-span-4 md:row-span-2"
             >
               <Link href="/biolabs" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col group relative overflow-hidden bg-gradient-to-b from-transparent to-purple-500/5">
+                <GlassCard className="h-full p-8 flex flex-col group relative overflow-hidden bg-gradient-to-b from-transparent to-[#eab308]/5 border-[#eab308]/10 hover:border-[#eab308]/30">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-purple-500/20 rounded-lg border border-purple-500/30">
-                      <Database className="w-5 h-5 text-purple-400" />
+                    <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                      <Database className="w-5 h-5 text-white/80" />
                     </div>
-                    <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest">Research Lab</span>
+                    <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">Research Lab</span>
                   </div>
                   <h3 className="text-3xl font-bold text-white mb-4">Healix <br />BioLabs</h3>
                   <p className="text-white/50 text-sm leading-relaxed mb-8">
                     World-class laboratory facilities for advanced genomic sequencing, AI diagnostic modeling, and high-performance computing research.
                   </p>
                   <div className="flex-1 border-y border-white/5 py-6 my-6 flex flex-col justify-center space-y-4">
-                    {["Next-Gen Sequencing", "HPC Clusters", "AI Diagnostics"].map(item => (
-                      <div key={item} className="flex items-center gap-2 text-[10px] font-mono text-white/30 uppercase">
-                        <div className="w-1 h-1 rounded-full bg-purple-500" /> {item}
-                      </div>
+                    {["Next-Gen Sequencing", "HPC Clusters", "AI Diagnostics"].map((item, idx) => (
+                      <motion.div 
+                        key={item} 
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + (idx * 0.1) }}
+                        className="flex items-center gap-2 text-[10px] font-mono text-white/40 uppercase group-hover:text-white/70 transition-colors"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#eab308] shadow-[0_0_10px_rgba(234,179,8,0.5)]" /> {item}
+                      </motion.div>
                     ))}
                   </div>
-                  <div className="flex items-center gap-2 text-sm font-bold text-white group-hover:text-purple-400 transition-colors">
-                    View Lab <ArrowRight className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#eab308] transition-colors">
+                    View Lab <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </GlassCard>
               </Link>
@@ -195,15 +163,20 @@ export default function Home() {
 
             {/* SheSecure - Horizontal Bento Card */}
             <motion.div 
-              whileHover={{ y: -5 }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+              whileHover={{ y: -5, scale: 1.02 }}
               className="md:col-span-4 md:row-span-1"
             >
               <Link href="/shesecure" className="h-full block">
                 <GlassCard className="h-full p-8 flex flex-col justify-between group border-orange-500/10 hover:border-orange-500/30">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                        <div className="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
                           <Shield className="w-5 h-5 text-orange-400" />
                         </div>
                         <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">IoT Safety</span>
@@ -213,14 +186,14 @@ export default function Home() {
                         Real-time travel safety with Project Suraksha QR tracking and uncompromised telemetry.
                       </p>
                       <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
-                        Learn More <ArrowRight className="w-3 h-3" />
+                        Learn More <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                     
                     {/* Scannable Logo Tech Demo - Connected */}
                     <motion.div 
-                      whileHover={{ scale: 1.05 }}
-                      className="shrink-0 p-3 bg-black/40 rounded-xl border border-white/5 flex items-center gap-3 group/qr transition-all hover:border-orange-500/30 relative"
+                      whileHover={{ scale: 1.05, rotate: 2 }}
+                      className="shrink-0 p-3 bg-black/60 rounded-xl border border-white/5 flex items-center gap-3 group/qr transition-all hover:border-orange-500/30 relative backdrop-blur-md"
                     >
                       <div className="absolute -top-1 -right-1 flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
                         <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
@@ -242,30 +215,35 @@ export default function Home() {
 
             {/* Care - Horizontal Bento Card */}
             <motion.div 
-              whileHover={{ y: -5 }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+              whileHover={{ y: -5, scale: 1.02 }}
               className="md:col-span-4 md:row-span-1"
             >
               <Link href="/care" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col justify-between group border-teal-500/10 hover:border-teal-500/30">
-                  <div>
+                <GlassCard className="h-full p-8 flex flex-col justify-between group border-[#eab308]/10 hover:border-[#eab308]/40 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#eab308]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  <div className="relative">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-teal-500/20 rounded-lg">
-                        <Activity className="w-5 h-5 text-teal-400" />
+                      <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20">
+                        <Building2 className="w-5 h-5 text-[#eab308]" />
                       </div>
-                      <span className="text-[10px] font-mono text-teal-400 uppercase tracking-widest">Healthcare</span>
+                      <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest drop-shadow-sm">Healthcare</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Healix Care</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">Healix Care Network</h3>
                     <p className="text-xs text-white/50 leading-relaxed">
-                      High-fidelity medical booking and provider orchestration.
+                      High-fidelity medical booking and provider orchestration across our global facilities.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-teal-400 transition-colors">
-                    Find Care <ArrowRight className="w-3 h-3" />
+                  <div className="relative flex items-center gap-2 text-xs font-bold text-white group-hover:text-[#eab308] transition-colors mt-4">
+                    Find Care <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                   </div>
                 </GlassCard>
               </Link>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Infrastructure Architecture Flow */}
@@ -288,27 +266,27 @@ export default function Home() {
             <div className="hidden md:block absolute top-[44px] left-[16%] right-[16%] h-px bg-gradient-to-r from-purple-500/20 via-blue-500/50 to-green-500/20 z-0" />
             
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
+              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Activity className="h-8 w-8 text-blue-400" />
+                <Activity className="h-8 w-8 text-[#eab308]" />
               </div>
               <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 01: Telemetry Input</h3>
               <p className="text-white/40 text-xs">User devices securely transmit encrypted health or GPS telemetry to our edge nodes. Payload is validated against strict schema parameters.</p>
             </div>
             
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
+              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Server className="h-8 w-8 text-purple-400" />
+                <Server className="h-8 w-8 text-[#ca8a04]" />
               </div>
               <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 02: AI Analysis Engine</h3>
               <p className="text-white/40 text-xs">Data is processed through our high-performance computing clusters. <strong>Zero-knowledge proofs</strong> ensure raw data is never exposed to external models.</p>
             </div>
             
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
+              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Shield className="h-8 w-8 text-green-400" />
+                <Shield className="h-8 w-8 text-[#eab308]" />
               </div>
               <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 03: Secure Routing</h3>
               <p className="text-white/40 text-xs">Based on deterministic rule engines, packets are routed to appropriate emergency response APIs or medical scheduling interoperability layers.</p>
@@ -402,15 +380,15 @@ export default function Home() {
 
             {/* Left: Text + CTAs */}
             <div className="relative z-10 flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 mb-6">
-                <Smartphone className="h-3 w-3 text-purple-400" />
-                <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest">iOS &amp; Android</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-6">
+                <Smartphone className="h-3 w-3 text-[#eab308]" />
+                <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">iOS &amp; Android</span>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
                 The Healix App
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-teal-300 to-blue-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] via-[#fde047] to-[#ca8a04]">
                   Launching Soon
                 </span>
               </h2>
@@ -447,7 +425,7 @@ export default function Home() {
                     className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/60 focus:bg-white/8 transition-all"
                   />
                 </div>
-                <button id="mobile-notify-btn" className="px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold transition-colors shrink-0">
+                <button id="mobile-notify-btn" className="px-4 py-2.5 rounded-lg bg-[#eab308] hover:bg-[#ca8a04] text-black text-sm font-semibold transition-colors shrink-0">
                   Notify Me
                 </button>
               </div>

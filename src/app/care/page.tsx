@@ -13,11 +13,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 const categories = [
-  { id: "doctor", name: "Consult Doctor", icon: Stethoscope, color: "text-blue-400", bg: "bg-blue-400/20" },
-  { id: "lab", name: "Lab Tests", icon: FlaskConical, color: "text-purple-400", bg: "bg-purple-400/20" },
-  { id: "medicine", name: "Medicines", icon: Pill, color: "text-green-400", bg: "bg-green-400/20" },
-  { id: "ayurveda", name: "Ayurveda", icon: Shield, color: "text-orange-400", bg: "bg-orange-400/20" },
-  { id: "devices", name: "Health Devices", icon: Activity, color: "text-red-400", bg: "bg-red-400/20" },
+  { id: "doctor", name: "Consult Doctor", icon: Stethoscope, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
+  { id: "lab", name: "Lab Tests", icon: FlaskConical, color: "text-[#ca8a04]", bg: "bg-[#ca8a04]/15" },
+  { id: "medicine", name: "Medicines", icon: Pill, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
+  { id: "ayurveda", name: "Ayurveda", icon: Shield, color: "text-[#ca8a04]", bg: "bg-[#ca8a04]/15" },
+  { id: "devices", name: "Health Devices", icon: Activity, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
 ];
 
 const trendingMedicines = [
@@ -142,9 +142,9 @@ export default function CarePage() {
 
         {/* Promotional Banner */}
         <section>
-          <div className="relative rounded-3xl overflow-hidden p-8 sm:p-12 border border-primary/20 shadow-[0_0_40px_rgba(99,102,241,0.15)] bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-[#050505]">
+          <div className="relative rounded-3xl overflow-hidden p-8 sm:p-12 border border-[#eab308]/20 shadow-[0_0_40px_rgba(234,179,8,0.1)] bg-gradient-to-r from-[#ca8a04]/20 via-[#eab308]/10 to-[#050505]">
             <div className="relative z-10 max-w-xl">
-              <span className="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary text-xs font-bold tracking-wider mb-4 border border-primary/30 uppercase">
+              <span className="inline-block py-1 px-3 rounded-full bg-[#eab308]/20 text-[#eab308] text-xs font-bold tracking-wider mb-4 border border-[#eab308]/30 uppercase">
                 Limited Time Offer
               </span>
               <h2 className="text-3xl font-bold mb-4 leading-tight">Get 20% Off on Full Body Checkups</h2>
@@ -156,8 +156,8 @@ export default function CarePage() {
               </Button>
             </div>
             
-            <div className="absolute right-10 bottom-0 opacity-20 md:opacity-100 transform translate-y-10 md:translate-y-0">
-              <Activity className="w-64 h-64 text-primary" strokeWidth={1} />
+            <div className="absolute right-10 bottom-0 opacity-10 md:opacity-30 transform translate-y-10 md:translate-y-0">
+              <Activity className="w-64 h-64 text-[#eab308]" strokeWidth={1} />
             </div>
           </div>
         </section>
@@ -166,7 +166,7 @@ export default function CarePage() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <FlaskConical className="h-6 w-6 text-purple-400" />
+              <FlaskConical className="h-6 w-6 text-[#eab308]" />
               Popular Health Checks
             </h2>
             <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More packages coming soon">
@@ -199,7 +199,7 @@ export default function CarePage() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-green-400" />
+              <TrendingUp className="h-6 w-6 text-[#eab308]" />
               Trending Medicines
             </h2>
             <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More medicines coming soon">
@@ -273,9 +273,9 @@ export default function CarePage() {
                     <div className="p-3 bg-white/5 border border-white/10 rounded-xl mb-6">
                       <p className="text-xs text-white/50 mb-1">Selected Service</p>
                       <p className="font-medium flex items-center gap-2">
-                        {selectedService === "doctor" && <Stethoscope className="h-4 w-4 text-blue-400" />}
-                        {selectedService === "lab" && <FlaskConical className="h-4 w-4 text-purple-400" />}
-                        {selectedService === "medicine" && <Pill className="h-4 w-4 text-green-400" />}
+                        {selectedService === "doctor" && <Stethoscope className="h-4 w-4 text-[#eab308]" />}
+                        {selectedService === "lab" && <FlaskConical className="h-4 w-4 text-[#ca8a04]" />}
+                        {selectedService === "medicine" && <Pill className="h-4 w-4 text-[#eab308]" />}
                         {categories.find(c => c.id === selectedService)?.name || "Doctor Consultation"}
                       </p>
                     </div>
