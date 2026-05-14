@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Linkedin, Globe, GraduationCap, ArrowUpRight } from "lucide-react";
+import { ExternalLink, Globe, GraduationCap, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 
 interface MentorCardProps {
@@ -57,7 +57,7 @@ export const MentorCard = ({ mentor }: MentorCardProps) => {
           <div className="flex gap-4">
             {mentor.linkedinUrl && (
               <a href={mentor.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-[#eab308] transition-colors">
-                <Linkedin className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4" />
               </a>
             )}
             <button className="text-white/30 hover:text-[#eab308] transition-colors flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest">

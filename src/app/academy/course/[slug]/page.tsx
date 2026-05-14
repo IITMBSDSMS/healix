@@ -10,7 +10,7 @@ import {
   Clock, BarChart, Users, CheckCircle2, 
   ArrowRight, Play, BookOpen, GraduationCap,
   Award, Zap, ChevronDown, MessageSquare,
-  Linkedin, Star, Shield, Monitor
+  ExternalLink, Star, Shield, Monitor
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -243,7 +243,7 @@ export default function CourseDetailPage() {
                     </p>
                     <div className="flex gap-4">
                       <Link href={course.mentor?.linkedinUrl || "#"} className="p-2 bg-white/5 rounded-lg hover:bg-[#eab308]/10 hover:text-[#eab308] transition-all">
-                        <Linkedin className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" />
                       </Link>
                       <Link href="#" className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg text-xs font-bold hover:bg-white/10 transition-all">
                         <MessageSquare className="w-4 h-4" /> Book Intro Call
