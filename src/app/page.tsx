@@ -13,7 +13,7 @@ import { HeroCarousel } from "@/components/ui/HeroCarousel";
 
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
-  const [activeVideo, setActiveVideo] = useState<{url: string, title: string} | null>(null);
+  const [activeVideo, setActiveVideo] = useState<{ url: string, title: string } | null>(null);
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -54,11 +54,11 @@ export default function Home() {
 
 
   return (
-    <div className="relative isolate min-h-screen flex flex-col justify-center pb-20 overflow-x-hidden w-full">
+    <div className="relative isolate min-h-screen flex flex-col w-full">
       {/* Cinematic Background */}
       <div className="absolute inset-0 bg-[#050505]" />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
-      
+
       {/* Animated Glow Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#eab308]/5 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#ca8a04]/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
@@ -76,7 +76,7 @@ export default function Home() {
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         {/* Premium Dark Bento Grid Modules */}
         <div className="mt-16 mb-32">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -87,7 +87,7 @@ export default function Home() {
             className="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-auto md:h-[600px]"
           >
             {/* AI Check - Large Bento Card */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -121,7 +121,7 @@ export default function Home() {
             </motion.div>
 
             {/* BioLabs - Vertical Bento Card */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -143,8 +143,8 @@ export default function Home() {
                   </p>
                   <div className="flex-1 border-y border-white/5 py-6 my-6 flex flex-col justify-center space-y-4">
                     {["Next-Gen Sequencing", "HPC Clusters", "AI Diagnostics"].map((item, idx) => (
-                      <motion.div 
-                        key={item} 
+                      <motion.div
+                        key={item}
                         initial={{ opacity: 0, x: -10 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 + (idx * 0.1) }}
@@ -162,7 +162,7 @@ export default function Home() {
             </motion.div>
 
             {/* SheSecure - Horizontal Bento Card */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -189,9 +189,9 @@ export default function Home() {
                         Learn More <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
-                    
+
                     {/* Scannable Logo Tech Demo - Connected */}
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.05, rotate: 2 }}
                       className="shrink-0 p-3 bg-black/60 rounded-xl border border-white/5 flex items-center gap-3 group/qr transition-all hover:border-orange-500/30 relative backdrop-blur-md"
                     >
@@ -214,7 +214,7 @@ export default function Home() {
             </motion.div>
 
             {/* Care - Horizontal Bento Card */}
-            <motion.div 
+            <motion.div
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -247,7 +247,7 @@ export default function Home() {
         </div>
 
         {/* Healix Academy Premium Banner */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -258,7 +258,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-tr from-[#eab308]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
             <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#eab308]/5 to-transparent pointer-events-none" />
-            
+
             <div className="flex flex-col md:flex-row items-center justify-between p-10 md:p-16 relative z-10">
               <div className="flex-1 mb-8 md:mb-0">
                 <div className="flex items-center gap-3 mb-6">
@@ -267,23 +267,23 @@ export default function Home() {
                   </div>
                   <span className="text-sm font-mono text-[#eab308] font-bold uppercase tracking-widest drop-shadow-sm">Healix Academy</span>
                 </div>
-                
+
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
                   Learn Real Engineering. <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
                     Build Real Systems.
                   </span>
                 </h2>
-                
+
                 <p className="text-lg text-white/60 max-w-xl mb-8 leading-relaxed">
                   1:1 mentorship from elite engineers building production-grade systems. Elite engineering institution authority.
                 </p>
-                
+
                 <button className="px-8 py-4 bg-white text-black font-bold rounded-xl flex items-center gap-3 hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                   Explore Programs <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
-              
+
               {/* Academy Mockup / Graphic */}
               <div className="flex-1 flex justify-center md:justify-end relative">
                 {/* Abstract animated elements */}
@@ -307,7 +307,7 @@ export default function Home() {
         </motion.div>
 
         {/* Infrastructure Architecture Flow */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -320,11 +320,11 @@ export default function Home() {
               Operational transparency. Our distributed infrastructure operates within strictly defined failsafe parameters to ensure 99.9% uptime and uncompromised privacy.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative max-w-5xl mx-auto">
             {/* Connecting Line */}
             <div className="hidden md:block absolute top-[44px] left-[16%] right-[16%] h-px bg-gradient-to-r from-purple-500/20 via-blue-500/50 to-green-500/20 z-0" />
-            
+
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -333,7 +333,7 @@ export default function Home() {
               <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 01: Telemetry Input</h3>
               <p className="text-white/40 text-xs">User devices securely transmit encrypted health or GPS telemetry to our edge nodes. Payload is validated against strict schema parameters.</p>
             </div>
-            
+
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -342,7 +342,7 @@ export default function Home() {
               <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 02: AI Analysis Engine</h3>
               <p className="text-white/40 text-xs">Data is processed through our high-performance computing clusters. <strong>Zero-knowledge proofs</strong> ensure raw data is never exposed to external models.</p>
             </div>
-            
+
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -355,7 +355,7 @@ export default function Home() {
         </motion.div>
 
         {/* Testimonials */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -395,19 +395,19 @@ export default function Home() {
           <div className="relative w-full overflow-hidden">
             <div className="flex gap-6 animate-marquee" style={{ animationDirection: 'reverse', width: 'max-content' }}>
               {[...reels, ...reels, ...reels].map((reel, idx) => (
-                <div 
-                  key={`${reel.id}-${idx}`} 
+                <div
+                  key={`${reel.id}-${idx}`}
                   onClick={() => setActiveVideo({ url: reel.video_url, title: reel.title })}
                   className="group relative rounded-xl overflow-hidden bg-black border border-white/10 w-64 aspect-[9/16] shrink-0 cursor-pointer shadow-xl"
                 >
                   {/* Thumbnail */}
                   <img src={reel.thumbnail_url} alt={reel.title} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-black/50 group-hover:bg-black/20 transition-colors duration-500" />
-                  
+
                   {/* Play Button Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/90 group-hover:bg-white group-hover:text-black group-hover:scale-110 transition-all">
-                      <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                   </div>
 
@@ -459,14 +459,14 @@ export default function Home() {
               {/* Store Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <button id="app-store-btn" className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-white text-black font-semibold hover:bg-white/90 active:scale-95 transition-all shadow-lg shadow-white/10">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
                   <div className="text-left">
                     <div className="text-[10px] opacity-70 leading-none mb-0.5">Download on the</div>
                     <div className="text-sm font-bold leading-none">App Store</div>
                   </div>
                 </button>
                 <button id="play-store-btn" className="flex items-center gap-3 px-6 py-3.5 rounded-xl border border-white/20 bg-white/5 text-white font-semibold hover:bg-white/10 active:scale-95 transition-all backdrop-blur-sm">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83 1-.97 1.45-.42l11 8.5c.39.3.39.86 0 1.16l-11 8.5C3.97 21.47 3 21.33 3 20.5z" opacity=".3"/><path d="M3.23 20.93 13.36 12 3.23 3.07A.99.99 0 003 3.7v16.6c0 .32.16.62.23.63zM4.16 3.27l9.08 5.24-1.96 1.96L4.16 3.27zm0 17.46 7.12-7.12 1.96 1.96-9.08 5.16zM20.84 12l-3.86 2.23-2.17-2.17 2.17-2.17L20.84 12z"/></svg>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83 1-.97 1.45-.42l11 8.5c.39.3.39.86 0 1.16l-11 8.5C3.97 21.47 3 21.33 3 20.5z" opacity=".3" /><path d="M3.23 20.93 13.36 12 3.23 3.07A.99.99 0 003 3.7v16.6c0 .32.16.62.23.63zM4.16 3.27l9.08 5.24-1.96 1.96L4.16 3.27zm0 17.46 7.12-7.12 1.96 1.96-9.08 5.16zM20.84 12l-3.86 2.23-2.17-2.17 2.17-2.17L20.84 12z" /></svg>
                   <div className="text-left">
                     <div className="text-[10px] opacity-70 leading-none mb-0.5">Get it on</div>
                     <div className="text-sm font-bold leading-none">Google Play</div>
@@ -534,30 +534,30 @@ export default function Home() {
       {/* Video Player Modal */}
       <AnimatePresence>
         {activeVideo && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4"
             onClick={() => setActiveVideo(null)}
           >
-            <button 
+            <button
               className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
               onClick={(e) => { e.stopPropagation(); setActiveVideo(null); }}
             >
               <X className="h-6 w-6" />
             </button>
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               className="relative w-full max-w-sm aspect-[9/16] bg-black border border-white/20 rounded-2xl overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <video 
-                src={activeVideo.url} 
-                autoPlay 
-                controls 
+              <video
+                src={activeVideo.url}
+                autoPlay
+                controls
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-0 inset-x-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
