@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   Shield, Activity, Server, Database, Users, CheckCircle, 
   ChevronRight, Calendar, Lock, Code, Microscope, 
-  ArrowRight, Heart, Brain, Zap, Globe
+  ArrowRight, Heart, Brain, Zap, Globe, FileText
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,7 @@ export default function AboutPage() {
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
   };
 
   return (
