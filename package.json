@@ -40,5 +40,9 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "uuid": "^11.0.0",
+    "serialize-error-cjs": "0.2.0"
   }
 }
