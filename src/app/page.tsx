@@ -6,7 +6,7 @@ import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { HealixLogo } from "@/components/ui/HealixLogo";
-import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper, HelpCircle, Camera, ChevronDown } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper, HelpCircle, Camera, ChevronDown, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
@@ -449,6 +449,25 @@ export default function Home() {
             ))}
           </div>
         </motion.div>
+
+        {/* ── Animated Yellow Gear Strip ── */}
+        <div className="relative h-1 w-full bg-[#eab308]/20 my-24 overflow-hidden rounded-full">
+          <motion.div 
+            animate={{ x: ["0%", "100%"] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute top-0 left-0 h-full w-24 bg-gradient-to-r from-transparent via-[#eab308] to-transparent"
+          />
+          <motion.div
+            animate={{ 
+              x: ["-5%", "105%"],
+              rotate: [0, 360 * 5]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-2 left-0 text-[#eab308]"
+          >
+            <Settings className="w-5 h-5 fill-[#eab308]/20" />
+          </motion.div>
+        </div>
 
         {/* ── FAQ & Tech Showcase ── */}
         <div className="mt-32 grid grid-cols-1 lg:grid-cols-2 gap-16">
