@@ -92,7 +92,7 @@ export default function AboutPage() {
     <div className="relative isolate w-full bg-[#050505] overflow-hidden selection:bg-[#eab308]/30">
       {/* ── Background Global ── */}
       <div className="fixed inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.02] pointer-events-none" />
-      <div className="fixed top-0 left-1/4 w-full h-full bg-[radial-gradient(circle_at_20%_20%,_#eab30810_0%,_transparent_50%)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,_#eab30805_0%,_transparent_50%)] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         
@@ -114,7 +114,7 @@ export default function AboutPage() {
                 </div>
                 
                 <h1 className="text-5xl md:text-8xl font-bold leading-[0.95] tracking-tighter mb-8">
-                  Building the <span className="text-[#eab308]">infrastructure layer</span> for the future of healthcare intelligence.
+                  Building the <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] via-[#fde047] to-[#eab308] animate-gradient-x">infrastructure layer</span> for the future of healthcare intelligence.
                 </h1>
                 
                 <p className="text-xl text-white/50 max-w-xl mb-12 leading-relaxed">
@@ -136,7 +136,7 @@ export default function AboutPage() {
               </motion.div>
             </div>
             
-            <div className="lg:col-span-5 relative">
+            <div className="lg:col-span-5 relative overflow-hidden rounded-[2.5rem]">
               <MedicalMesh />
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

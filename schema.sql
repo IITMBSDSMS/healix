@@ -262,6 +262,41 @@ CREATE TABLE IF NOT EXISTS public.incident_reports (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 22. ACADEMY MENTORS
+CREATE TABLE IF NOT EXISTS public.academy_mentors (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    institution TEXT NOT NULL,
+    specialization TEXT NOT NULL,
+    experience TEXT NOT NULL,
+    photo_url TEXT NOT NULL,
+    linkedin_url TEXT,
+    companies JSONB DEFAULT '[]',
+    bio TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 23. ACADEMY COURSES
+CREATE TABLE IF NOT EXISTS public.academy_courses (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    short_description TEXT NOT NULL,
+    long_description TEXT NOT NULL,
+    price INTEGER NOT NULL,
+    original_price INTEGER,
+    duration TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    seats_remaining INTEGER DEFAULT 20,
+    mentors JSONB DEFAULT '[]', -- Array of mentor IDs
+    thumbnail_url TEXT NOT NULL,
+    modules JSONB DEFAULT '[]',
+    outcomes JSONB DEFAULT '[]',
+    projects JSONB DEFAULT '[]',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- =================================================================================
 -- SECURITY: ROW LEVEL SECURITY (RLS) POLICIES
 -- =================================================================================
@@ -351,6 +386,12 @@ CREATE POLICY "Admin manage tamper logs" ON public.tamper_logs FOR ALL USING (au
 -- 15. INCIDENT REPORTS
 CREATE POLICY "Public read incident reports" ON public.incident_reports FOR SELECT USING (true);
 CREATE POLICY "Admin manage incident reports" ON public.incident_reports FOR ALL USING (auth.role() = 'authenticated');
+
+-- 16. ACADEMY: Public Read
+CREATE POLICY "Public read academy mentors" ON public.academy_mentors FOR SELECT USING (true);
+CREATE POLICY "Public read academy courses" ON public.academy_courses FOR SELECT USING (true);
+CREATE POLICY "Admin manage academy mentors" ON public.academy_mentors FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admin manage academy courses" ON public.academy_courses FOR ALL USING (auth.role() = 'authenticated');
 
 -- =================================================================================
 -- INITIAL SEED DATA
