@@ -165,6 +165,28 @@ export default function GenomicsResearch() {
       });
     };
 
+    // Helper to render Hindi text to an image (since jsPDF lacks native Unicode/Hindi support)
+    const renderHindiToImage = (text: string): string => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return "";
+      
+      // Set a large enough canvas for high quality
+      canvas.width = 1200;
+      canvas.height = 80;
+      
+      ctx.fillStyle = "white"; // Background (transparent would be better but white is safe for PDF)
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.font = "bold 44px 'Arial', 'Noto Sans Devanagari', sans-serif";
+      ctx.fillStyle = "#64748b"; // slate-500
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, canvas.width - 10, canvas.height / 2);
+      
+      return canvas.toDataURL("image/png");
+    };
+
     try {
       const logoBase64 = await loadImage("/biolabs-logo.png");
       doc.addImage(logoBase64, 'PNG', 15, 12, 28, 28);
@@ -185,8 +207,13 @@ export default function GenomicsResearch() {
       doc.text("Precision Oncology Research Facility", 48, 35);
       
       // Hindi Tagline under official logo on right
-      doc.setFontSize(7);
-      doc.text("जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र", pageWidth - 15, 42, { align: 'right' });
+      // We render this as an image because jsPDF doesn't support Hindi characters natively
+      const hindiText = "जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र";
+      const hindiImage = renderHindiToImage(hindiText);
+      if (hindiImage) {
+        // Adding the text as a high-res image (width: 80mm, height: 5mm roughly)
+        doc.addImage(hindiImage, 'PNG', pageWidth - 95, 38, 80, 5);
+      }
       
       // Header Divider
       doc.setDrawColor(16, 185, 129);
