@@ -5,9 +5,16 @@ import Link from "next/link";
 import { ArrowRight, Code2, GraduationCap, Laptop, Sparkles, Terminal } from "lucide-react";
 import { MentorMarquee } from "@/components/academy/MentorMarquee";
 import { CourseCard } from "@/components/academy/CourseCard";
-import { courses } from "@/lib/academy/data";
+import { getCourses } from "@/lib/academy/db";
+import { useState, useEffect } from "react";
 
 export default function AcademyLanding() {
+  const [courses, setCourses] = useState<any[]>([]);
+
+  useEffect(() => {
+    getCourses().then(setCourses);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       {/* Hero Section */}

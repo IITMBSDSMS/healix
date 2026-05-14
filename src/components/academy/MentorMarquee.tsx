@@ -1,9 +1,19 @@
 "use client";
 
-import { mentors } from "@/lib/academy/data";
+import { useState, useEffect } from "react";
+import { getMentors } from "@/lib/academy/db";
 import { ShieldCheck } from "lucide-react";
 
 export function MentorMarquee() {
+  const [mentors, setMentors] = useState<any[]>([]);
+
+  useEffect(() => {
+    getMentors().then(setMentors);
+  }, []);
+
+  if (mentors.length === 0) return null;
+
+  // Duplicate for seamless loop
   const duplicatedMentors = [...mentors, ...mentors, ...mentors];
 
   return (

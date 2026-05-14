@@ -1,11 +1,17 @@
 "use client";
 
-import { mentors } from "@/lib/academy/data";
+import { useState, useEffect } from "react";
+import { getMentors } from "@/lib/academy/db";
 import { motion } from "framer-motion";
 import { ShieldCheck, ExternalLink, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function MentorsPage() {
+  const [mentors, setMentors] = useState<any[]>([]);
+
+  useEffect(() => {
+    getMentors().then(setMentors);
+  }, []);
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-6">

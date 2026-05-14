@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { courses, mentors } from "@/lib/academy/data";
+import { getCourses, getMentors } from "@/lib/academy/db";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock, Code2, GraduationCap, ShieldCheck, Users } from "lucide-react";
@@ -9,13 +9,30 @@ import React from "react";
 
 export default function CourseDetail() {
   const { slug } = useParams();
-  const course = courses.find((c) => c.slug === slug);
+  const [course, setCourse] = React.useState<any>(null);
+  const [mentors, setMentors] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const [allCourses, allMentors] = await Promise.all([getCourses(), getMentors()]);
+      setCourse(allCourses.find((c: any) => c.slug === slug));
+      setMentors(allMentors);
+      setIsLoading(false);
+    }
+    load();
+  }, [slug]);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Loading...</div>;
+  }
 
   if (!course) {
     return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Course not found.</div>;
   }
 
-  const courseMentors = course.mentors.map(mId => mentors.find(m => m.id === mId)).filter(Boolean);
+  const courseMentors = course.mentors.map((mId: string) => mentors.find(m => m.id === mId)).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-32">
@@ -71,7 +88,7 @@ export default function CourseDetail() {
               <GraduationCap className="text-[#eab308] w-8 h-8" /> Curriculum
             </h2>
             <div className="space-y-4">
-              {course.modules.map((mod, i) => (
+              {course.modules.map((mod: string, i: number) => (
                 <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-[#eab308]/30 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-full bg-black border border-[#eab308]/50 flex items-center justify-center text-[#eab308] font-mono font-bold shrink-0">
@@ -92,7 +109,7 @@ export default function CourseDetail() {
               <Code2 className="text-[#eab308] w-8 h-8" /> Live Projects
             </h2>
             <div className="grid sm:grid-cols-2 gap-6">
-              {course.projects.map((proj, i) => (
+              {course.projects.map((proj: string, i: number) => (
                 <div key={i} className="p-6 bg-gradient-to-br from-[#0a0a0f] to-[#111] border border-white/10 rounded-2xl">
                   <h3 className="font-bold text-lg mb-2">{proj}</h3>
                   <p className="text-sm text-white/50">Build from scratch and deploy to production.</p>
@@ -130,7 +147,7 @@ export default function CourseDetail() {
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
             <h2 className="text-2xl font-bold mb-6 border-b border-white/10 pb-4">Career Outcomes</h2>
             <ul className="space-y-4">
-              {course.outcomes.map((outcome, i) => (
+              {course.outcomes.map((outcome: string, i: number) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-white/70">
                   <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                   {outcome}

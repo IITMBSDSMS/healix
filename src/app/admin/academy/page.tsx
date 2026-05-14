@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Users, IndianRupee, BookOpen, Clock, Download, Search, CheckCircle, XCircle } from "lucide-react";
-import { useState } from "react";
-import { courses } from "@/lib/academy/data";
+import { useState, useEffect } from "react";
+import { getCourses, getMentors } from "@/lib/academy/db";
+import { addCourse, deleteCourse, addMentor, deleteMentor } from "./actions";
 
 const dummyApplications = [
   { id: "APP-101", name: "Rajat Sharma", email: "rajat@iitd.ac.in", course: "AI Systems Engineering", status: "pending", date: "2026-05-14" },
@@ -14,6 +15,21 @@ const dummyApplications = [
 export default function AdminAcademyCRM() {
   const [searchTerm, setSearchTerm] = useState("");
   const [applications, setApplications] = useState(dummyApplications);
+  const [activeTab, setActiveTab] = useState<"apps" | "courses" | "mentors">("apps");
+  const [courses, setCourses] = useState<any[]>([]);
+  const [mentors, setMentors] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [fetchedCourses, fetchedMentors] = await Promise.all([getCourses(), getMentors()]);
+      setCourses(fetchedCourses);
+      setMentors(fetchedMentors);
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   const handleApprove = (id: string) => {
     setApplications(applications.map(app => app.id === id ? { ...app, status: "approved" } : app));
@@ -74,7 +90,15 @@ export default function AdminAcademyCRM() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-white/10 pb-4">
+          <button onClick={() => setActiveTab("apps")} className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'apps' ? 'text-[#eab308] border-b-2 border-[#eab308]' : 'text-white/50 hover:text-white'}`}>Applications</button>
+          <button onClick={() => setActiveTab("courses")} className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'courses' ? 'text-[#eab308] border-b-2 border-[#eab308]' : 'text-white/50 hover:text-white'}`}>Manage Courses</button>
+          <button onClick={() => setActiveTab("mentors")} className={`px-4 py-2 font-semibold transition-colors ${activeTab === 'mentors' ? 'text-[#eab308] border-b-2 border-[#eab308]' : 'text-white/50 hover:text-white'}`}>Manage Mentors</button>
+        </div>
+
         {/* Applications Manager */}
+        {activeTab === "apps" && (
         <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl overflow-hidden">
           <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
             <h2 className="text-xl font-bold">Recent Applications</h2>
@@ -138,6 +162,85 @@ export default function AdminAcademyCRM() {
             </table>
           </div>
         </div>
+        )}
+
+        {/* Courses Manager */}
+        {activeTab === "courses" && (
+          <div className="space-y-8">
+            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl p-6">
+              <h2 className="text-xl font-bold mb-4">Add New Course</h2>
+              <form action={async (formData) => {
+                const res = await addCourse(formData);
+                if (res.error) alert(res.error);
+                else { alert("Course Added!"); const data = await getCourses(); setCourses(data); }
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input required name="title" placeholder="Course Title" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="shortDescription" placeholder="Short Description" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="price" type="number" placeholder="Price (INR)" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="originalPrice" type="number" placeholder="Original Price" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="duration" placeholder="Duration (e.g. 12 Weeks)" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="difficulty" placeholder="Difficulty (e.g. Advanced)" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="seatsRemaining" type="number" placeholder="Seats Remaining" className="bg-black border border-white/10 p-3 rounded" />
+                <input name="thumbnail" placeholder="Thumbnail URL" className="bg-black border border-white/10 p-3 rounded" />
+                <textarea required name="longDescription" placeholder="Long Description" className="bg-black border border-white/10 p-3 rounded md:col-span-2" rows={3}></textarea>
+                <input name="modules" placeholder='Modules (JSON Array: ["Mod 1", "Mod 2"])' className="bg-black border border-white/10 p-3 rounded" />
+                <input name="mentors" placeholder='Mentors (JSON Array IDs: ["m1", "m2"])' className="bg-black border border-white/10 p-3 rounded" />
+                <button type="submit" className="md:col-span-2 bg-[#eab308] text-black font-bold p-3 rounded mt-2 hover:bg-[#ca8a04]">Add Course</button>
+              </form>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {courses.map(course => (
+                <div key={course.id} className="bg-white/5 border border-white/10 p-4 rounded-xl">
+                  <h3 className="font-bold text-lg">{course.title}</h3>
+                  <p className="text-sm text-white/50 mb-4">{course.duration} • ₹{course.price}</p>
+                  <button onClick={async () => {
+                    await deleteCourse(course.id);
+                    setCourses(await getCourses());
+                  }} className="text-red-400 text-sm hover:underline flex items-center gap-1"><XCircle className="w-4 h-4" /> Delete</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mentors Manager */}
+        {activeTab === "mentors" && (
+          <div className="space-y-8">
+            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl p-6">
+              <h2 className="text-xl font-bold mb-4">Add New Mentor</h2>
+              <form action={async (formData) => {
+                const res = await addMentor(formData);
+                if (res.error) alert(res.error);
+                else { alert("Mentor Added!"); const data = await getMentors(); setMentors(data); }
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input required name="name" placeholder="Full Name" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="role" placeholder="Role (e.g. AI Architect)" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="institution" placeholder="Institution/Alumni" className="bg-black border border-white/10 p-3 rounded" />
+                <input required name="experience" placeholder="Experience (e.g. 10+ Years)" className="bg-black border border-white/10 p-3 rounded" />
+                <input name="photoUrl" placeholder="Photo URL" className="bg-black border border-white/10 p-3 rounded" />
+                <input name="linkedinUrl" placeholder="LinkedIn URL" className="bg-black border border-white/10 p-3 rounded" />
+                <input name="companies" placeholder='Companies (JSON Array: ["Google", "Tesla"])' className="bg-black border border-white/10 p-3 rounded md:col-span-2" />
+                <textarea required name="bio" placeholder="Biography" className="bg-black border border-white/10 p-3 rounded md:col-span-2" rows={3}></textarea>
+                <button type="submit" className="md:col-span-2 bg-[#eab308] text-black font-bold p-3 rounded mt-2 hover:bg-[#ca8a04]">Add Mentor</button>
+              </form>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {mentors.map(mentor => (
+                <div key={mentor.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-4">
+                  <img src={mentor.photoUrl} alt={mentor.name} className="w-12 h-12 rounded-full object-cover" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">{mentor.name}</h3>
+                    <p className="text-xs text-white/50">{mentor.role}</p>
+                  </div>
+                  <button onClick={async () => {
+                    await deleteMentor(mentor.id);
+                    setMentors(await getMentors());
+                  }} className="text-red-400 p-2 hover:bg-red-500/10 rounded"><XCircle className="w-4 h-4" /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

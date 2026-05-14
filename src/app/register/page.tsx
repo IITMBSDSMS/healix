@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion } from "framer-motion";
-import { useState, Suspense } from "react";
-import { courses } from "@/lib/academy/data";
+import { useState, useEffect, Suspense } from "react";
+import { getCourses } from "@/lib/academy/db";
 import { Shield, Loader2, ArrowRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -28,6 +28,11 @@ function RegisterForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [courses, setCourses] = useState<any[]>([]);
+
+  useEffect(() => {
+    getCourses().then(setCourses);
+  }, []);
 
   const {
     register,
