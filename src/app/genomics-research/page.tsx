@@ -67,14 +67,14 @@ export default function GenomicsResearch() {
     setProgress(0);
     setStatus("Analyzing genomic signatures...");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     const stages = [
-      { p: 15, s: "Scanning microarray vectors..." },
+      { p: 10, s: "Initializing secure tunnel..." },
+      { p: 20, s: "Scanning microarray vectors..." },
       { p: 35, s: "Normalizing genomic signatures..." },
-      { p: 60, s: "Executing neural inference models..." },
-      { p: 85, s: "Generating clinical interpretation..." },
+      { p: 50, s: "Extracting biomarker features..." },
+      { p: 65, s: "Executing neural inference models..." },
+      { p: 80, s: "Calibrating clinical weights..." },
+      { p: 90, s: "Generating clinical interpretation..." },
     ];
 
     let currentStage = 0;
@@ -84,7 +84,7 @@ export default function GenomicsResearch() {
         setStatus(stages[currentStage].s);
         currentStage++;
       }
-    }, 1500);
+    }, 2000);
 
     try {
       const response = await fetch("/api/predict", {

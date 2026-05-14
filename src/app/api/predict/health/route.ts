@@ -7,7 +7,7 @@ const FLASK_URL = process.env.FLASK_API_URL ?? "https://healix-biolabs.onrender.
 export async function GET() {
   try {
     const response = await axios.get(`${FLASK_URL}/health`, {
-      timeout: 5000,
+      timeout: 45000,
     });
     return NextResponse.json(response.data);
   } catch (err: any) {

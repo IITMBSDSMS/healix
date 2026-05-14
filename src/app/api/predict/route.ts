@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
     const response = await axios.post(`${FLASK_URL}/predict`, data, {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 30000, // 30s — large genomic files may take time
+      timeout: 60000, // 60s — large genomic files or Render cold start
     });
 
     return NextResponse.json(response.data);
