@@ -450,24 +450,6 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* ── Animated Yellow Gear Strip ── */}
-        <div className="relative h-1 w-full bg-[#eab308]/20 my-24 overflow-hidden rounded-full">
-          <motion.div 
-            animate={{ x: ["0%", "100%"] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute top-0 left-0 h-full w-24 bg-gradient-to-r from-transparent via-[#eab308] to-transparent"
-          />
-          <motion.div
-            animate={{ 
-              x: ["-5%", "105%"],
-              rotate: [0, 360 * 5]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-2 left-0 text-[#eab308]"
-          >
-            <Settings className="w-5 h-5 fill-[#eab308]/20" />
-          </motion.div>
-        </div>
 
         {/* ── FAQ & Tech Showcase ── */}
         <div className="mt-32 grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -652,6 +634,32 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
+
+        {/* ── Broad Animated Yellow Gear Strip ── */}
+        <div className="relative h-12 w-full bg-[#eab308]/5 my-32 overflow-hidden border-y border-[#eab308]/10 flex items-center">
+          <motion.div 
+            animate={{ x: ["-20%", "120%"] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute top-0 left-0 h-full w-64 bg-gradient-to-r from-transparent via-[#eab308]/20 to-transparent"
+          />
+          <motion.div
+            animate={{ 
+              x: ["-10%", "110%"],
+              rotate: [0, 360 * 8]
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute left-0 text-[#eab308]"
+          >
+            <Settings className="w-12 h-12 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+          </motion.div>
+          {/* Subtle repeating pattern background */}
+          <div className="absolute inset-0 opacity-[0.03] flex items-center gap-8 px-8 overflow-hidden pointer-events-none">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <Settings key={i} className="w-6 h-6 shrink-0" />
+            ))}
+          </div>
+        </div>
+
 
       </div>
 
