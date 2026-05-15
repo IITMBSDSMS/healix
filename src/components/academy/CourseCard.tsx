@@ -27,7 +27,7 @@ interface CourseCardProps {
 
 export const CourseCard = ({ course }: CourseCardProps) => {
   return (
-    <Link href={`/academy/course/${course.slug}`}>
+    <Link href={`/academy/course/${course.slug}`} className="block h-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -36,8 +36,8 @@ export const CourseCard = ({ course }: CourseCardProps) => {
         transition={{ duration: 0.4 }}
         className="h-full"
       >
-        <GlassCard className="p-0 overflow-hidden border-white/5 group h-full hover:border-[#eab308]/30 transition-all shadow-2xl bg-black/40">
-          <div className="relative aspect-[16/10] overflow-hidden">
+        <GlassCard className="p-0 overflow-hidden border-white/5 group h-full flex flex-col hover:border-[#eab308]/30 transition-all shadow-2xl bg-black/40">
+          <div className="relative aspect-[16/10] overflow-hidden shrink-0">
             <Image 
               src={course.thumbnail} 
               alt={course.title} 
@@ -78,12 +78,12 @@ export const CourseCard = ({ course }: CourseCardProps) => {
             </div>
           </div>
 
-          <div className="p-8">
-            <p className="text-sm text-white/50 mb-8 line-clamp-2 leading-relaxed h-10">
+          <div className="p-8 flex flex-col flex-1">
+            <p className="text-sm text-white/50 mb-8 line-clamp-2 leading-relaxed min-h-[2.5rem]">
               {course.shortDescription || course.description}
             </p>
 
-            <div className="flex items-center justify-between mb-8 pb-8 border-b border-white/5">
+            <div className="flex items-center justify-between mb-8 pb-8 border-b border-white/5 mt-auto">
               <div className="space-y-1">
                 <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Course Fee</p>
                 <p className="text-2xl font-bold text-white tracking-tighter">₹{course.price.toLocaleString()}</p>
