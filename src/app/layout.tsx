@@ -11,6 +11,7 @@ const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
   preload: true,
+  fallback: ["Inter", "system-ui", "sans-serif"],
 });
 
 const geistMono = Geist_Mono({
@@ -18,6 +19,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   preload: false,
+  fallback: ["monospace"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://healix-nu.vercel.app";

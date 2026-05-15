@@ -251,6 +251,40 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* ── 2.5 THE SYSTEMIC ADVANTAGE ── */}
+        <section className="py-40 bg-gradient-to-b from-transparent via-[#eab308]/5 to-transparent">
+          <SectionHeader 
+            badge="Unified Intelligence"
+            title="Systemic Healthcare Infrastructure."
+            subtitle="Healix isn't a collection of features; it's a unified ecosystem where data flows seamlessly between research, safety, and care."
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { title: "BioLabs", desc: "Genomic research fuels clinical models.", icon: Microscope },
+              { title: "SheSecure", desc: "Live safety telemetry secures patients.", icon: Shield },
+              { title: "Healix AI", desc: "Diagnostic reasoning unified by FHIR.", icon: Brain },
+              { title: "Academy", desc: "Training the next generation of staff engineers.", icon: GraduationCap }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <GlassCard className="p-8 border-white/5 text-center group hover:border-[#eab308]/20 transition-all">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <item.icon className="w-6 h-6 text-[#eab308]" />
+                  </div>
+                  <h4 className="text-lg font-bold mb-2">{item.title}</h4>
+                  <p className="text-xs text-white/40 leading-relaxed">{item.desc}</p>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         {/* ── 3. MISSION + VISION ── */}
         <section className="py-40">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
