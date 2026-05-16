@@ -144,8 +144,8 @@ export default function BioLabsPage() {
                 className="absolute inset-0"
               >
                 <img 
-                  src={dynamicPhotos[currentSlide].image_url} 
-                  alt={dynamicPhotos[currentSlide].title} 
+                  src={dynamicPhotos[currentSlide]?.image_url || '/placeholder.png'} 
+                  alt={dynamicPhotos[currentSlide]?.title || 'Photo'} 
                   className="w-full h-full object-cover opacity-80"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-8 px-8">
@@ -155,17 +155,20 @@ export default function BioLabsPage() {
                     transition={{ delay: 0.3 }}
                     className="text-white font-bold text-2xl tracking-wide border-l-4 border-[#eab308] pl-4"
                   >
-                    {dynamicPhotos[currentSlide].title}
+                    {dynamicPhotos[currentSlide]?.title}
                   </motion.h2>
                 </div>
               </motion.div>
             </AnimatePresence>
           )}
           
-          <button onClick={() => setCurrentSlide(prev => (prev === 0 ? dynamicPhotos.length - 1 : prev - 1))} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
+          <button onClick={() => setCurrentSlide(prev => {
+            const max = Math.max(0, dynamicPhotos.length - 1);
+            return prev <= 0 ? max : prev - 1;
+          })} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <button onClick={() => setCurrentSlide(prev => (prev + 1) % dynamicPhotos.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
+          <button onClick={() => setCurrentSlide(prev => (prev + 1) % Math.max(1, dynamicPhotos.length))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
             <ChevronRight className="h-6 w-6" />
           </button>
           
@@ -309,11 +312,11 @@ export default function BioLabsPage() {
             <div className="bg-white text-black rounded-sm overflow-hidden flex-1 flex flex-col shadow-lg">
               <div className="h-48 bg-slate-200 relative">
                 {dynamicPhotos.length > 0 && (
-                  <Image src={dynamicPhotos[0].image_url} alt={dynamicPhotos[0].title} fill style={{ objectFit: 'cover' }} className="opacity-90" />
+                  <Image src={dynamicPhotos[0]?.image_url || '/placeholder.png'} alt={dynamicPhotos[0]?.title || 'Photo'} fill style={{ objectFit: 'cover' }} className="opacity-90" />
                 )}
               </div>
               <div className="p-4 flex-1 font-bold text-lg flex items-center">
-                {dynamicPhotos.length > 0 ? dynamicPhotos[0].title : "Healix BioLabs Foundation Day"}
+                {dynamicPhotos.length > 0 ? dynamicPhotos[0]?.title : "Healix BioLabs Foundation Day"}
               </div>
             </div>
 
@@ -331,19 +334,19 @@ export default function BioLabsPage() {
             {dynamicEvents.length > 0 && (
               <>
                 <div className="h-32 bg-slate-200 relative shrink-0">
-                  <Image src={dynamicEvents[currentEvent].image_url} alt="Event" fill style={{ objectFit: 'cover' }} />
+                  <Image src={dynamicEvents[currentEvent]?.image_url || '/placeholder.png'} alt="Event" fill style={{ objectFit: 'cover' }} />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-2xl font-black tracking-tight">Events</h3>
                     <span className="text-xs text-slate-400 font-mono">{currentEvent + 1} / {dynamicEvents.length}</span>
                   </div>
-                  <h4 className="font-bold text-sm mb-3">{dynamicEvents[currentEvent].title}</h4>
+                  <h4 className="font-bold text-sm mb-3">{dynamicEvents[currentEvent]?.title}</h4>
                   <p className="text-xs text-slate-600 mb-6 leading-relaxed flex-1">
-                    {dynamicEvents[currentEvent].description}
+                    {dynamicEvents[currentEvent]?.description}
                   </p>
                   <p className="text-xs font-semibold text-orange-600 mb-6">
-                    {new Date(dynamicEvents[currentEvent].start_date).toLocaleDateString()} to {new Date(dynamicEvents[currentEvent].end_date).toLocaleDateString()}
+                    {dynamicEvents[currentEvent]?.start_date && new Date(dynamicEvents[currentEvent].start_date).toLocaleDateString()} to {dynamicEvents[currentEvent]?.end_date && new Date(dynamicEvents[currentEvent].end_date).toLocaleDateString()}
                   </p>
                   
                   <div className="flex justify-between items-center">
@@ -444,8 +447,8 @@ export default function BioLabsPage() {
                   <div className="lg:col-span-4">
                     <a href={featured.link_url || "#"} className="block relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.8)] group cursor-pointer">
                       <Image 
-                        src={featured.image_url} 
-                        alt={featured.title} 
+                        src={featured?.image_url || '/placeholder.png'} 
+                        alt={featured?.title || 'Featured'} 
                         fill 
                         className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" 
                       />
@@ -506,8 +509,8 @@ export default function BioLabsPage() {
                         {/* Card Thumbnail */}
                         <div className="relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 group-hover:border-[#eab308] transition-all duration-300 shadow-2xl group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-15px_rgba(234,179,8,0.3)]">
                           <Image 
-                            src={item.image_url}
-                            alt={item.title}
+                            src={item?.image_url || '/placeholder.png'}
+                            alt={item?.title || 'Edition'}
                             fill
                             className="object-cover opacity-50 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700 grayscale group-hover:grayscale-0"
                           />
