@@ -144,11 +144,22 @@ export default function AboutPage() {
                 transition={{ duration: 1, delay: 0.2 }}
                 className="relative z-10"
               >
-                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 group bg-[#0a0a0a]">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
+                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 group bg-[#0a0a0a] flex items-center justify-center">
+                  {/* Subtle Background Pattern */}
+                  <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+                  
+                  {/* Glowing Initial */}
+                  <div className="relative z-0 group-hover:scale-105 transition-transform duration-700">
+                    <div className="absolute inset-0 bg-[#eab308] blur-[80px] opacity-20 rounded-full" />
+                    <span className="text-[200px] font-serif font-bold italic text-white/90 drop-shadow-2xl select-none pr-8">
+                      A
+                    </span>
+                  </div>
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent opacity-90 pointer-events-none" />
                   
                   {/* Founder Badge */}
-                  <div className="absolute bottom-8 left-8">
+                  <div className="absolute bottom-8 left-8 z-10">
                     <p className="text-xs font-mono text-[#eab308] uppercase tracking-widest mb-2">Avnish</p>
                     <p className="text-2xl font-bold text-white tracking-tight">Founder & CEO</p>
                   </div>
