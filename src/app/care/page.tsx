@@ -1,757 +1,540 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/Button";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
-  Stethoscope, FlaskConical, Pill, Calendar, CheckCircle, Heart, 
-  Search, Shield, Activity, TrendingUp, ChevronRight, X, User, ArrowRight,
-  ShieldAlert, PhoneCall, MapPin, Hospital, Smartphone, Play, 
-  Clock, Zap, Server, Database, Globe, AlertTriangle, Users
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { bookAppointment } from "./actions";
-import Image from "next/image";
-import Link from "next/link";
+  Activity, ArrowRight, ShieldAlert, Stethoscope, Beaker, Pill, 
+  Smartphone, Map, Dna, Brain, ChevronRight, CheckCircle2, Play
+} from 'lucide-react';
+import Image from 'next/image';
 
-// Number Counter Hook
-const useCounter = (end: number, duration: number = 2000) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      setCount(Math.floor(progress * end));
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }, [end, duration]);
-
-  return count;
-};
-
-// Section Header Component
-const SectionTitle = ({ title, subtitle, accent = "text-[#eab308]" }: { title: string, subtitle?: string, accent?: string }) => (
-  <div className="text-center mb-16">
-    <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">{title}</h2>
-    {subtitle && <p className="text-white/50 text-lg max-w-2xl mx-auto">{subtitle}</p>}
-    <div className={`w-20 h-1 mt-6 mx-auto rounded-full bg-gradient-to-r ${accent.replace('text-', 'from-').replace(']', ']/50')} to-transparent`} />
+const GlassCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`bg-white/[0.02] border border-white/5 backdrop-blur-md rounded-2xl ${className}`}>
+    {children}
   </div>
 );
 
-const categories = [
-  { id: "doctor", name: "Consult Doctor", icon: Stethoscope, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
-  { id: "lab", name: "Lab Tests", icon: FlaskConical, color: "text-[#ca8a04]", bg: "bg-[#ca8a04]/15" },
-  { id: "medicine", name: "Medicines", icon: Pill, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
-  { id: "ayurveda", name: "Ayurveda", icon: Shield, color: "text-[#ca8a04]", bg: "bg-[#ca8a04]/15" },
-  { id: "devices", name: "Health Devices", icon: Activity, color: "text-[#eab308]", bg: "bg-[#eab308]/15" },
-];
-
-const trendingMedicines = [
-  { name: "Shelcal 500 Tablet", price: "₹119", desc: "Calcium Supplement", img: "💊" },
-  { name: "Dolo 650 Tablet", price: "₹30", desc: "Pain Relief", img: "💊" },
-  { name: "Supradyn Daily", price: "₹55", desc: "Multivitamins", img: "💊" },
-  { name: "Pan 40 Tablet", price: "₹150", desc: "Acidity & Ulcer", img: "💊" },
-  { name: "Evion 400mg Capsule", price: "₹35", desc: "Vitamin E", img: "💊" },
-];
-
-const popularChecks = [
-  { name: "Comprehensive Full Body Checkup", price: "₹1,499", oldPrice: "₹2,999", parameters: 85, img: "🧪" },
-  { name: "Advanced Heart Care Profile", price: "₹999", oldPrice: "₹1,500", parameters: 20, img: "❤️" },
-  { name: "Women's Wellness Package", price: "₹1,299", oldPrice: "₹2,500", parameters: 60, img: "🧬" },
-  { name: "Diabetes Screening Panel", price: "₹499", oldPrice: "₹800", parameters: 12, img: "🩸" },
-];
-
-export default function CarePage() {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<string>("doctor");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
-
-  // Counters for Dashboard
-  const deliveries = useCounter(5420, 2500);
-  const ambulances = useCounter(142, 2500);
-  const doctors = useCounter(385, 2500);
-  const tests = useCounter(2890, 2500);
-
-  const openBooking = (serviceId: string) => {
-    setSelectedService(serviceId);
-    setSuccess(false);
-    setError(null);
-    setIsBookingModalOpen(true);
-  };
-
-  async function handleBooking(formData: FormData) {
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    formData.append("type", selectedService);
-    const result = await bookAppointment(formData);
-
-    if (result?.error) {
-      setError(result.error);
-    } else {
-      setSuccess(true);
-    }
-    setLoading(false);
-  }
-
+export default function HealixCare() {
   return (
-    <div className="min-h-screen bg-[#050505] pb-24">
-      {/* Header / Hero Section */}
-      <div className="relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10 bg-gradient-to-b from-[#111] to-[#050505] overflow-hidden">
-        
-        {/* Animated Background Waves */}
-        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none flex items-center justify-center">
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute w-[600px] h-[600px] rounded-full border border-primary/30"
-          />
-          <motion.div
-            animate={{ scale: [1.2, 1.5, 1.2], opacity: [0.2, 0.4, 0.2] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute w-[800px] h-[800px] rounded-full border border-primary/20"
-          />
-          <motion.div
-            animate={{ scale: [1.5, 1.8, 1.5], opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute w-[1000px] h-[1000px] rounded-full border border-primary/10"
-          />
-        </div>
-
-        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10 shadow-lg shadow-white/5">
-              <Image src="/care-logo-new.png" alt="Healix Care" width={64} height={64} className="w-full h-full object-cover" />
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-bold">Healix Care Portal</h1>
-          </div>
-          <p className="text-white/60 text-lg sm:text-xl max-w-2xl mb-12">
-            Your one-stop destination for medicines, lab tests, and expert doctor consultations.
-          </p>
-
-          {/* Search Bar */}
-          <div className="w-full relative group">
-            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-white/40 group-focus-within:text-primary transition-colors" />
-            </div>
-            <input
-              type="text"
-              className="w-full bg-white/5 border border-white/10 rounded-full pl-14 pr-32 py-5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xl placeholder:text-white/30 text-lg sm:text-xl"
-              placeholder="Search for Medicines, Lab Tests, Doctors..."
-            />
-            <div className="absolute inset-y-0 right-2 flex items-center">
-              <Button className="rounded-full px-8 py-3 h-auto font-semibold">Search</Button>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#eab308]/30 overflow-hidden font-sans">
+      
+      {/* BACKGROUND EFFECTS */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#eab308]/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
-        
-        {/* Quick Categories */}
-        <section>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              if (cat.id === 'lab') {
-                return (
-                  <Link key={cat.id} href="/labs">
-                    <GlassCard className="cursor-pointer hover:bg-white/10 hover:border-[#eab308]/30 transition-all flex flex-col items-center justify-center text-center py-8 group h-full">
-                      <div className={`${cat.bg} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                        <Icon className={`h-8 w-8 ${cat.color}`} />
-                      </div>
-                      <h3 className="font-semibold text-sm">{cat.name}</h3>
-                    </GlassCard>
-                  </Link>
-                );
-              }
-              return (
-                <GlassCard 
-                  key={cat.id} 
-                  className="cursor-pointer hover:bg-white/10 transition-all flex flex-col items-center justify-center text-center py-8 group"
-                  onClick={() => openBooking(cat.id === 'doctor' || cat.id === 'medicine' ? cat.id : 'doctor')}
-                >
-                  <div className={`${cat.bg} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                    <Icon className={`h-8 w-8 ${cat.color}`} />
-                  </div>
-                  <h3 className="font-semibold text-sm">{cat.name}</h3>
-                </GlassCard>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Promotional Banner */}
-        <section>
-          <div className="relative rounded-3xl overflow-hidden p-8 sm:p-12 border border-[#eab308]/20 shadow-[0_0_40px_rgba(234,179,8,0.1)] bg-gradient-to-r from-[#ca8a04]/20 via-[#eab308]/10 to-[#050505]">
-            <div className="relative z-10 max-w-xl">
-              <span className="inline-block py-1 px-3 rounded-full bg-[#eab308]/20 text-[#eab308] text-xs font-bold tracking-wider mb-4 border border-[#eab308]/30 uppercase">
-                Limited Time Offer
-              </span>
-              <h2 className="text-3xl font-bold mb-4 leading-tight">Get 20% Off on Full Body Checkups</h2>
-              <p className="text-white/70 mb-8">
-                Early detection saves lives. Book a comprehensive health screen today with free home sample collection.
-              </p>
-              <Button onClick={() => openBooking('lab')} className="rounded-xl flex items-center gap-2">
-                Book Now <ArrowRight className="h-4 w-4" />
-              </Button>
+      {/* HERO SECTION */}
+      <section className="relative z-10 min-h-screen flex items-center pt-20 pb-20">
+        <div className="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm font-medium tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-[#eab308] animate-pulse" />
+              HEALIX CARE
             </div>
             
-            <div className="absolute right-10 bottom-0 opacity-10 md:opacity-30 transform translate-y-10 md:translate-y-0">
-              <Activity className="w-64 h-64 text-[#eab308]" strokeWidth={1} />
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Popular Checks */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <FlaskConical className="h-6 w-6 text-[#eab308]" />
-              Popular Health Checks
-            </h2>
-            <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More packages coming soon">
-              View All <ChevronRight className="h-4 w-4" />
-            </span>
-          </div>
-          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 gap-6 snap-x hide-scrollbar">
-            {popularChecks.map((check, i) => (
-              <GlassCard key={i} className="min-w-[280px] max-w-[320px] flex-shrink-0 snap-start flex flex-col justify-between p-6">
-                <div>
-                  <div className="text-5xl mb-6">{check.img}</div>
-                  <h3 className="font-semibold text-lg mb-2 leading-tight min-h-[3.5rem]">{check.name}</h3>
-                  <p className="text-xs text-white/50 mb-6 bg-white/5 py-1.5 px-3 rounded-full w-fit border border-white/5">
-                    Includes {check.parameters} parameters
-                  </p>
-                </div>
-                <div className="mt-auto">
-                  <div className="flex items-end gap-3 mb-5">
-                    <span className="text-2xl font-bold text-white leading-none">{check.price}</span>
-                    <span className="text-sm text-white/40 line-through mb-0.5">{check.oldPrice}</span>
-                  </div>
-                  <Button onClick={() => openBooking('lab')} variant="outline" className="w-full rounded-xl">Add to Cart</Button>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        </section>
-
-        {/* Trending Medicines */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-[#eab308]" />
-              Trending Medicines
-            </h2>
-            <span className="text-white/50 text-sm font-medium flex items-center cursor-not-allowed" title="More medicines coming soon">
-              View All <ChevronRight className="h-4 w-4" />
-            </span>
-          </div>
-          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 gap-6 snap-x hide-scrollbar">
-            {trendingMedicines.map((med, i) => (
-              <GlassCard key={i} className="min-w-[220px] flex-shrink-0 snap-start flex flex-col justify-between p-5">
-                <div>
-                  <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl flex items-center justify-center text-4xl mb-5 shadow-inner">
-                    {med.img}
-                  </div>
-                  <h3 className="font-semibold mb-1 truncate text-base">{med.name}</h3>
-                  <p className="text-xs text-white/50 mb-5">{med.desc}</p>
-                </div>
-                <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
-                  <span className="text-xl font-bold">{med.price}</span>
-                  <button onClick={() => openBooking('medicine')} className="text-primary hover:text-white bg-primary/10 hover:bg-primary rounded-xl p-2.5 transition-colors shadow-sm">
-                    <CheckCircle className="h-5 w-5" />
-                  </button>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        </section>
-
-      </div>
-
-      {/* ── SECTION 1: SERVICES GRID ── */}
-      <section className="py-20 relative z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <SectionTitle title="Core Care Services" subtitle="Choose from our primary clinical-grade service networks." />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Medicine */}
-            <GlassCard className="p-8 border-white/5 hover:border-[#eab308]/30 hover:bg-white/[0.02] transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#eab308]/5 rounded-full blur-3xl group-hover:bg-[#eab308]/10 transition-colors" />
-              <div className="w-14 h-14 bg-[#eab308]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#eab308]/20">
-                <Pill className="w-7 h-7 text-[#eab308]" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Medicines in 30 Minutes</h3>
-              <p className="text-white/50 mb-6 h-12">Instant doorstep delivery via our automated pharmacy network.</p>
-              <ul className="space-y-3 mb-8">
-                {['Nearby pharmacy automation', 'AI prescription validation', 'Route optimization', 'Live tracking'].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-white/70">
-                    <CheckCircle className="w-4 h-4 text-[#eab308]" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full justify-between group/btn">
-                Order Now <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Button>
-            </GlassCard>
-
-            {/* Labs */}
-            <GlassCard className="p-8 border-white/5 hover:border-[#eab308]/30 hover:bg-white/[0.02] transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#eab308]/5 rounded-full blur-3xl group-hover:bg-[#eab308]/10 transition-colors" />
-              <div className="w-14 h-14 bg-[#eab308]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#eab308]/20">
-                <FlaskConical className="w-7 h-7 text-[#eab308]" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Diagnostic Testing at Your Doorstep</h3>
-              <p className="text-white/50 mb-6 h-12">Certified sample collection with AI-powered instant report analysis.</p>
-              <ul className="space-y-3 mb-8">
-                {['Certified phlebotomists', 'Slot scheduling', 'Instant report dashboard', 'AI interpretation engine'].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-white/70">
-                    <CheckCircle className="w-4 h-4 text-[#eab308]" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full justify-between group/btn">
-                Book Test <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Button>
-            </GlassCard>
-
-            {/* Doctor */}
-            <GlassCard className="p-8 border-white/5 hover:border-[#eab308]/30 hover:bg-white/[0.02] transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#eab308]/5 rounded-full blur-3xl group-hover:bg-[#eab308]/10 transition-colors" />
-              <div className="w-14 h-14 bg-[#eab308]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#eab308]/20">
-                <Stethoscope className="w-7 h-7 text-[#eab308]" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Consult Specialists Instantly</h3>
-              <p className="text-white/50 mb-6 h-12">Connect with top clinical specialists in under 60 seconds.</p>
-              <ul className="space-y-3 mb-8">
-                {['Video consult', 'Chat consult', 'AI symptom pre-screening', 'Prescription generation'].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-white/70">
-                    <CheckCircle className="w-4 h-4 text-[#eab308]" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full justify-between group/btn">
-                Consult Now <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Button>
-            </GlassCard>
-
-            {/* Emergency */}
-            <GlassCard className="p-8 border-white/5 hover:border-red-500/50 hover:shadow-[0_0_40px_rgba(239,68,68,0.15)] hover:bg-red-500/5 transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl group-hover:bg-red-500/20 transition-colors" />
-              <div className="w-14 h-14 bg-red-500/20 rounded-2xl flex items-center justify-center mb-6 border border-red-500/30">
-                <ShieldAlert className="w-7 h-7 text-red-500" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-red-100 transition-colors">Emergency Response Network</h3>
-              <p className="text-white/50 mb-6 h-12">Immediate dispatch of critical care resources.</p>
-              <ul className="space-y-3 mb-8">
-                {['Instant ambulance dispatch', 'Nearest hospital routing', 'SOS family alerts', 'Real-time ETA tracking'].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3 text-white/70">
-                    <CheckCircle className="w-4 h-4 text-red-500" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => setIsEmergencyModalOpen(true)} className="w-full flex items-center justify-between px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors group/btn">
-                Emergency SOS <AlertTriangle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+            <h1 className="text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight">
+              Predict.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Prevent.</span><br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] to-[#ca8a04]">Protect.</span>
+            </h1>
+            
+            <p className="text-lg text-white/60 max-w-xl leading-relaxed">
+              AI-powered precision healthcare combining predictive diagnostics, expert doctor consultations, emergency intelligence, medicine delivery, and genomic risk assessment.
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <button className="px-8 py-4 bg-white text-black font-semibold rounded-full hover:scale-105 transition-transform flex items-center gap-2">
+                Get Started <ArrowRight className="w-4 h-4" />
               </button>
+              <button className="px-8 py-4 bg-white/5 border border-white/10 font-semibold rounded-full hover:bg-white/10 transition-colors">
+                Check Health Risk
+              </button>
+              <button className="px-8 py-4 bg-red-500/10 text-red-500 border border-red-500/20 font-semibold rounded-full hover:bg-red-500/20 transition-colors flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4" /> Emergency Care
+              </button>
+            </div>
+
+            <div className="pt-8 border-t border-white/10 flex flex-wrap gap-6 text-sm text-white/40 font-medium">
+              {['AI Powered', 'Research Driven', 'Preventive Intelligence', 'Clinical Precision'].map(badge => (
+                <div key={badge} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#eab308]" /> {badge}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Right: Dashboard Preview */}
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.2 }} className="relative h-[600px] hidden lg:block">
+            {/* Holographic glowing lines in bg */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1)_0%,transparent_70%)]" />
+            
+            <div className="absolute inset-0 grid grid-cols-2 gap-4 animate-[spin_120s_linear_infinite] opacity-20">
+              <div className="border border-[#eab308]/20 rounded-full w-full h-full" />
+              <div className="border border-blue-500/20 rounded-full w-full h-full" />
+            </div>
+
+            {/* Floating Widgets */}
+            <GlassCard className="absolute top-10 left-0 p-4 border-[#eab308]/20 shadow-2xl shadow-[#eab308]/10 animate-pulse">
+              <div className="flex items-center gap-3">
+                <Dna className="text-[#eab308] w-6 h-6" />
+                <div>
+                  <div className="text-xs text-white/50">Genomic Risk Score</div>
+                  <div className="text-xl font-bold text-[#eab308]">Low Risk (12%)</div>
+                </div>
+              </div>
             </GlassCard>
-          </div>
+
+            <GlassCard className="absolute top-40 right-0 p-4 border-blue-500/20 shadow-2xl w-64 translate-y-[-20px]">
+              <div className="text-xs text-white/50 mb-2">Live Availability</div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="font-semibold">Dr. Sarah Chen</span>
+                </div>
+                <span className="text-xs bg-white/10 px-2 py-1 rounded">Cardiology</span>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="absolute bottom-32 left-10 p-4 border-red-500/20 shadow-2xl w-56">
+              <div className="flex items-center gap-3">
+                <Map className="text-red-500 w-6 h-6" />
+                <div>
+                  <div className="text-xs text-white/50">Ambulance ETA</div>
+                  <div className="text-xl font-bold text-red-500">4 Mins Away</div>
+                </div>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="absolute bottom-10 right-10 p-4 shadow-2xl w-48">
+              <div className="flex items-center gap-3">
+                <Pill className="text-white/80 w-6 h-6" />
+                <div>
+                  <div className="text-xs text-white/50">Meds Delivery</div>
+                  <div className="text-sm font-bold">Dispatched</div>
+                </div>
+              </div>
+            </GlassCard>
+            
+            {/* Center piece */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="relative w-48 h-48 rounded-full border border-white/10 flex items-center justify-center bg-black/50 backdrop-blur-xl shadow-2xl shadow-blue-900/50">
+                <Brain className="w-16 h-16 text-white/80" />
+                <div className="absolute inset-0 border border-[#eab308]/30 rounded-full animate-ping opacity-20" />
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── SECTION 2: HOW IT WORKS ── */}
-      <section className="py-32 relative border-y border-white/5 bg-[#0a0a0a]">
+      {/* SECTION 2: CORE SERVICES */}
+      <section className="py-24 relative z-10 border-t border-white/5 bg-black">
         <div className="max-w-7xl mx-auto px-6">
-          <SectionTitle title="How It Works" subtitle="The automated pipeline powering every Healix transaction." />
-          
-          <div className="relative mt-20 max-w-4xl mx-auto">
-            {/* Animated Path Line */}
-            <div className="absolute left-[27px] md:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 md:-translate-x-1/2">
-              <motion.div 
-                className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-[#eab308] to-transparent"
-                animate={{ y: ["-100%", "100%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-            </div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Core Services</h2>
+            <p className="text-white/50 max-w-2xl mx-auto">An integrated ecosystem designed for speed, precision, and care.</p>
+          </div>
 
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "User Request", desc: "Patient initiates a service via the Healix App." },
-              { title: "AI Routing Engine", desc: "Neural logic categorizes and prioritizes the request instantly." },
-              { title: "Smart Provider Matching", desc: "Locates the nearest optimal pharmacy, lab, or doctor." },
-              { title: "Real-Time Dispatch", desc: "Service agents deployed with optimized GPS tracking." },
-              { title: "Completion Verification", desc: "Cryptographic proof of service completion." },
-              { title: "Feedback Intelligence Loop", desc: "Data fed back to models to improve future routing." },
-            ].map((step, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`relative flex items-center gap-8 mb-12 md:mb-20 last:mb-0 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
-              >
-                {/* Node */}
-                <div className="absolute left-0 md:left-1/2 w-14 h-14 bg-[#050505] rounded-full border-2 border-[#eab308] flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.3)] md:-translate-x-1/2 z-10">
-                  <div className="w-3 h-3 bg-[#eab308] rounded-full animate-ping opacity-50 absolute" />
-                  <div className="w-3 h-3 bg-[#eab308] rounded-full relative z-10" />
-                </div>
-                
-                {/* Content */}
-                <div className="ml-20 md:ml-0 md:w-1/2 p-6 md:px-12">
-                  <GlassCard className="p-6 border-white/10 hover:border-[#eab308]/30 transition-colors relative overflow-hidden group">
-                     <div className="absolute inset-0 bg-gradient-to-r from-[#eab308]/0 to-[#eab308]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                     <h4 className="text-xl font-bold mb-2 text-[#eab308]">{step.title}</h4>
-                     <p className="text-white/60 text-sm">{step.desc}</p>
-                  </GlassCard>
-                </div>
-              </motion.div>
+              { title: "Doctor Consultation", icon: Stethoscope, color: "text-blue-400", features: ["Video consult", "AI-assisted triage", "Prescription generation"], cta: "Consult Now" },
+              { title: "Home Diagnostics", icon: Beaker, color: "text-[#eab308]", features: ["Book lab tests", "At-home collection", "AI interpretation"], cta: "Book Test" },
+              { title: "Emergency Intelligence", icon: ShieldAlert, color: "text-red-500", glow: "hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]", border: "hover:border-red-500/30", features: ["Ambulance dispatch", "Hospital routing", "Family alert automation"], cta: "Emergency SOS" },
+              { title: "30-Min Medicine", icon: Pill, color: "text-emerald-400", features: ["Prescription verification", "Pharmacy automation", "Live route tracking"], cta: "Order Medicines" }
+            ].map((s, i) => (
+              <GlassCard key={i} className={`p-8 group hover:-translate-y-2 transition-all duration-300 ${s.glow || 'hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]'} ${s.border || 'hover:border-white/20'}`}>
+                <s.icon className={`w-8 h-8 ${s.color} mb-6`} />
+                <h3 className="text-xl font-bold mb-4">{s.title}</h3>
+                <ul className="space-y-3 mb-8">
+                  {s.features.map(f => (
+                    <li key={f} className="text-sm text-white/50 flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1.5 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button className={`w-full py-3 rounded-xl border border-white/10 text-sm font-semibold transition-colors flex items-center justify-center gap-2 group-hover:bg-white group-hover:text-black ${s.title.includes('Emergency') ? 'group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500' : ''}`}>
+                  {s.cta} <ArrowRight className="w-4 h-4" />
+                </button>
+              </GlassCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 3: AUTOMATION PIPELINES ── */}
-      <section className="py-32 relative">
+      {/* SECTION 3: WHY HEALIX */}
+      <section className="py-32 relative z-10 bg-[#050505]">
         <div className="max-w-7xl mx-auto px-6">
-          <SectionTitle title="Automation Pipelines" subtitle="Micro-architecture routing for distinct care channels." />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {[
-              {
-                title: "Medicine Delivery Pipeline",
-                icon: Pill,
-                image: "/pipeline-meds.png",
-                steps: ["Patient Uploads Prescription", "OCR Extraction", "AI Drug Validation", "Pharmacy Match Engine", "Rider Dispatch", "GPS Tracking", "Delivery Confirmation"]
-              },
-              {
-                title: "Lab Testing Pipeline",
-                icon: FlaskConical,
-                image: "/pipeline-labs.png",
-                steps: ["Book Slot", "Smart Lab Assignment", "Technician Dispatch", "Sample Collection", "Lab Processing", "Report AI Analysis", "Dashboard Upload"]
-              },
-              {
-                title: "Doctor Consultation Pipeline",
-                icon: Stethoscope,
-                image: "/pipeline-doc.png",
-                steps: ["Symptom Input", "AI Triage", "Specialist Matching", "Video Session", "Prescription Engine", "Follow-Up Automation"]
-              },
-              {
-                title: "Emergency Pipeline",
-                icon: ShieldAlert,
-                color: "text-red-500",
-                image: "/pipeline-sos.png",
-                steps: ["SOS Trigger", "Geo Detection", "Nearest Ambulance Locate", "Hospital Alert", "Route Clearance Logic", "ETA Broadcast"]
-              }
-            ].map((pipeline, i) => (
-              <GlassCard key={i} className="p-0 overflow-hidden border-white/5 hover:border-white/10 hover:shadow-2xl transition-all group">
-                {/* Image Section */}
-                <div className="relative h-72 w-full bg-[#0a0a0a] overflow-hidden">
-                  <Image 
-                    src={pipeline.image} 
-                    alt={pipeline.title} 
-                    fill 
-                    className="object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/20 to-transparent pointer-events-none" />
-                  
-                  {/* Floating Icon */}
-                  <div className="absolute bottom-6 left-6 flex items-center gap-4 z-10">
-                    <div className="p-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 shadow-lg">
-                      <pipeline.icon className={`w-6 h-6 ${pipeline.color || 'text-[#eab308]'}`} />
-                    </div>
-                    <h3 className="text-xl font-bold text-white drop-shadow-md">{pipeline.title}</h3>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6">Reactive vs Predictive</h2>
+              <p className="text-white/50 text-lg mb-12">Healthcare is broken. It waits for you to get sick. Healix Care anticipates risk before symptoms appear, shifting the paradigm from reaction to prevention.</p>
+              
+              <div className="space-y-8">
+                <div className="flex gap-4 opacity-50 grayscale">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-1 text-white">Traditional Healthcare</h4>
+                    <p className="text-sm text-white/60">Reactive treatment only after severe illness escalation.</p>
                   </div>
                 </div>
                 
-                {/* Steps Section */}
-                <div className="p-6 bg-[#050505]">
-                  <div className="flex flex-wrap gap-2">
-                    {pipeline.steps.map((step, idx) => (
-                      <React.Fragment key={idx}>
-                        <div className="px-3 py-1.5 rounded-md bg-[#111] border border-white/10 text-xs font-mono text-white/70 group-hover:border-white/20 transition-colors">
-                          {step}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#eab308]/10 border border-[#eab308]/20 flex items-center justify-center shrink-0">
+                    <Brain className="w-6 h-6 text-[#eab308]" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-1 text-[#eab308]">Healix Care</h4>
+                    <p className="text-sm text-white/60">Predictive prevention and early intervention before escalation.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative h-[400px]">
+              <GlassCard className="absolute inset-0 p-8 flex items-end">
+                {/* Simulated Graph */}
+                <div className="w-full h-full relative border-l border-b border-white/10 flex items-end gap-4 p-4">
+                  <div className="absolute top-4 left-4 text-xs text-white/30 font-mono">Disease Severity</div>
+                  <div className="absolute bottom-4 right-4 text-xs text-white/30 font-mono">Time</div>
+                  
+                  {/* Traditional Curve */}
+                  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                    <path d="M 0 100 C 40 100, 60 20, 100 10" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeDasharray="4 4" />
+                    <text x="70" y="30" fill="rgba(255,255,255,0.4)" fontSize="4">Traditional Path</text>
+                  </svg>
+                  
+                  {/* Healix Curve */}
+                  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                    <path d="M 0 100 C 20 80, 40 85, 100 90" fill="none" stroke="#eab308" strokeWidth="3" />
+                    <circle cx="20" cy="88" r="2" fill="#eab308" />
+                    <text x="25" y="86" fill="#eab308" fontSize="4">Healix Intervention</text>
+                  </svg>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: HEALIX INTELLIGENCE ENGINE */}
+      <section className="py-32 relative z-10 bg-[#020202] border-y border-white/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-5xl font-bold mb-16">Intelligence Pipeline</h2>
+          
+          <div className="relative max-w-4xl mx-auto">
+            {/* Flow Line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#eab308] to-transparent -translate-x-1/2 opacity-30" />
+            <div className="absolute left-1/2 top-0 w-px h-32 bg-[#eab308] -translate-x-1/2 shadow-[0_0_10px_#eab308] animate-[slide-down_3s_linear_infinite]" />
+
+            <div className="flex flex-col gap-12 relative z-10">
+              {['Patient Symptoms', 'AI Analysis', 'Risk Detection', 'Genomic Interpretation', 'Specialist Match', 'Preventive Action Plan'].map((step, i) => (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  key={step} 
+                  className="flex justify-center"
+                >
+                  <div className="px-6 py-3 bg-black border border-white/10 rounded-full text-sm font-semibold tracking-wide shadow-xl flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-[#eab308]" />
+                    {step}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4 mt-20">
+            {['Explainable AI', 'Clinical Intelligence', 'Real-Time Support', 'Predictive Prevention'].map(badge => (
+              <div key={badge} className="px-4 py-2 rounded-lg bg-white/5 text-xs font-mono text-white/50 border border-white/5">
+                {badge}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: BIOLABS SHOWCASE */}
+      <section className="py-32 relative z-10 bg-black">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Powered by Healix BioLabs</h2>
+            <p className="text-white/50 max-w-2xl mx-auto">Real-time genomic intelligence for early breast cancer risk prediction.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            <GlassCard className="lg:col-span-1 p-8 flex flex-col justify-center items-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]" />
+              <Dna className="w-24 h-24 text-blue-500 animate-[spin_10s_linear_infinite]" />
+              <div className="mt-8 text-center relative z-10">
+                <div className="text-xs font-mono text-blue-400 mb-2">DNA HOLOGRAM ACTIVE</div>
+                <div className="text-2xl font-bold">BRCA1 / BRCA2</div>
+                <div className="text-sm text-white/50">Mutation Analysis</div>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="lg:col-span-2 p-8 grid grid-cols-2 gap-8">
+              <div>
+                <div className="text-sm text-white/50 mb-2">Confidence Score</div>
+                <div className="text-5xl font-light text-[#eab308]">98.4<span className="text-2xl">%</span></div>
+                <div className="mt-4 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div className="w-[98.4%] h-full bg-[#eab308] shadow-[0_0_10px_#eab308]" />
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-white/50 mb-2">Risk Status</div>
+                <div className="text-2xl font-bold text-green-400">Benign</div>
+                <div className="mt-2 text-xs font-mono text-white/30">SHAP Value: -2.41</div>
+              </div>
+              <div className="col-span-2">
+                <div className="text-sm text-white/50 mb-4">Explainability Heatmap</div>
+                <div className="flex gap-2 h-12">
+                  {[40, 20, 60, 10, 80, 30, 50, 90].map((v, i) => (
+                    <div key={i} className="flex-1 bg-white/5 rounded relative overflow-hidden">
+                      <div className="absolute bottom-0 w-full bg-blue-500/50" style={{ height: `${v}%` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: DIGITAL TWIN */}
+      <section className="py-32 relative z-10 bg-[#050505]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Health Digital Twin</h2>
+            <p className="text-white/50 max-w-2xl">A real-time, AI-driven dashboard reflecting your complete biological state.</p>
+          </div>
+
+          <div className="w-full bg-[#111] rounded-[2rem] border border-white/10 p-4 shadow-2xl">
+            <div className="w-full bg-black rounded-3xl overflow-hidden border border-white/5">
+              {/* Mac Header */}
+              <div className="h-10 bg-[#1a1a1a] flex items-center px-4 gap-2 border-b border-white/5">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                </div>
+              </div>
+              
+              {/* Dashboard Content */}
+              <div className="p-8 grid md:grid-cols-3 gap-6">
+                <div className="space-y-6">
+                  <div className="bg-[#1a1a1a] p-6 rounded-2xl border border-white/5">
+                    <div className="text-sm text-white/50 mb-2">Overall Health Score</div>
+                    <div className="text-6xl font-bold text-white mb-2">92</div>
+                    <div className="text-xs text-green-400">+4 pts since last month</div>
+                  </div>
+                  <div className="bg-[#1a1a1a] p-6 rounded-2xl border border-white/5">
+                    <div className="text-sm font-semibold mb-4">Upcoming Interventions</div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-white/60">Annual Blood Panel</span>
+                        <span className="text-[#eab308]">Tomorrow</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-white/60">Cardio Check</span>
+                        <span className="text-white/30">Next Week</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2 bg-[#1a1a1a] p-6 rounded-2xl border border-white/5 flex flex-col">
+                  <div className="text-sm font-semibold mb-6">Risk Progression Timeline</div>
+                  <div className="flex-1 flex items-end gap-2">
+                    {[10, 12, 11, 15, 14, 18, 22, 20, 18, 15, 12, 10].map((v, i) => (
+                      <div key={i} className="flex-1 bg-white/5 rounded-t hover:bg-white/10 transition-colors relative group">
+                        <div className="absolute bottom-0 w-full bg-[#eab308] rounded-t transition-all duration-500" style={{ height: `${v * 3}%` }} />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                          Risk: {v}%
                         </div>
-                        {idx < pipeline.steps.length - 1 && (
-                          <div className="flex items-center justify-center text-white/30">
-                            <ArrowRight className="w-3 h-3" />
-                          </div>
-                        )}
-                      </React.Fragment>
+                      </div>
                     ))}
                   </div>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 4: SYSTEM ARCHITECTURE ── */}
-      <section className="py-32 bg-[#0a0a0a] border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <SectionTitle title="System Architecture" subtitle="The enterprise-grade tech stack behind Healix." />
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Frontend", value: "Next.js + React", icon: Globe },
-              { label: "Backend", value: "Node.js + Express", icon: Server },
-              { label: "Database", value: "PostgreSQL", icon: Database },
-              { label: "Real-time", value: "Socket.io", icon: Zap },
-              { label: "Maps", value: "Google Maps API", icon: MapPin },
-              { label: "Notifications", value: "Twilio + Firebase", icon: Smartphone },
-              { label: "AI Layer", value: "Healix Intelligence", icon: Activity },
-              { label: "Cloud", value: "AWS / Vercel", icon: Server },
-            ].map((tech, i) => (
-              <GlassCard key={i} className="p-6 border-white/5 text-center hover:border-white/20 transition-colors group">
-                <tech.icon className="w-8 h-8 mx-auto mb-4 text-white/30 group-hover:text-white transition-colors" />
-                <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">{tech.label}</p>
-                <p className="font-bold text-white group-hover:text-[#eab308] transition-colors">{tech.value}</p>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 5: LIVE DASHBOARD PREVIEW ── */}
-      <section className="py-32 relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <SectionTitle title="Live Operations" subtitle="Real-time metrics from the Healix network." />
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <GlassCard className="p-8 text-center border-white/5">
-              <p className="text-4xl md:text-6xl font-bold text-[#eab308] font-mono mb-2">{deliveries}</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">Orders Delivered</p>
-            </GlassCard>
-            <GlassCard className="p-8 text-center border-white/5">
-              <p className="text-4xl md:text-6xl font-bold text-white font-mono mb-2">{ambulances}</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">Active Ambulances</p>
-            </GlassCard>
-            <GlassCard className="p-8 text-center border-white/5">
-              <p className="text-4xl md:text-6xl font-bold text-white font-mono mb-2">{doctors}</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">Doctors Online</p>
-            </GlassCard>
-            <GlassCard className="p-8 text-center border-white/5">
-              <p className="text-4xl md:text-6xl font-bold text-[#eab308] font-mono mb-2">{tests}</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">Tests Processed</p>
-            </GlassCard>
-            <GlassCard className="p-8 text-center border-white/5">
-              <p className="text-4xl md:text-6xl font-bold text-white font-mono mb-2">99.2%</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">AI Accuracy</p>
-            </GlassCard>
-            <GlassCard className="p-8 text-center border-white/5 border-red-500/20 bg-red-500/5">
-              <p className="text-4xl md:text-6xl font-bold text-red-500 font-mono mb-2">&lt;4m</p>
-              <p className="text-sm text-white/50 uppercase tracking-widest">Response Time</p>
-            </GlassCard>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 7: TRUST SECTION ── */}
-      <section className="py-20 border-t border-white/5 bg-[#111]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-wrap justify-center gap-12 md:gap-20 opacity-70 grayscale">
-            {[
-              "50,000+ Deliveries", "500+ Doctors", "100+ Labs", "98.7% Response Accuracy", "Under 30 Min Delivery"
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-white/50" />
-                <span className="font-bold text-white/80">{stat}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 8: APP DOWNLOAD CTA ── */}
-      <section className="py-40 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#eab308]/10 pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8">Healthcare. Reimagined by Healix.</h2>
-          <p className="text-xl text-white/50 mb-12 max-w-2xl mx-auto">Get the all-in-one healthcare infrastructure directly on your device. Instant access to clinical-grade care, anywhere.</p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button size="lg" className="px-8 bg-white text-black hover:bg-white/90">
-              Download for iOS
-            </Button>
-            <Button size="lg" variant="outline" className="px-8 border-white/20 hover:bg-white/5">
-              Download for Android
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 6: EMERGENCY FLOATING BUTTON ── */}
-      <button 
-        onClick={() => setIsEmergencyModalOpen(true)}
-        className="fixed bottom-8 right-8 z-50 w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:scale-110 transition-transform group"
-      >
-        <div className="absolute inset-0 rounded-full border-2 border-red-500 animate-ping opacity-50" />
-        <span className="font-bold text-white tracking-widest text-sm relative z-10">SOS</span>
-      </button>
-
-      {/* EMERGENCY MODAL */}
-      <AnimatePresence>
-        {isEmergencyModalOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
-              onClick={() => setIsEmergencyModalOpen(false)}
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[101] p-4"
-            >
-              <GlassCard className="relative overflow-hidden border border-red-500/30 bg-[#110000] shadow-[0_0_100px_rgba(239,68,68,0.2)]">
-                <button onClick={() => setIsEmergencyModalOpen(false)} className="absolute right-4 top-4 text-white/50 hover:text-white">
-                  <X className="h-5 w-5" />
-                </button>
-
-                <div className="p-2 w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
-                </div>
-                
-                <h2 className="text-2xl font-bold mb-2 text-white">Emergency Dispatch</h2>
-                <p className="text-red-200/70 mb-8 text-sm">Initiating an SOS will instantly alert nearby critical care units. Use only in emergencies.</p>
-
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-red-600 hover:bg-red-500 transition-colors text-left group">
-                    <div>
-                      <h4 className="font-bold text-white">Call Ambulance</h4>
-                      <p className="text-xs text-red-200">Dispatch nearest vehicle</p>
-                    </div>
-                    <PhoneCall className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  </button>
-                  
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-left group">
-                    <div>
-                      <h4 className="font-bold text-white">Notify Family</h4>
-                      <p className="text-xs text-white/50">Send automated SMS with vital stats</p>
-                    </div>
-                    <Users className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-                  </button>
-                  
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-left group">
-                    <div>
-                      <h4 className="font-bold text-white">Share Location</h4>
-                      <p className="text-xs text-white/50">Broadcast live GPS to local network</p>
-                    </div>
-                    <MapPin className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-                  </button>
-
-                  <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-left group">
-                    <div>
-                      <h4 className="font-bold text-white">Call Nearby Hospital</h4>
-                      <p className="text-xs text-white/50">Connect to emergency ward</p>
-                    </div>
-                    <Hospital className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-                  </button>
-                </div>
-              </GlassCard>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Booking Modal */}
-      <AnimatePresence>
-        {isBookingModalOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsBookingModalOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[101] p-4"
-            >
-              <GlassCard className="relative overflow-hidden border border-white/20 shadow-2xl">
-                <button 
-                  onClick={() => setIsBookingModalOpen(false)}
-                  className="absolute right-4 top-4 text-white/50 hover:text-white transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
-                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Request Booking
-                </h2>
-
-                {success ? (
-                  <div className="text-center py-8">
-                    <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-green-500/20 mb-4">
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">Request Sent!</h3>
-                    <p className="text-white/60 mb-6">Your request has been successfully submitted. We will contact you shortly.</p>
-                    <Button onClick={() => setIsBookingModalOpen(false)} className="w-full">Done</Button>
+                  <div className="flex justify-between text-xs text-white/30 mt-4 font-mono">
+                    <span>JAN</span><span>JUN</span><span>DEC</span>
                   </div>
-                ) : (
-                  <form action={handleBooking} className="space-y-4">
-                    <div className="p-3 bg-white/5 border border-white/10 rounded-xl mb-6">
-                      <p className="text-xs text-white/50 mb-1">Selected Service</p>
-                      <p className="font-medium flex items-center gap-2">
-                        {selectedService === "doctor" && <Stethoscope className="h-4 w-4 text-[#eab308]" />}
-                        {selectedService === "lab" && <FlaskConical className="h-4 w-4 text-[#ca8a04]" />}
-                        {selectedService === "medicine" && <Pill className="h-4 w-4 text-[#eab308]" />}
-                        {categories.find(c => c.id === selectedService)?.name || "Doctor Consultation"}
-                      </p>
-                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                    <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1" htmlFor="date">
-                        Preferred Date & Time
-                      </label>
-                      <input
-                        id="date"
-                        name="date"
-                        type="datetime-local"
-                        required
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors [color-scheme:dark]"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white/70 mb-1" htmlFor="notes">
-                        Additional Notes
-                      </label>
-                      <textarea
-                        id="notes"
-                        name="notes"
-                        rows={3}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
-                        placeholder="Any specific requirements or prescriptions?"
-                      />
-                    </div>
+      {/* SECTION 7: EMERGENCY INTELLIGENCE */}
+      <section className="py-32 relative z-10 bg-[#0a0202] border-y border-red-900/30 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.05)_0%,transparent_100%)]" />
+        
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center relative z-10">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-sm font-bold mb-8">
+              <ShieldAlert className="w-4 h-4" /> SECONDS MATTER
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Emergency Intelligence</h2>
+            <p className="text-white/50 text-lg mb-8">Auto-dispatch ambulances, map fastest hospital routes, and alert family members instantly with our SOS matrix.</p>
+            
+            <ul className="space-y-4 mb-8">
+              {['Live Ambulance Tracking', 'Traffic-Optimized Routing', 'Hospital Bed Availability Sync', 'Automated Family Notifications'].map(item => (
+                <li key={item} className="flex items-center gap-3 text-sm text-white/70">
+                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full" /> {item}
+                </li>
+              ))}
+            </ul>
+            
+            <button className="px-8 py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]">
+              Activate Demo
+            </button>
+          </div>
 
-                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          <div className="relative h-[500px] bg-[#110505] rounded-[2rem] border border-red-500/20 overflow-hidden shadow-2xl p-6 flex flex-col justify-between">
+            {/* Map lines simulation */}
+            <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M10 90 L 40 60 L 60 70 L 90 20" fill="none" stroke="white" strokeWidth="0.5" />
+              <path d="M10 90 L 40 60 L 60 70 L 90 20" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="5 5" className="animate-[dash_2s_linear_infinite]" />
+            </svg>
+            
+            <div className="flex justify-between items-start relative z-10">
+              <div className="bg-black/80 backdrop-blur border border-white/10 px-4 py-2 rounded-lg text-xs font-mono">
+                <div className="text-white/50">DESTINATION</div>
+                <div className="text-white font-bold">Central Hospital</div>
+              </div>
+              <div className="bg-red-500/20 text-red-500 border border-red-500/30 px-4 py-2 rounded-lg text-xs font-bold animate-pulse">
+                ETA: 4 MIN
+              </div>
+            </div>
 
-                    <div className="pt-4">
-                      <Button type="submit" className="w-full" isLoading={loading}>
-                        Confirm Request
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </GlassCard>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            <div className="bg-black/80 backdrop-blur border border-white/10 p-4 rounded-xl relative z-10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold">Ambulance #402</div>
+                  <div className="text-xs text-white/50">En Route to Patient</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8: PATIENT JOURNEY */}
+      <section className="py-32 relative z-10 bg-black">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-24">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">The Patient Journey</h2>
+            <p className="text-white/50 max-w-2xl mx-auto">A seamless continuum of care.</p>
+          </div>
+
+          <div className="relative">
+            {/* Horizontal Line */}
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 hidden md:block" />
+            <div className="absolute top-1/2 left-0 w-1/3 h-0.5 bg-gradient-to-r from-[#eab308] to-transparent -translate-y-1/2 hidden md:block" />
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {['Signup', 'AI Assessment', 'Consultation', 'Diagnostics', 'Prediction', 'Action Plan', 'Monitoring'].map((step, i) => (
+                <div key={step} className="relative flex flex-col items-center text-center group">
+                  <div className={`w-4 h-4 rounded-full border-2 border-black mb-4 relative z-10 transition-colors ${i < 3 ? 'bg-[#eab308]' : 'bg-white/20 group-hover:bg-white/50'}`} />
+                  <div className="text-xs font-bold uppercase tracking-wider text-white/80">{step}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 10: MOBILE APP (Skipped 9 to save space, App is cooler) */}
+      <section className="py-32 relative z-10 bg-[#050505]">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Care in your pocket.</h2>
+            <p className="text-white/50 text-lg mb-8">Download the Healix app to access your digital twin, book instantaneous consultations, and order 30-minute medicine delivery.</p>
+            
+            <div className="flex gap-4">
+              <button className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
+                <div className="text-left">
+                  <div className="text-[10px] text-white/50">Download on the</div>
+                  <div className="text-sm font-bold">App Store</div>
+                </div>
+              </button>
+              <button className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
+                <div className="text-left">
+                  <div className="text-[10px] text-white/50">GET IT ON</div>
+                  <div className="text-sm font-bold">Google Play</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-6">
+            <div className="w-48 h-96 bg-black rounded-[2.5rem] border-4 border-[#222] shadow-2xl overflow-hidden relative translate-y-8">
+              <div className="absolute top-0 inset-x-0 h-6 bg-[#222] rounded-b-xl w-24 mx-auto" />
+              <div className="p-4 pt-10">
+                <div className="w-full h-32 bg-white/5 rounded-xl mb-4" />
+                <div className="w-full h-12 bg-white/5 rounded-xl mb-2" />
+                <div className="w-full h-12 bg-white/5 rounded-xl" />
+              </div>
+            </div>
+            <div className="w-48 h-96 bg-black rounded-[2.5rem] border-4 border-[#222] shadow-2xl overflow-hidden relative -translate-y-8">
+              <div className="absolute top-0 inset-x-0 h-6 bg-[#222] rounded-b-xl w-24 mx-auto" />
+              <div className="p-4 pt-10">
+                <div className="flex justify-between items-end mb-8">
+                  <div className="w-16 h-16 rounded-full bg-[#eab308]/20 border border-[#eab308]/30" />
+                  <div className="text-right">
+                    <div className="text-[10px] text-white/50">Score</div>
+                    <div className="text-2xl font-bold">96</div>
+                  </div>
+                </div>
+                <div className="w-full h-20 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-2" />
+                <div className="w-full h-20 bg-green-500/10 border border-green-500/20 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 11: FINAL CTA & FOOTER */}
+      <section className="pt-32 pb-16 relative z-10 bg-black overflow-hidden text-center">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(234,179,8,0.1)_0%,transparent_50%)]" />
+        
+        <div className="max-w-4xl mx-auto px-6 relative z-10 mb-32">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            Healthcare Should Predict Problems — <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/50 to-white/20">Not Just Treat Them</span>
+          </h2>
+          <p className="text-white/50 text-xl mb-12">The future of preventive intelligence is here.</p>
+          
+          <button className="px-10 py-5 bg-[#eab308] text-black font-bold text-lg rounded-full hover:bg-[#fef08a] hover:scale-105 transition-all shadow-[0_0_40px_rgba(234,179,8,0.3)]">
+            Launch Healix Care
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="border-t border-white/10 pt-16 relative z-10">
+          <div className="flex flex-col items-center justify-center mb-8">
+            <h3 className="text-2xl font-bold tracking-widest mb-2 flex items-center gap-2">
+              <span className="w-3 h-3 bg-[#eab308] rounded-full" /> HEALIX
+            </h3>
+            <p className="text-sm font-semibold text-white/60">Healix Technologies Pvt. Ltd.</p>
+            <p className="text-xs text-white/40 mt-1 font-serif tracking-widest opacity-80">
+              जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र
+            </p>
+          </div>
+          <div className="text-[10px] text-white/20 uppercase tracking-widest">
+            © 2026 Healix Intelligence. All rights reserved.
+          </div>
+        </footer>
+      </section>
+
     </div>
   );
 }
