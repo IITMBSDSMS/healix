@@ -162,11 +162,23 @@ export default function CarePage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {categories.map((cat) => {
               const Icon = cat.icon;
+              if (cat.id === 'lab') {
+                return (
+                  <Link key={cat.id} href="/labs">
+                    <GlassCard className="cursor-pointer hover:bg-white/10 hover:border-[#eab308]/30 transition-all flex flex-col items-center justify-center text-center py-8 group h-full">
+                      <div className={`${cat.bg} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`h-8 w-8 ${cat.color}`} />
+                      </div>
+                      <h3 className="font-semibold text-sm">{cat.name}</h3>
+                    </GlassCard>
+                  </Link>
+                );
+              }
               return (
                 <GlassCard 
                   key={cat.id} 
                   className="cursor-pointer hover:bg-white/10 transition-all flex flex-col items-center justify-center text-center py-8 group"
-                  onClick={() => openBooking(cat.id === 'doctor' || cat.id === 'lab' || cat.id === 'medicine' ? cat.id : 'doctor')}
+                  onClick={() => openBooking(cat.id === 'doctor' || cat.id === 'medicine' ? cat.id : 'doctor')}
                 >
                   <div className={`${cat.bg} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform`}>
                     <Icon className={`h-8 w-8 ${cat.color}`} />
