@@ -121,7 +121,7 @@ export function HeroCarousel() {
                 src={carouselItems[activeIndex].media_url} 
                 alt={carouselItems[activeIndex].title}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
                 priority
               />
             )}

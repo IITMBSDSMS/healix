@@ -17,6 +17,7 @@ import Link from "next/link";
 
 export default function CourseDetailPage() {
   const { slug } = useParams();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [course, setCourse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeModule, setActiveModule] = useState<number | null>(0);
@@ -303,7 +304,7 @@ export default function CourseDetailPage() {
                   ))}
                 </div>
                 <p className="text-white/60 mb-8 italic leading-relaxed">
-                  "The mentorship here is unlike anything else. You're not just watching videos; you're building production systems alongside staff engineers."
+                  &quot;The mentorship here is unlike anything else. You&apos;re not just watching videos; you&apos;re building production systems alongside staff engineers.&quot;
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-white/10" />

@@ -51,6 +51,7 @@ export default function BioLabsPage() {
   const [dynamicNews, setDynamicNews] = useState<any[]>([]);
   const [dynamicPhotos, setDynamicPhotos] = useState<any[]>([]);
   const [dynamicPrograms, setDynamicPrograms] = useState<any[]>([]);
+  const [dynamicPublications, setDynamicPublications] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchDynamicContent() {
@@ -60,6 +61,17 @@ export default function BioLabsPage() {
       setDynamicNews(content.news);
       setDynamicPhotos(content.photos);
       setDynamicPrograms(content.programs);
+      
+      const serverPubs = (content as any).publications || [];
+      let finalPubs = serverPubs;
+      
+      if (typeof window !== 'undefined') {
+        const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
+        if (localPubs.length > 0) {
+          finalPubs = [...localPubs, ...serverPubs];
+        }
+      }
+      setDynamicPublications(finalPubs);
     }
     fetchDynamicContent();
   }, []);
@@ -416,6 +428,102 @@ export default function BioLabsPage() {
             <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#ca8a04]/5 rounded-full blur-3xl" />
           </div>
         </section>
+
+        {/* --- RESEARCH PAPERS & PUBLICATIONS SECTION --- */}
+        {dynamicPublications.length > 0 && (() => {
+          const featured = dynamicPublications.find((p: any) => p.is_featured);
+          const editions = dynamicPublications.filter((p: any) => !p.is_featured);
+          return (
+            <section className="mt-24 mb-16 pt-16 border-t border-white/10 relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-[#eab308]/50 to-transparent" />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+                
+                {/* Featured Left Column */}
+                {featured && (
+                  <div className="lg:col-span-4">
+                    <a href={featured.link_url || "#"} className="block relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.8)] group cursor-pointer">
+                      <Image 
+                        src={featured.image_url} 
+                        alt={featured.title} 
+                        fill 
+                        className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" 
+                      />
+                      <div className="absolute inset-0 bg-white/5 mix-blend-overlay pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <p className="text-[#eab308] text-xs font-bold uppercase tracking-widest mb-2 border-l-2 border-[#eab308] pl-2">{featured.label}</p>
+                        <h3 className="font-black text-white text-2xl leading-tight drop-shadow-lg mb-2">{featured.title}</h3>
+                        {featured.description && (
+                          <p className="text-xs text-white/70 line-clamp-3">{featured.description}</p>
+                        )}
+                      </div>
+                    </a>
+                  </div>
+                )}
+
+                {/* Content Right Column */}
+                <div className={featured ? "lg:col-span-8 flex flex-col justify-center" : "lg:col-span-12 flex flex-col"}>
+                  
+                  {featured?.subtitle && (
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-white leading-snug">
+                      <span className="text-[#eab308]">{featured.subtitle.split(' - ')[0]}</span>
+                      {featured.subtitle.includes(' - ') && ` - ${featured.subtitle.split(' - ')[1]}`}
+                    </h2>
+                  )}
+                  
+                  <p className="text-white/70 mb-10 text-sm md:text-base leading-relaxed max-w-3xl">
+                    <span className="text-[#ca8a04] font-bold text-lg">Newsletter - </span> 
+                    aims to share our work, keep you informed of research milestones and invite you to be part of this dynamic ecosystem.
+                  </p>
+
+                  {/* Tab Headers */}
+                  <div className="flex gap-8 mb-8 border-b border-white/10 pb-0">
+                    <h3 className="text-[#eab308] font-bold text-lg px-4 pb-3 border-b-2 border-[#eab308] translate-y-[1px]">Latest Edition</h3>
+                    <h3 className="text-white/50 font-bold text-lg hover:text-white transition-colors cursor-pointer px-4 pb-3">Previous Editions</h3>
+                  </div>
+
+                  {/* Grid of Edition Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 mt-4 relative">
+                    <div className="hidden sm:block absolute top-4 left-10 right-10 h-px bg-white/10 z-0" />
+                    
+                    {editions.slice(0, 3).map((item: any) => (
+                      <a key={item.id} href={item.link_url || "#"} className="relative group cursor-pointer z-10">
+                        {/* Ribbon Bookmark */}
+                        <div className="absolute -top-4 left-6 z-20 w-10 md:w-12 drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">
+                          <div 
+                            className={`h-20 md:h-24 w-full bg-gradient-to-b ${item.ribbon_color || 'from-green-600 to-emerald-900'} relative border-x border-white/20`} 
+                            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)' }}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center pt-1 pb-3">
+                              <span className="text-white text-[10px] md:text-xs font-bold -rotate-90 whitespace-nowrap tracking-widest drop-shadow-md">
+                                {item.label}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Card Thumbnail */}
+                        <div className="relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 group-hover:border-[#eab308] transition-all duration-300 shadow-2xl group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-15px_rgba(234,179,8,0.3)]">
+                          <Image 
+                            src={item.image_url}
+                            alt={item.title}
+                            fill
+                            className="object-cover opacity-50 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700 grayscale group-hover:grayscale-0"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <p className="text-white text-xs font-bold line-clamp-2">{item.title}</p>
+                          </div>
+                          <div className="absolute inset-0 border-[4px] border-[#050505]/50 group-hover:border-transparent transition-colors pointer-events-none" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })()}
       </div>
     </div>
   );

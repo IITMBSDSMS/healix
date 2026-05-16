@@ -12,7 +12,8 @@ import {
   addBiolabPhoto, deleteBiolabPhoto, addBiolabEvent, deleteBiolabEvent, 
   addBiolabAnnouncement, deleteBiolabAnnouncement, addBiolabNews, deleteBiolabNews,
   addBiolabProgram, deleteBiolabProgram, addReel, deleteReel,
-  addSessionPhoto, deleteSessionPhoto
+  addSessionPhoto, deleteSessionPhoto,
+  addBiolabPublication, deleteBiolabPublication
 } from "./actions";
 import BrandedQRCard from "@/components/ui/BrandedQRCard";
 import { Copy, ExternalLink, Download as DownloadIcon } from "lucide-react";
@@ -48,6 +49,11 @@ export default function AdminPage() {
   const [eventPreview, setEventPreview] = useState<string | null>(null);
   const eventPhotoRef = React.useRef<HTMLInputElement>(null);
 
+  // Publications drag-drop state
+  const [pubDragOver, setPubDragOver] = useState(false);
+  const [pubImagePreview, setPubImagePreview] = useState<string | null>(null);
+  const pubPhotoRef = React.useRef<HTMLInputElement>(null);
+
   const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
 
   const fetchData = async () => {
@@ -59,10 +65,15 @@ export default function AdminPage() {
         router.push("/login");
       }
     } else {
-      // Merge local storage photos for mock/demo mode
       if (typeof window !== 'undefined') {
+        // Merge local session photos
         const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
         res.session_photos = [...localPhotos, ...(res.session_photos || [])];
+        // Merge local publications (fallback when biolab_publications table doesn't exist yet)
+        const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
+        if (localPubs.length > 0) {
+          res.publications = [...localPubs, ...(res.publications || [])];
+        }
       }
       setData(res);
     }
@@ -128,16 +139,41 @@ export default function AdminPage() {
 
   const handleDeleteContent = async (id: string, deleteFunc: Function) => {
     if(confirm("Delete this content?")) {
-      // Also remove from local storage if it exists there
       if (typeof window !== 'undefined') {
+        // Clean session photos from localStorage
         const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
-        const filtered = localPhotos.filter((p: any) => p.id !== id);
-        localStorage.setItem('healix_mock_photos', JSON.stringify(filtered));
+        localStorage.setItem('healix_mock_photos', JSON.stringify(localPhotos.filter((p: any) => p.id !== id)));
+        // Clean publications from localStorage
+        const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
+        localStorage.setItem('healix_publications', JSON.stringify(localPubs.filter((p: any) => p.id !== id)));
       }
-
       const res = await deleteFunc(id);
       if (res.error) alert(res.error);
       else fetchData();
+    }
+  };
+
+  // Dedicated handler for publications with localStorage fallback
+  const handleAddPublication = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const res = await addBiolabPublication(formData) as any;
+    if (res.localFallback && res.data) {
+      // DB table missing — save to localStorage so it still works
+      const newPub = { id: crypto.randomUUID(), created_at: new Date().toISOString(), ...res.data };
+      const local = JSON.parse(localStorage.getItem('healix_publications') || '[]');
+      local.unshift(newPub);
+      localStorage.setItem('healix_publications', JSON.stringify(local));
+      form.reset();
+      setPubImagePreview(null);
+      fetchData();
+    } else if (res.error) {
+      alert('Publication error: ' + res.error);
+    } else {
+      form.reset();
+      setPubImagePreview(null);
+      fetchData();
     }
   };
 
@@ -679,6 +715,125 @@ export default function AdminPage() {
                             <button onClick={() => handleDeleteContent(p.id, deleteBiolabProgram)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Research Publications */}
+                    <div className="border-t border-white/5 pt-8">
+                      <h4 className="font-semibold flex items-center gap-2 mb-1 text-[#eab308]"><FileText className="h-4 w-4"/> Research Papers & Publications</h4>
+                      <p className="text-xs text-white/40 mb-4">Manage the newsletter/research papers section on the BioLabs page. Mark one entry as Featured to use it as the big left-column poster.</p>
+
+                      <form onSubmit={handleAddPublication} className="space-y-3 mb-4 p-4 bg-[#0a0a0a] border border-[#eab308]/20 rounded-xl">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <input name="title" required placeholder="Title (e.g. INCUBATING DEEP TECH)" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#eab308]/50" />
+                          <input name="label" required placeholder="Ribbon Label (e.g. June 26, Featured)" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                        </div>
+                        <input name="subtitle" placeholder="Subtitle (e.g. National Hub - ET Feature 30.05.2026)" className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                        <textarea name="description" placeholder="Short description shown on the card..." className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-14 focus:outline-none" />
+                        {/* Image: drag-and-drop OR paste URL — mutually exclusive */}
+                        {pubImagePreview ? (
+                          <input type="hidden" name="image_url" value={pubImagePreview} />
+                        ) : (
+                          <input
+                            name="image_url"
+                            required
+                            placeholder="Paste Image URL (https://... or /path/to/image.png)"
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#eab308]/50"
+                          />
+                        )}
+
+                        {/* Drag & Drop Upload Zone */}
+                        <div
+                          className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
+                            pubDragOver
+                              ? "border-[#eab308] bg-[#eab308]/10"
+                              : pubImagePreview
+                              ? "border-[#eab308]/40 bg-[#0a0a0a]"
+                              : "border-white/10 bg-[#0a0a0a] hover:border-[#eab308]/40 hover:bg-[#eab308]/5"
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setPubDragOver(true); }}
+                          onDragLeave={() => setPubDragOver(false)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setPubDragOver(false);
+                            const file = e.dataTransfer.files?.[0];
+                            if (file && file.type.startsWith("image/")) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setPubImagePreview(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          onClick={() => pubPhotoRef.current?.click()}
+                        >
+                          <input
+                            ref={pubPhotoRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => setPubImagePreview(ev.target?.result as string);
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          {pubImagePreview ? (
+                            <div className="relative w-full h-28">
+                              <img src={pubImagePreview} alt="Preview" className="w-full h-full object-cover rounded-xl" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-xl" />
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setPubImagePreview(null); if(pubPhotoRef.current) pubPhotoRef.current.value = ""; }}
+                                className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                              <span className="absolute bottom-2 left-3 text-white/60 text-[10px] font-mono">✓ Image ready — click × to change</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-5 px-4 text-center">
+                              <ImageIcon className={`h-6 w-6 mb-1.5 transition-colors ${pubDragOver ? "text-[#eab308]" : "text-white/30"}`} />
+                              <p className="text-xs font-semibold text-white/60">{pubDragOver ? "Drop to upload" : "Drag & drop image, or click to browse"}</p>
+                              <p className="text-[10px] text-white/30 mt-0.5">PNG, JPG, WebP — supersedes the URL field above</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-3 items-center">
+                          <input name="link_url" placeholder="Link URL (optional, # for none)" className="flex-1 bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                          <select name="ribbon_color" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none">
+                            <option value="from-green-600 to-emerald-900">Green</option>
+                            <option value="from-[#ca8a04] to-amber-900">Amber</option>
+                            <option value="from-blue-600 to-indigo-900">Blue</option>
+                            <option value="from-purple-600 to-purple-900">Purple</option>
+                            <option value="from-red-600 to-rose-900">Red</option>
+                          </select>
+                          <label className="flex items-center gap-2 text-xs text-white/60 whitespace-nowrap">
+                            <input type="checkbox" name="is_featured" className="accent-[#eab308]" /> 
+                            Set as Featured
+                          </label>
+                          <button type="submit" className="px-5 py-2 bg-[#eab308] hover:bg-[#ca8a04] text-black rounded-xl font-bold text-sm transition-colors"><Plus className="h-4 w-4 inline -mt-0.5"/> Add</button>
+                        </div>
+                      </form>
+
+                      <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                        {data.publications?.map((pub: any) => (
+                          <div key={pub.id} className="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-xl group">
+                            <img src={pub.image_url} alt="thumb" className="w-12 h-14 object-cover rounded bg-black shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                {pub.is_featured && <span className="text-[9px] bg-[#eab308]/20 text-[#eab308] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Featured</span>}
+                                <p className="text-sm font-bold truncate">{pub.title}</p>
+                              </div>
+                              <p className="text-xs text-white/40 truncate">{pub.subtitle || pub.label}</p>
+                            </div>
+                            <button onClick={() => handleDeleteContent(pub.id, deleteBiolabPublication)} className="text-white/20 hover:text-red-400 p-2 transition-colors shrink-0"><Trash2 className="h-4 w-4"/></button>
+                          </div>
+                        ))}
+                        {(!data.publications || data.publications.length === 0) && (
+                          <p className="text-center text-white/30 italic text-sm py-4">No publications yet. Add one above.</p>
+                        )}
                       </div>
                     </div>
 

@@ -69,7 +69,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
 
       {/* High-Class Media Display (Full Width Hero) */}
-      <div className="pt-16">
+      <div className="w-full">
         <HeroCarousel />
       </div>
 

@@ -187,8 +187,55 @@ export async function getBiolabsContent() {
     { title: "Facilities Visit", description: "Guided tours of our HPC and AI Modeling clusters for institutions." }
   ];
 
+  const defaultPublications = [
+    {
+      id: "pub-1",
+      title: "INCUBATING DEEP TECH",
+      subtitle: "National Hub for Deep Tech Startups - Economic Times feature on 30.05.2026",
+      description: "With 240 startups valued at ₹10.5k cr incubated over 8 years, Healix is India's hi-tech haven.",
+      image_url: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=800&auto=format&fit=crop",
+      label: "Featured",
+      ribbon_color: "",
+      is_featured: true,
+      link_url: "#"
+    },
+    {
+      id: "pub-2",
+      title: "June 2026 Newsletter",
+      subtitle: "Latest Research Edition",
+      description: "Quarterly update on our genomics research and AI diagnostics breakthroughs.",
+      image_url: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&auto=format&fit=crop",
+      label: "June 26",
+      ribbon_color: "from-green-600 to-emerald-900",
+      is_featured: false,
+      link_url: "#"
+    },
+    {
+      id: "pub-3",
+      title: "April 2026 Edition",
+      subtitle: "BioLabs Research Digest",
+      description: "Highlights from our quarterly AI health research program.",
+      image_url: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop",
+      label: "Apr 26",
+      ribbon_color: "from-[#ca8a04] to-amber-900",
+      is_featured: false,
+      link_url: "#"
+    },
+    {
+      id: "pub-4",
+      title: "February 2026 Edition",
+      subtitle: "BioLabs Research Digest",
+      description: "Highlights from our quarterly AI health research program.",
+      image_url: "https://images.unsplash.com/photo-1614947942704-5827be95b369?q=80&w=600&auto=format&fit=crop",
+      label: "Feb 26",
+      ribbon_color: "from-blue-600 to-indigo-900",
+      is_featured: false,
+      link_url: "#"
+    }
+  ];
+
   if (isMock) {
-    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms };
+    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms, publications: defaultPublications };
   }
 
   // Fetch real content
@@ -197,13 +244,15 @@ export async function getBiolabsContent() {
     { data: events },
     { data: news },
     { data: photos },
-    { data: programs }
+    { data: programs },
+    { data: publications }
   ] = await Promise.all([
     supabase.from("biolab_announcements").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_events").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_news").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_photos").select("*").eq("is_active", true).order("created_at", { ascending: false }),
-    supabase.from("biolab_programs").select("*").eq("is_active", true).order("created_at", { ascending: true })
+    supabase.from("biolab_programs").select("*").eq("is_active", true).order("created_at", { ascending: true }),
+    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false })
   ]);
 
   return {
@@ -211,6 +260,7 @@ export async function getBiolabsContent() {
     events: events?.length ? events : defaultEvents,
     news: news?.length ? news : defaultNews,
     photos: photos?.length ? photos : defaultPhotos,
-    programs: programs?.length ? programs : defaultPrograms
+    programs: programs?.length ? programs : defaultPrograms,
+    publications: publications?.length ? publications : defaultPublications
   };
 }

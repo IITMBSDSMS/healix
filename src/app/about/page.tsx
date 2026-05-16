@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { 
-  Shield, Activity, Server, Database, Users, CheckCircle, 
-  ChevronRight, Lock, Code, Microscope, 
-  ArrowRight, Heart, Brain, Zap, Globe, FileText,
-  Stethoscope, BarChart3, Fingerprint, Layers
+  Shield, Activity, Server, Database, Lock, Code, Microscope, 
+  ArrowRight, Brain, Zap, Globe, FileText,
+  Stethoscope, Fingerprint, Layers, GraduationCap
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { IDCard } from "@/components/ui/IDCard";
 
 // ─── Sub-Components ───
 
@@ -83,6 +82,7 @@ export default function AboutPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -408,7 +408,20 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── 6. MENTORS + BACKING ── */}
+        {/* ── 6. INSTITUTIONAL CREDENTIALS ── */}
+        <section className="py-40">
+          <SectionHeader 
+            badge="Institutional Proof"
+            title="Authenticated credentials for every researcher."
+            subtitle="Our team and students carry cryptographically verifiable institutional IDs, ensuring secure access to clinical-grade environments."
+          />
+          <div className="flex flex-col items-center">
+            <IDCard />
+            <p className="mt-12 text-[10px] font-mono text-white/20 uppercase tracking-[0.4em]">Healix Research & Engineering Credential · Prototype v4.2</p>
+          </div>
+        </section>
+
+        {/* ── 7. MENTORS + BACKING ── */}
         <section className="py-40 bg-white/[0.01] rounded-[3rem] border border-white/5 px-12">
           <SectionHeader 
             badge="Strategic Advisory"
@@ -436,7 +449,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── 7. ROADMAP TIMELINE ── */}
+        {/* ── 8. ROADMAP TIMELINE ── */}
         <section className="py-40">
           <SectionHeader 
             badge="The Roadmap"
@@ -481,7 +494,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── 8. TRUST SECTION ── */}
+        {/* ── 9. TRUST SECTION ── */}
         <section className="py-40 border-t border-white/5">
           <div className="flex flex-wrap justify-center items-center gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-1000">
             {[
@@ -499,7 +512,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── 9. FINAL CTA ── */}
+        {/* ── 10. FINAL CTA ── */}
         <section className="pb-40">
           <GlassCard className="p-20 md:p-32 text-center relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#050505] to-black border-[#eab308]/10">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#eab30805_0%,_transparent_50%)]" />

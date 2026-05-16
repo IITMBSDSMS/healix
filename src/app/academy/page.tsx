@@ -2,131 +2,82 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { 
-  ArrowRight, Code2, GraduationCap, Monitor, 
-  Sparkles, Terminal, Users, Play, 
+  ArrowRight, Terminal, Users, Play, 
   Zap, Shield, Globe, Star,
   MessageSquare, BarChart, Rocket
 } from "lucide-react";
 import { MentorMarquee } from "@/components/academy/MentorMarquee";
 import { CourseCard } from "@/components/academy/CourseCard";
-import { getCourses } from "@/lib/academy/db";
+import { getCourses, getMentors } from "@/lib/academy/db";
 import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
 export default function AcademyLanding() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [courses, setCourses] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [mentors, setMentors] = useState<any[]>([]);
 
   useEffect(() => {
     getCourses().then(setCourses);
+    getMentors().then(setMentors);
   }, []);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#eab308]/30">
       
       {/* ── 1. HERO SECTION ── */}
-      <section className="relative pt-40 pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#eab308]/5 blur-[120px] rounded-full pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-7"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-8">
-                <Sparkles className="h-4 w-4 text-[#eab308]" />
-                <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Enrollment Open for 2026</span>
-              </div>
-              
-              <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-8 leading-[0.95]">
-                Build <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] to-[#fde047]">Production-Grade</span> <br/>
-                Engineering Skills.
-              </h1>
-              
-              <p className="text-xl text-white/50 mb-12 max-w-2xl leading-relaxed font-light">
-                Personal mentorship from elite staff engineers and researchers. Bridge the gap between theory and industry-scale systems.
-              </p>
-              
-              <div className="flex flex-wrap items-center gap-6">
-                <Link href="/register">
-                  <Button size="lg" className="px-10 h-16 text-lg">
-                    Apply Now <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link href="#courses" className="flex items-center gap-3 text-sm font-semibold text-white/70 hover:text-white transition-all group">
-                  Explore Tracks <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#eab308]" />
-                </Link>
-              </div>
+      <section className="relative pt-32 pb-24 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-8 mx-auto">
+            <span className="w-2 h-2 rounded-full bg-[#eab308] animate-pulse" />
+            <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Applications open for 2026 Cohort</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 max-w-4xl mx-auto">
+            Master production-grade <br className="hidden md:block"/> engineering and research.
+          </h1>
+          
+          <p className="text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Intensive, mentor-led programs taught by engineers from top institutions. 
+            Build real systems, master modern stacks, and accelerate your career.
+          </p>
+          
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/register">
+              <Button size="lg" className="px-8 h-14 text-base">
+                Apply Now <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+            <Link href="#courses">
+              <Button variant="outline" size="lg" className="px-8 h-14 text-base bg-white/5">
+                Explore Programs
+              </Button>
+            </Link>
+          </div>
 
-              <div className="mt-16 flex items-center gap-8 grayscale opacity-40">
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">1.2k+</span>
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Alumni</span>
-                </div>
-                <div className="w-px h-10 bg-white/10" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">94%</span>
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Hire Rate</span>
-                </div>
-                <div className="w-px h-10 bg-white/10" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-bold">1:1</span>
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Mentorship</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="lg:col-span-5 relative"
-            >
-              <GlassCard className="p-8 border-white/10 bg-white/[0.01] backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <Terminal className="h-64 w-64 text-[#eab308]" />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                    </div>
-                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">main.ts — healix-os</span>
-                  </div>
-                  <pre className="text-sm font-mono text-white/70 space-y-2 overflow-x-auto">
-                    <code>{`class Infrastructure {
-  static async deploy(service) {
-    const mesh = await Healix.init();
-    return await mesh.scale(service, {
-      nodes: 'auto',
-      intelligence: true
-    });
-  }
-}`}</code>
-                  </pre>
-                  <div className="mt-12 p-4 rounded-xl bg-[#eab308]/10 border border-[#eab308]/20 flex items-center gap-4">
-                    <div className="p-2 bg-[#eab308] rounded-lg text-black">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <p className="text-xs font-bold text-[#eab308] uppercase tracking-widest italic">Optimizing for 2026 Batch</p>
-                  </div>
-                </div>
-              </GlassCard>
-            </motion.div>
+          <div className="mt-20 pt-10 border-t border-white/5 flex flex-wrap justify-center gap-12 sm:gap-24 opacity-60">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-white mb-1">1.2k+</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Alumni Network</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-white mb-1">94%</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Placement Rate</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-white mb-1">1:1</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Mentorship</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── 2. MARQUEE SECTION ── */}
-      <MentorMarquee />
+      <MentorMarquee mentors={mentors} />
 
       {/* ── 3. METHODOLOGY ── */}
       <section className="py-40 bg-white/[0.01]">
@@ -184,10 +135,12 @@ export default function AcademyLanding() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {courses.map(course => (
-              <CourseCard key={course.id} course={course} />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            {courses.map(course => {
+              const mentorId = Array.isArray(course.mentors) ? course.mentors[0] : null;
+              const mentor = mentors.find(m => m.id === mentorId) || null;
+              return <CourseCard key={course.id} course={{ ...course, mentor }} />;
+            })}
           </div>
         </div>
       </section>
@@ -195,32 +148,33 @@ export default function AcademyLanding() {
       {/* ── 5. MENTOR TEASER ── */}
       <section className="py-40">
         <div className="max-w-7xl mx-auto px-6">
-          <GlassCard className="p-16 md:p-24 border-[#eab308]/20 bg-gradient-to-br from-[#eab308]/5 to-transparent relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 opacity-5">
-              <Users className="h-96 w-96 text-[#eab308]" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <GlassCard className="p-16 md:p-24 border-white/5 bg-white/[0.02] relative overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
               <div>
-                <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 leading-[0.95]">Mentors from <br/> top institutions.</h2>
-                <p className="text-white/50 text-xl mb-12 leading-relaxed">
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">Mentors from <br/> top institutions.</h2>
+                <p className="text-white/60 text-lg mb-12 leading-relaxed">
                   Learn directly from those who built the infrastructure you use every day. Our mentors are vetted for both technical excellence and pedagogical skill.
                 </p>
                 <Link href="/academy/mentors">
-                  <Button size="lg" className="px-10 h-16">
-                    Meet the Faculty <ArrowRight className="ml-2 w-5 h-5" />
+                  <Button size="lg" className="px-8 h-14">
+                    Meet the Faculty <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-6">
-                {[
-                  { name: "IIT Madras", role: "AI Partners" },
-                  { name: "Stanford", role: "Clinical AI" },
-                  { name: "Google Cloud", role: "Infra Mentors" },
-                  { name: "YC Fellows", role: "Startup Scale" },
-                ].map((item, i) => (
-                  <GlassCard key={i} className="p-8 text-center border-white/5 group hover:border-[#eab308]/20 transition-all">
-                    <p className="text-base font-bold text-white mb-1">{item.name}</p>
-                    <p className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">{item.role}</p>
+                {mentors.slice(0, 4).map((mentor, i) => (
+                  <GlassCard key={i} className="p-6 text-center border-white/5 hover:border-white/20 transition-all flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10 mb-4">
+                      <Image 
+                        src={mentor.photoUrl || "https://i.pravatar.cc/150"} 
+                        alt={mentor.name} 
+                        width={64} 
+                        height={64} 
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <p className="text-sm font-bold text-white mb-1">{mentor.name}</p>
+                    <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">{mentor.institution}</p>
                   </GlassCard>
                 ))}
               </div>
