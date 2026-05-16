@@ -68,7 +68,7 @@ const SectionHeader = ({ badge, title, subtitle, align = "center" }: { badge: st
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-lg text-white/50 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+        className={`text-lg text-white/50 max-w-2xl leading-relaxed ${align === "center" ? "mx-auto" : "mx-auto lg:mx-0"}`}
       >
         {subtitle}
       </motion.p>
