@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Shield, Zap, Activity, Code, Fingerprint, Globe, Mail, Phone, ExternalLink } from "lucide-react";
+import { Shield, Zap, Activity, Code, Fingerprint, Globe } from "lucide-react";
 import Image from "next/image";
 
 interface IDCardProps {
@@ -42,26 +42,26 @@ export const IDCard = ({
   photoUrl = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"
 }: IDCardProps) => {
   return (
-    <div className="flex flex-col lg:flex-row gap-12 items-center justify-center p-8 bg-[#050505]">
+    <div className="flex flex-col lg:flex-row gap-12 items-center justify-center p-8 bg-[#050505] w-full">
       {/* Front Side */}
       <motion.div 
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        className="relative w-[450px] h-[280px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl border border-white/10 shadow-2xl overflow-hidden text-white font-sans select-none group"
+        className="relative w-[500px] h-[320px] bg-[#1c1c1c] rounded-xl border-t border-white/10 shadow-2xl overflow-hidden text-white font-sans select-none group border-x border-x-white/5 border-b border-b-black"
       >
         <GearBackground />
         
         {/* Header */}
-        <div className="relative z-10 pt-4 pb-2 text-center border-b border-white/5">
-          <h2 className="text-xl font-bold tracking-wider text-white">HEALIX TECHNOLOGIES PVT. LTD.</h2>
-          <p className="text-[10px] font-medium text-[#eab308]/80 mt-0.5 font-hindi">जैव-चिकित्सकीय अनुसंधान एवं अभियांत्रिकी केंद्र</p>
+        <div className="relative z-10 pt-5 pb-3 text-center">
+          <h2 className="text-[22px] font-bold tracking-wider text-white">HEALIX TECHNOLOGIES PVT. LTD.</h2>
+          <p className="text-[14px] font-medium text-[#eab308] mt-1 font-hindi">जैव-चिकित्सकीय अनुसंधान एवं अभियांत्रिकी केंद्र</p>
         </div>
 
-        <div className="flex px-6 py-4 gap-6">
+        <div className="flex px-6 py-2 gap-6 items-start relative z-10">
           {/* Photo Section */}
-          <div className="relative">
-            <div className="w-32 h-36 rounded-xl border-2 border-[#eab308]/50 overflow-hidden bg-black/40">
+          <div className="relative shrink-0 mt-1">
+            <div className="w-[110px] h-[140px] rounded-xl border-2 border-[#eab308] overflow-hidden bg-black/40">
               <Image 
                 src={photoUrl} 
                 alt="Profile" 
@@ -72,64 +72,65 @@ export const IDCard = ({
           </div>
 
           {/* Details Section */}
-          <div className="flex-1 space-y-2">
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Full Name:</span>
-              <span className="text-sm font-bold text-white tracking-tight">{name}</span>
+          <div className="flex-1 space-y-3 pl-2">
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">FULL NAME:</span>
+              <span className="text-[14px] font-bold text-white tracking-wide">{name}</span>
             </div>
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Designation:</span>
-              <span className="text-[11px] font-semibold text-white/90">{designation}</span>
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">DESIGNATION:</span>
+              <span className="text-[12px] font-normal text-white">{designation}</span>
             </div>
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Unique ID:</span>
-              <span className="text-[11px] font-mono text-white/80">{idNumber}</span>
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">UNIQUE ID:</span>
+              <span className="text-[12px] font-normal text-white">{idNumber}</span>
             </div>
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Division:</span>
-              <span className="text-[11px] font-medium text-white/80">{division}</span>
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">DIVISION:</span>
+              <span className="text-[12px] font-normal text-white">{division}</span>
             </div>
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Validity:</span>
-              <span className="text-[11px] font-medium text-white/80">{validity}</span>
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">VALIDITY:</span>
+              <span className="text-[12px] font-normal text-white">{validity}</span>
             </div>
-            <div className="grid grid-cols-[85px_1fr] gap-x-2 items-baseline">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Access:</span>
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tight">{accessLevel}</span>
+            <div className="grid grid-cols-[100px_1fr] gap-x-2 items-center">
+              <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">ACCESS LEVEL:</span>
+              <span className="text-[12px] font-normal text-white">{accessLevel}</span>
             </div>
           </div>
 
-          {/* Side Logo Icon */}
-          <div className="absolute right-6 top-24 opacity-20">
-            <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center">
-              <Activity className="w-8 h-8 text-[#eab308]" />
+          {/* Side Logo Icon faint in background */}
+          <div className="absolute right-6 top-16 opacity-[0.15]">
+            <div className="w-24 h-24 rounded-full border-[2px] border-dashed border-white/40 flex items-center justify-center">
+              <Activity className="w-10 h-10 text-white" />
             </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between z-10">
-          <div className="flex items-center gap-4">
-            <div className="p-1 bg-white rounded-md">
-              <Image 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://healix-nu.vercel.app/verify/${idNumber}`}
-                width={48}
-                height={48}
-                alt="Verification QR"
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Verification profile:</span>
-              <span className="text-[9px] font-mono text-[#eab308] opacity-60">healix-nu.vercel.app/verify/{idNumber}</span>
-            </div>
+          <div className="flex items-center gap-3 bg-white p-1 rounded-md">
+            <Image 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://healix-nu.vercel.app/verify/${idNumber}`}
+              width={54}
+              height={54}
+              alt="Verification QR"
+            />
           </div>
           
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border border-[#eab308]/30 flex items-center justify-center bg-black/40 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
-               <Fingerprint className="w-6 h-6 text-[#eab308]" />
+          <div className="flex flex-col items-end pb-1 pr-2">
+            <div className="flex flex-col items-start bg-black/40 px-2 py-1 rounded">
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest">Verification profile:</span>
+              <span className="text-[10px] font-mono text-white mt-0.5">healix-nu.vercel.app/verify/{idNumber}</span>
+            </div>
+          </div>
+
+          <div className="relative ml-2">
+            <div className="w-14 h-14 rounded-full border-2 border-[#eab308] flex items-center justify-center bg-black/60 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+               <Activity className="w-7 h-7 text-[#eab308]" />
             </div>
             {/* Cog Outline */}
-            <div className="absolute -inset-1 border border-dashed border-white/10 rounded-full animate-[spin_10s_linear_infinite]" />
+            <div className="absolute -inset-1 border border-dashed border-[#eab308]/40 rounded-full animate-[spin_10s_linear_infinite]" />
           </div>
         </div>
       </motion.div>
@@ -139,17 +140,17 @@ export const IDCard = ({
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        className="relative w-[450px] h-[280px] bg-gradient-to-br from-[#111111] to-[#050505] rounded-2xl border border-white/10 shadow-2xl overflow-hidden text-white font-sans select-none group"
+        className="relative w-[500px] h-[320px] bg-[#1c1c1c] rounded-xl border-t border-white/10 shadow-2xl overflow-hidden text-white font-sans select-none group border-x border-x-white/5 border-b border-b-black"
       >
         <GearBackground />
 
         <div className="relative z-10 p-8 flex flex-col h-full">
-          <h3 className="text-lg font-bold text-center tracking-[0.3em] uppercase mb-6 border-b border-white/5 pb-2">Institutional Credential</h3>
+          <h3 className="text-xl font-bold text-center tracking-[0.3em] uppercase mb-6 border-b border-white/10 pb-3">Institutional Credential</h3>
 
           <div className="grid grid-cols-1 gap-6 flex-1">
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold text-[#eab308] uppercase tracking-[0.2em]">Authorized Access Areas:</p>
-              <ul className="text-[11px] text-white/60 space-y-1 pl-4 list-disc marker:text-[#eab308]">
+            <div className="space-y-3">
+              <p className="text-[12px] font-bold text-[#eab308] uppercase tracking-[0.2em]">Authorized Access Areas:</p>
+              <ul className="text-[12px] text-white/80 space-y-1.5 pl-4 list-disc marker:text-[#eab308]">
                 <li>Research Labs & Bio-Compute Clusters</li>
                 <li>Bioinformatics Systems (Level 4)</li>
                 <li>Clinical Intelligence Dashboard</li>
@@ -158,18 +159,18 @@ export const IDCard = ({
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-2">
-              <div className="space-y-1">
-                <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Emergency Contact:</p>
-                <p className="text-xs font-mono font-bold text-white tracking-tighter">+91 9540694581</p>
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Emergency Contact:</p>
+                <p className="text-sm font-mono font-bold text-white tracking-tighter">+91 9540694581</p>
               </div>
-              <div className="space-y-1 text-right">
-                <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Website:</p>
-                <p className="text-xs font-mono text-[#eab308] underline underline-offset-2">healix-nu.vercel.app</p>
+              <div className="space-y-1.5 text-right">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Website:</p>
+                <p className="text-sm font-mono text-[#eab308] underline underline-offset-2">healix-nu.vercel.app</p>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/5">
-              <p className="text-[9px] text-white/40 leading-relaxed italic text-center">
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-[10px] text-white/50 leading-relaxed italic text-center">
                 "Engineering Biomedical Intelligence"
               </p>
             </div>
@@ -177,17 +178,17 @@ export const IDCard = ({
 
           {/* Tech Badges */}
           <div className="flex justify-end items-center gap-3 mt-auto opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-             <div className="p-1.5 rounded-lg bg-white/5 border border-white/10">
-                <Zap className="w-3.5 h-3.5" />
+             <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                <Zap className="w-4 h-4 text-white" />
              </div>
-             <div className="p-1.5 rounded-lg bg-white/5 border border-white/10">
-                <Code className="w-3.5 h-3.5" />
+             <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                <Code className="w-4 h-4 text-white" />
              </div>
-             <div className="p-1.5 rounded-lg bg-white/5 border border-white/10">
-                <Globe className="w-3.5 h-3.5" />
+             <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                <Globe className="w-4 h-4 text-white" />
              </div>
-             <div className="p-1.5 rounded-lg bg-[#eab308]/10 border border-[#eab308]/20">
-                <Shield className="w-3.5 h-3.5 text-[#eab308]" />
+             <div className="p-2 rounded-lg bg-[#eab308]/10 border border-[#eab308]/30">
+                <Shield className="w-4 h-4 text-[#eab308]" />
              </div>
           </div>
         </div>
