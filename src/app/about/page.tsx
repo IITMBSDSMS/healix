@@ -145,17 +145,11 @@ export default function AboutPage() {
                 className="relative z-10"
               >
                 <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/10 group bg-[#0a0a0a]">
-                  <Image 
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop" 
-                    alt="Founder Portrait"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
-                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
                   
                   {/* Founder Badge */}
                   <div className="absolute bottom-8 left-8">
-                    <p className="text-xs font-mono text-[#eab308] uppercase tracking-widest mb-2">Avnish J.</p>
+                    <p className="text-xs font-mono text-[#eab308] uppercase tracking-widest mb-2">Avnish</p>
                     <p className="text-2xl font-bold text-white tracking-tight">Founder & CEO</p>
                   </div>
                 </div>
@@ -192,11 +186,8 @@ export default function AboutPage() {
                 <div className="w-20 h-1 bg-[#eab308] mb-12 rounded-full" />
                 <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 italic">“Why Healix <br/>exists”</h2>
                 <div className="flex items-center gap-4 mt-12">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10">
-                    <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop" width={48} height={48} alt="Avnish" className="object-cover grayscale" />
-                  </div>
                   <div>
-                    <p className="font-serif text-2xl text-white italic tracking-tighter">Avnish J.</p>
+                    <p className="font-serif text-2xl text-white italic tracking-tighter">Avnish</p>
                     <p className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Founder & CEO</p>
                   </div>
                 </div>
