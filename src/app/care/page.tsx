@@ -417,46 +417,65 @@ export default function CarePage() {
               {
                 title: "Medicine Delivery Pipeline",
                 icon: Pill,
+                image: "/pipeline-meds.png",
                 steps: ["Patient Uploads Prescription", "OCR Extraction", "AI Drug Validation", "Pharmacy Match Engine", "Rider Dispatch", "GPS Tracking", "Delivery Confirmation"]
               },
               {
                 title: "Lab Testing Pipeline",
                 icon: FlaskConical,
+                image: "/pipeline-labs.png",
                 steps: ["Book Slot", "Smart Lab Assignment", "Technician Dispatch", "Sample Collection", "Lab Processing", "Report AI Analysis", "Dashboard Upload"]
               },
               {
                 title: "Doctor Consultation Pipeline",
                 icon: Stethoscope,
+                image: "/pipeline-doc.png",
                 steps: ["Symptom Input", "AI Triage", "Specialist Matching", "Video Session", "Prescription Engine", "Follow-Up Automation"]
               },
               {
                 title: "Emergency Pipeline",
                 icon: ShieldAlert,
                 color: "text-red-500",
+                image: "/pipeline-sos.png",
                 steps: ["SOS Trigger", "Geo Detection", "Nearest Ambulance Locate", "Hospital Alert", "Route Clearance Logic", "ETA Broadcast"]
               }
             ].map((pipeline, i) => (
-              <GlassCard key={i} className="p-8 border-white/5 hover:bg-white/[0.02] transition-colors">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className={`p-3 rounded-xl bg-white/5 border border-white/10`}>
-                    <pipeline.icon className={`w-6 h-6 ${pipeline.color || 'text-[#eab308]'}`} />
+              <GlassCard key={i} className="p-0 overflow-hidden border-white/5 hover:border-white/10 hover:shadow-2xl transition-all group">
+                {/* Image Section */}
+                <div className="relative h-72 w-full bg-[#0a0a0a] overflow-hidden">
+                  <Image 
+                    src={pipeline.image} 
+                    alt={pipeline.title} 
+                    fill 
+                    className="object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/20 to-transparent pointer-events-none" />
+                  
+                  {/* Floating Icon */}
+                  <div className="absolute bottom-6 left-6 flex items-center gap-4 z-10">
+                    <div className="p-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 shadow-lg">
+                      <pipeline.icon className={`w-6 h-6 ${pipeline.color || 'text-[#eab308]'}`} />
+                    </div>
+                    <h3 className="text-xl font-bold text-white drop-shadow-md">{pipeline.title}</h3>
                   </div>
-                  <h3 className="text-xl font-bold">{pipeline.title}</h3>
                 </div>
                 
-                <div className="flex flex-wrap gap-2">
-                  {pipeline.steps.map((step, idx) => (
-                    <React.Fragment key={idx}>
-                      <div className="px-3 py-1.5 rounded-md bg-[#111] border border-white/10 text-xs font-mono text-white/70">
-                        {step}
-                      </div>
-                      {idx < pipeline.steps.length - 1 && (
-                        <div className="flex items-center justify-center text-white/30">
-                          <ArrowRight className="w-3 h-3" />
+                {/* Steps Section */}
+                <div className="p-6 bg-[#050505]">
+                  <div className="flex flex-wrap gap-2">
+                    {pipeline.steps.map((step, idx) => (
+                      <React.Fragment key={idx}>
+                        <div className="px-3 py-1.5 rounded-md bg-[#111] border border-white/10 text-xs font-mono text-white/70 group-hover:border-white/20 transition-colors">
+                          {step}
                         </div>
-                      )}
-                    </React.Fragment>
-                  ))}
+                        {idx < pipeline.steps.length - 1 && (
+                          <div className="flex items-center justify-center text-white/30">
+                            <ArrowRight className="w-3 h-3" />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
               </GlassCard>
             ))}
