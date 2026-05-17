@@ -1,5 +1,6 @@
-import React from "react";
-import { motion } from "framer-motion";
+"use client";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 interface Mentor {
@@ -14,51 +15,105 @@ interface MentorMarqueeProps {
   mentors: Mentor[];
 }
 
-const STATIC_MENTORS = [
-  { name: "IIT Madras", logo: "/logos/iitm.svg", role: "AI Research Partners" },
-  { name: "Google Cloud", logo: "/logos/google-cloud.svg", role: "Infrastructure Mentor" },
-  { name: "YC W24", logo: "/logos/yc.svg", role: "Startup Fellowship" },
-  { name: "Stanford", logo: "/logos/stanford.svg", role: "Clinical Advisor" },
+const DEFAULT_MESSAGES = [
+  "We are driven by a singular mission to make high-quality healthcare and engineering education understandable, accessible, and affordable for millions. In today's fast-paced world, education is not just limited to theory; it's about practical, proactive engagement.",
+  "Our commitment to excellence and integrity remains steadfast. We are proud to partner with emerging engineers who share our passion for making a meaningful impact in clinical tech.",
+  "Together, we can empower communities and revolutionise biomedical engineering for a healthier tomorrow. Your trust in Healix is what inspires us.",
 ];
 
 export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
-  // Use dynamic mentors if available, otherwise fallback
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const displayItems = mentors.length > 0 
-    ? mentors.map(m => ({ name: m.name, image: m.photoUrl, role: m.role || m.institution }))
-    : STATIC_MENTORS.map(m => ({ name: m.name, image: "https://i.pravatar.cc/100", role: m.role }));
+    ? mentors.map((m, i) => ({ 
+        name: m.name, 
+        image: m.photoUrl || "https://i.pravatar.cc/300?img=" + (i + 1), 
+        role: m.role || m.institution,
+        message: DEFAULT_MESSAGES[i % DEFAULT_MESSAGES.length]
+      }))
+    : [
+        { name: "Dr. Sarah Chen", image: "https://i.pravatar.cc/400?img=1", role: "Head of Bioinformatics", message: DEFAULT_MESSAGES[0] },
+        { name: "Vikram Sharma", image: "https://i.pravatar.cc/400?img=11", role: "Staff Product Engineer", message: DEFAULT_MESSAGES[1] },
+        { name: "Dr. Arvind Rao", image: "https://i.pravatar.cc/400?img=3", role: "AI Systems Architect", message: DEFAULT_MESSAGES[2] },
+      ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % displayItems.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [displayItems.length]);
 
   return (
-    <div className="py-12 bg-white/[0.02] border-y border-white/5 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
-        <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.5em]">
-          Learn directly from industry leaders
-        </p>
-      </div>
-      
-      <div className="flex relative">
-        <motion.div
-          animate={{ x: [0, -1035] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="flex gap-20 items-center whitespace-nowrap"
-        >
-          {[...displayItems, ...displayItems, ...displayItems].map((item, i) => (
-            <div key={i} className="flex items-center gap-4 group">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-white/10 bg-white/5 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all shrink-0">
-                <Image 
-                  src={item.image} 
-                  alt={item.name} 
-                  width={80} 
-                  height={80} 
-                  className="object-cover w-full h-full"
-                />
+    <div className="py-24 bg-[#fafafa] overflow-hidden">
+      <div className="max-w-6xl mx-auto px-6 relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row items-center gap-16"
+          >
+            {/* Left Content */}
+            <div className="flex-1 md:pr-12">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-[#111] mb-2 tracking-tight">
+                A message from <span className="text-[#ff5500]">Our Mentors</span>
+              </h2>
+              <p className="text-xl md:text-2xl text-[#333] mb-8 font-medium">
+                Leading with vision and compassion
+              </p>
+              
+              <div className="text-[#555] space-y-6 text-base md:text-lg leading-relaxed">
+                <p>{displayItems[currentIndex].message}</p>
+                <p>
+                  To our current and future engineers—your drive is what inspires us. Together, we are transforming lives by delivering exceptional healthcare services that drive positive change.
+                </p>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-white/80">{item.name}</p>
-                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">{item.role}</p>
+
+              <div className="mt-12 text-[#333]">
+                <p className="mb-1 text-gray-500 font-medium">Warm regards,</p>
+                <p className="font-bold text-xl">{displayItems[currentIndex].name}</p>
+                <p className="text-sm text-gray-500 font-medium uppercase tracking-wide mt-1">{displayItems[currentIndex].role}</p>
               </div>
             </div>
+
+            {/* Right Content - Photo */}
+            <div className="w-full md:w-[450px] shrink-0 relative flex justify-center items-end mt-12 md:mt-0">
+               {/* Background Blob/Shape */}
+               <div className="absolute right-0 bottom-12 w-[350px] h-[400px] bg-[#ffc3ad] rounded-t-[150px] rounded-bl-[50px] rounded-br-[120px] -z-10 shadow-inner" />
+               
+               {/* Image Container */}
+               <div className="relative w-[320px] h-[450px] overflow-hidden rounded-t-[140px] rounded-bl-[40px] rounded-br-[100px] shadow-2xl">
+                 <Image 
+                   src={displayItems[currentIndex].image}
+                   alt={displayItems[currentIndex].name}
+                   fill
+                   className="object-cover object-center"
+                 />
+               </div>
+               
+               {/* Floating Tag */}
+               <div className="absolute -bottom-6 right-4 md:right-10 bg-white p-5 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-100 z-20 min-w-[220px]">
+                 <p className="font-extrabold text-gray-900 text-lg">{displayItems[currentIndex].name}</p>
+                 <p className="text-[#ff5500] font-bold text-sm mt-1">{displayItems[currentIndex].role}</p>
+               </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+        
+        {/* Navigation Dots */}
+        <div className="flex gap-3 justify-center mt-20">
+          {displayItems.map((_, idx) => (
+            <button 
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-2.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-[#ff5500] w-10 shadow-[0_0_10px_rgba(255,85,0,0.4)]' : 'bg-gray-300 w-2.5 hover:bg-gray-400'}`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
