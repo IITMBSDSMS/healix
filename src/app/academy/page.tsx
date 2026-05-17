@@ -240,10 +240,10 @@ export default function AcademyLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-            {courses.map(course => {
+            {courses.map((course, idx) => {
               const mentorId = Array.isArray(course.mentors) ? course.mentors[0] : null;
-              const mentor = mentors.find(m => m.id === mentorId) || null;
-              return <CourseCard key={course.id} course={{ ...course, mentor }} />;
+              const mentor = mentors.find((m: { id: string }) => m.id === mentorId) || null;
+              return <CourseCard key={course.id} course={{ ...course, mentor }} index={idx} />;
             })}
           </div>
           
