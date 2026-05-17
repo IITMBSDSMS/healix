@@ -297,8 +297,57 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 4. COURSES SECTION ── */}
-      <section id="courses" className="py-12 md:py-24 bg-[#f2b992]">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="courses" className="py-12 md:py-24 bg-gradient-to-b from-[#f2b992] to-[#e8ad85] relative overflow-hidden">
+        
+        {/* ── SVG Dotted Grid Overlay ── */}
+        <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="courses-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="#ffffff" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#courses-grid)" />
+        </svg>
+
+        {/* ── SVG Wavy Vector Path ── */}
+        <svg className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M-100,200 C300,400 600,100 1000,300 C1300,450 1500,250 1600,350 L1600,900 L-100,900 Z" fill="#ffffff" />
+          <path d="M-50,250 C350,450 650,150 1050,350 C1350,500 1550,300 1650,400 L1650,900 L-50,900 Z" fill="#ff5500" opacity="0.15" />
+        </svg>
+
+        {/* ── SVG Floating Accent Glows ── */}
+        <div className="absolute top-12 left-[-10%] w-[45%] h-[45%] rounded-full bg-white/25 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-12 right-[-10%] w-[45%] h-[45%] rounded-full bg-[#ff5500]/20 blur-[120px] pointer-events-none" />
+
+        {/* ── Floating Educational SVGs ── */}
+        {/* Atom (Top Left) */}
+        <svg className="absolute top-16 left-12 w-20 h-20 text-white/20 animate-[spin_30s_linear_infinite] pointer-events-none hidden md:block" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="50" cy="50" rx="40" ry="12" transform="rotate(30, 50, 50)" />
+          <ellipse cx="50" cy="50" rx="40" ry="12" transform="rotate(90, 50, 50)" />
+          <ellipse cx="50" cy="50" rx="40" ry="12" transform="rotate(150, 50, 50)" />
+          <circle cx="50" cy="50" r="6" fill="currentColor" />
+        </svg>
+
+        {/* Benzene Ring (Bottom Left) */}
+        <svg className="absolute bottom-16 left-10 w-24 h-24 text-white/15 pointer-events-none hidden lg:block" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" />
+          <polygon points="50,18 78,34 78,66 50,82 22,66 22,34" strokeDasharray="6 4" />
+        </svg>
+
+        {/* Integral Symbol (Top Right) */}
+        <svg className="absolute top-10 right-20 w-16 h-28 text-white/20 pointer-events-none hidden md:block" viewBox="0 0 50 100" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <path d="M35,15 C30,10 20,10 20,25 L20,75 C20,90 10,90 5,85" />
+          <text x="28" y="55" fill="currentColor" fontSize="12" fontWeight="bold" stroke="none">f(x)dx</text>
+        </svg>
+
+        {/* Trigonometry Wave (Bottom Right) */}
+        <svg className="absolute bottom-12 right-12 w-36 h-20 text-white/20 pointer-events-none hidden lg:block" viewBox="0 0 150 60" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <path d="M10,30 Q30,5 50,30 T90,30 T130,30" />
+          <line x1="10" y1="30" x2="140" y2="30" strokeDasharray="4 4" />
+          <line x1="75" y1="10" x2="75" y2="50" strokeDasharray="4 4" />
+        </svg>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-8 md:mb-10">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-black tracking-tight mb-3 md:mb-4">Our Courses</h2>
             <p className="text-black/90 font-bold text-base md:text-xl max-w-4xl mx-auto leading-snug px-2">
