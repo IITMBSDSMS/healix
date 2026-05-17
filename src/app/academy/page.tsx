@@ -491,6 +491,203 @@ export default function AcademyLanding() {
         </div>
       </section>
 
+      {/* ── 5.5 APP DOWNLOAD PROMO SECTION ── */}
+      <section className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-br from-[#fffbfa] to-[#fff5f0] border-t border-orange-100">
+        {/* Background decorative vector */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#ff5500]/5 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 right-0 w-[500px] h-[500px] rounded-full bg-[#5a4bda]/5 blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            {/* Left Content */}
+            <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight">
+                Learning At Your Pace<br />
+                <span className="text-[#ff5500]">Anytime, Anywhere</span>
+              </h2>
+              
+              <p className="text-lg md:text-xl text-slate-600 font-medium max-w-xl mx-auto lg:mx-0">
+                Download the <span className="text-[#5a4bda] font-extrabold">Healix Academy App</span> — India&apos;s most popular &amp; comprehensive competitive exams prep platform.
+              </p>
+
+              {/* Google Play Store Badge (High-fidelity custom SVG) */}
+              <div className="flex justify-center lg:justify-start">
+                <a 
+                  href="https://play.google.com/store" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-black text-white px-6 py-3.5 rounded-xl hover:bg-slate-900 transition-all hover:scale-[1.03] active:scale-95 shadow-xl shadow-black/15 border border-slate-800 group"
+                >
+                  {/* Google Play Icon */}
+                  <svg className="w-8 h-8 group-hover:animate-pulse" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.2-60.7-60.7 60.1-60.1 58.6 33.6c15 8.6 25.6 23.8 25.6 41.6s-10.7 32.9-25.6 42.4zM325.3 277.7l60.1 60.1L104.6 499l220.7-221.3z" fill="url(#play-gradient)" />
+                    <defs>
+                      <linearGradient id="play-gradient" x1="25.3" y1="256" x2="486.8" y2="256" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stopColor="#ea4335" />
+                        <stop offset="0.33" stopColor="#fbbc05" />
+                        <stop offset="0.66" stopColor="#34a853" />
+                        <stop offset="1" stopColor="#4285f4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider leading-none">GET IT ON</p>
+                    <p className="text-xl font-black font-sans leading-none mt-1">Google Play</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            {/* Right Content - Mockup display */}
+            <div className="lg:col-span-6 relative flex justify-center items-center h-[520px]">
+              
+              {/* Phone Mockup 1 (Primary - Front/Left) */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+                className="absolute z-20 w-[240px] h-[480px] bg-slate-950 rounded-[36px] p-2.5 shadow-[0_25px_60px_-15px_rgba(255,85,0,0.3)] border-4 border-slate-800 scale-95 md:scale-100"
+              >
+                {/* Internal Screen Layout */}
+                <div className="w-full h-full bg-white rounded-[28px] overflow-hidden flex flex-col font-sans relative">
+                  {/* Top Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-950 rounded-b-xl z-30" />
+                  
+                  {/* Mock App Header */}
+                  <div className="bg-gradient-to-r from-[#ff5500] to-[#ff7b3a] text-white pt-6 pb-4 px-4 rounded-b-[20px] shadow-md z-10 flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[10px] opacity-90 mt-1">
+                      <span className="font-extrabold uppercase bg-white/20 px-2 py-0.5 rounded">Academic Pro ⚡</span>
+                      <span className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center font-bold">A</span>
+                    </div>
+                    <p className="text-[11px] font-bold mt-1 opacity-90">Welcome back,</p>
+                    <p className="text-sm font-black leading-none">Ayush Kumar! 👋</p>
+                  </div>
+
+                  {/* Scrollable content area */}
+                  <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3.5 bg-slate-50 text-slate-800">
+                    {/* Days tracker pill */}
+                    <div className="flex justify-between items-center gap-1 bg-white p-2 rounded-xl shadow-sm border border-slate-100 text-[10px]">
+                      {['Day 1', 'Day 2', 'Day 3', 'Day 4'].map((day, idx) => (
+                        <span key={idx} className={`flex-1 text-center py-1 rounded font-bold ${idx === 1 ? 'bg-[#ff5500] text-white' : 'bg-slate-100 text-slate-600'}`}>{day}</span>
+                      ))}
+                    </div>
+
+                    {/* Active Course Card */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-bold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full uppercase">IIT JEE Core</span>
+                        <span className="text-[9px] font-bold text-emerald-600">✓ Active</span>
+                      </div>
+                      <h4 className="text-xs font-black text-slate-900 leading-snug">Physics Booster Class</h4>
+                      <p className="text-[9px] text-slate-500 font-medium">Topic: Mechanics &amp; Rotational Dynamics</p>
+                      
+                      {/* Teacher Live Preview Screen */}
+                      <div className="relative h-24 rounded-lg overflow-hidden bg-slate-900 border border-slate-200">
+                        <Image src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300" alt="Live Class" fill className="object-cover opacity-80" />
+                        <div className="absolute top-1.5 left-1.5 bg-red-600 text-[8px] font-black text-white px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" /> LIVE
+                        </div>
+                        <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-[8px] text-white px-1.5 py-0.5 rounded font-bold">
+                          Dr. Sarah Chen
+                        </div>
+                      </div>
+
+                      <button className="w-full bg-[#ff5500] text-white py-1.5 rounded-lg text-[10px] font-black hover:bg-[#ff7b3a] transition-all flex items-center justify-center gap-1">
+                        <span>▶</span> Join Live Session
+                      </button>
+                    </div>
+
+                    {/* Subjects Grid */}
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">My Study Dashboard</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-white p-2.5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
+                          <span className="text-base mb-1">📐</span>
+                          <span className="text-[9px] font-bold text-slate-800">Maths</span>
+                        </div>
+                        <div className="bg-white p-2.5 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
+                          <span className="text-base mb-1">⚗️</span>
+                          <span className="text-[9px] font-bold text-slate-800">Chemistry</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Phone Mockup 2 (Secondary - Back/Right) */}
+              <motion.div 
+                initial={{ opacity: 0, y: 80, x: 40 }}
+                whileInView={{ opacity: 1, y: 40, x: 100 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, type: "spring", stiffness: 80, delay: 0.1 }}
+                className="absolute z-10 w-[230px] h-[450px] bg-slate-950 rounded-[34px] p-2.5 shadow-[0_20px_50px_-20px_rgba(90,75,218,0.25)] border-4 border-slate-800 scale-90 md:scale-95 hidden sm:block"
+              >
+                {/* Internal Screen Layout */}
+                <div className="w-full h-full bg-white rounded-[26px] overflow-hidden flex flex-col font-sans relative">
+                  {/* Top Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-4 bg-slate-950 rounded-b-xl z-30" />
+                  
+                  {/* Mock App Header */}
+                  <div className="bg-gradient-to-r from-[#5a4bda] to-[#8b5cf6] text-white pt-6 pb-3 px-3 rounded-b-[18px] shadow-md z-10 flex flex-col gap-0.5">
+                    <div className="flex justify-between items-center text-[9px] opacity-90 mt-1">
+                      <span className="font-extrabold uppercase bg-white/20 px-1.5 py-0.5 rounded">Healix Connect 💬</span>
+                    </div>
+                    <p className="text-xs font-black">24/7 Doubt Desk</p>
+                  </div>
+
+                  {/* App Content */}
+                  <div className="flex-1 overflow-y-auto px-2.5 py-2.5 space-y-3 bg-slate-50 text-slate-800">
+                    
+                    {/* Live doubt solving session */}
+                    <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-2.5 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-[#ff5500] rounded-full animate-ping" />
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-wide">Live doubt session</span>
+                      </div>
+                      <h4 className="text-[10px] font-black text-slate-900 leading-snug">Organic Chemistry Queries</h4>
+                      
+                      {/* Teacher Profile */}
+                      <div className="flex items-center gap-2 bg-indigo-50/50 p-1.5 rounded-lg border border-indigo-100/50">
+                        <div className="w-7 h-7 rounded-full overflow-hidden border border-indigo-200 shrink-0">
+                          <Image src="https://i.pravatar.cc/100?img=47" alt="Priya Patel" width={28} height={28} className="object-cover" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-extrabold text-slate-900">Dr. Priya Patel</p>
+                          <p className="text-[7px] text-[#ff5500] font-black">IIT Delhi Alumnus</p>
+                        </div>
+                      </div>
+
+                      <button className="w-full bg-[#5a4bda] text-white py-1.5 rounded-lg text-[9px] font-black hover:bg-[#4a3bc0] transition-all">
+                        Ask a Doubt 💬
+                      </button>
+                    </div>
+
+                    {/* Progress Stats */}
+                    <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-2.5 space-y-2 text-[9px]">
+                      <p className="font-extrabold text-slate-900">My Preparedness Metric</p>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-slate-500">
+                          <span>Overall Progress</span>
+                          <span className="font-bold text-slate-900">82%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-[#ff5500] to-[#5a4bda] rounded-full" style={{ width: '82%' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── 6. FINAL CTA ── */}
       <section className="py-24 bg-[#ff5500] text-white px-6">
         <div className="max-w-4xl mx-auto text-center">
