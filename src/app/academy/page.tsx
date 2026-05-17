@@ -222,18 +222,21 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 4. COURSES SECTION ── */}
-      <section id="courses" className="py-40 relative">
+      <section id="courses" className="py-24 bg-[#f2b992]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20">
-            <div className="max-w-2xl">
-              <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">Choose your track.</h2>
-              <p className="text-white/50 text-lg">Specialized programs for different career trajectories. Every track is clinical-grade and industry-validated.</p>
+          <div className="text-center mb-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight mb-4">Our Courses</h2>
+            <p className="text-black/90 font-bold text-lg md:text-xl max-w-4xl mx-auto leading-snug">
+              Being true Mentors, our objective is to guide the students on the track of their academic growth by bringing out their latent potential
+            </p>
+          </div>
+
+          <div className="flex justify-center mb-12">
+            <div className="flex bg-[#ff5500] rounded overflow-hidden shadow-lg border border-[#ff5500]">
+               <button className="px-8 py-3 text-white font-bold bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Foundation</button>
+               <button className="px-8 py-3 text-white font-bold hover:bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Engineering</button>
+               <button className="px-8 py-3 text-white font-bold hover:bg-[#ff7b3a] transition-colors">Medical</button>
             </div>
-            <Link href="/academy/courses">
-              <Button variant="outline" className="px-8 h-14 rounded-xl gap-2">
-                All Programs <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
@@ -242,6 +245,11 @@ export default function AcademyLanding() {
               const mentor = mentors.find(m => m.id === mentorId) || null;
               return <CourseCard key={course.id} course={{ ...course, mentor }} />;
             })}
+          </div>
+          
+          <div className="flex justify-center gap-4 mt-12">
+             <button className="w-10 h-10 rounded-full bg-[#ff5500] text-white flex items-center justify-center font-bold text-xl hover:scale-110 transition-transform shadow-lg shadow-[#ff5500]/40">&lt;</button>
+             <button className="w-10 h-10 rounded-full bg-[#ff5500] text-white flex items-center justify-center font-bold text-xl hover:scale-110 transition-transform shadow-lg shadow-[#ff5500]/40">&gt;</button>
           </div>
         </div>
       </section>

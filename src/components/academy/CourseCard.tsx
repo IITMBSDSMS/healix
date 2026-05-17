@@ -1,7 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Clock, BarChart, Users, ArrowRight, Sparkles, GraduationCap, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -32,84 +30,66 @@ export const CourseCard = ({ course }: CourseCardProps) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        whileHover={{ y: -8 }}
-        transition={{ duration: 0.4 }}
-        className="h-full"
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.3 }}
+        className="h-full bg-white flex flex-col shadow-xl"
       >
-        <GlassCard className="p-0 overflow-hidden border-white/5 group h-full flex flex-col hover:border-[#eab308]/30 transition-all shadow-2xl bg-black/40">
-          <div className="relative aspect-[16/10] overflow-hidden shrink-0">
-            <Image 
-              src={course.thumbnail} 
-              alt={course.title} 
-              fill 
-              className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-60 group-hover:opacity-100" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+        {/* Top Header Graphic (Orange Polygon style) */}
+        <div className="relative h-48 bg-[#ff2600] overflow-hidden shrink-0">
+          {/* Diagonal overlay to create the polygon effect */}
+          <div className="absolute top-0 right-0 bottom-0 left-1/3 bg-[#ff5500] transform skew-x-[-20deg] origin-bottom" />
+          <div className="absolute top-0 right-0 bottom-0 left-2/3 bg-white transform skew-x-[-20deg] origin-bottom z-0" />
+          
+          <div className="absolute inset-0 p-4 flex z-10">
+            {/* Text Information (Left side) */}
+            <div className="w-2/3 flex flex-col justify-center">
+               <div className="bg-white text-red-600 font-black italic px-3 py-1 inline-block w-max text-sm uppercase shadow-sm border border-red-600">
+                  {course.title.substring(0, 15)}
+               </div>
+               
+               <div className="mt-3">
+                 <div className="bg-[#eab308] text-black text-[8px] font-bold px-2 py-0.5 inline-block italic w-max uppercase">Eligibility</div>
+                 <div className="text-white font-bold italic text-lg mt-1 uppercase tracking-wider text-shadow-sm">
+                   For {course.difficulty}
+                 </div>
+               </div>
+               
+               <div className="mt-3">
+                 <div className="bg-[#eab308] text-black text-[8px] font-bold px-2 py-0.5 inline-block italic w-max uppercase mb-1">Aims & Objectives</div>
+                 <ul className="text-white text-[7px] leading-tight font-medium list-disc pl-3">
+                   <li>Master production-grade AI & systems</li>
+                   <li>1:1 Mentorship with Top Engineers</li>
+                   <li>Build scalable architectures</li>
+                 </ul>
+               </div>
+            </div>
             
-            {/* Badges */}
-            <div className="absolute top-6 left-6 flex flex-wrap gap-2">
-              <div className="px-3 py-1 rounded-full bg-[#eab308] text-black text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-                <Sparkles className="w-3 h-3" />
-                {course.discount_tag || "Enroll Now"}
-              </div>
-              <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white/80 uppercase tracking-widest">
-                {course.difficulty}
-              </div>
-            </div>
-
-            <div className="absolute bottom-6 left-6 right-6">
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-[#eab308] transition-colors line-clamp-1">
-                {course.title}
-              </h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full border border-white/20 overflow-hidden">
-                    <Image 
-                      src={course.mentor?.photoUrl || "https://i.pravatar.cc/100"} 
-                      width={24} 
-                      height={24} 
-                      alt="Mentor" 
-                      className="grayscale group-hover:grayscale-0 transition-all"
-                    />
-                  </div>
-                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">with {course.mentor?.name || "Staff Engineer"}</span>
-                </div>
-              </div>
+            {/* Student Image (Right side) */}
+            <div className="w-1/3 relative flex items-end justify-center">
+               {/* We use the mentor photo or a fallback for the "student" portrait */}
+               <Image 
+                 src={course.mentor?.photoUrl || "https://i.pravatar.cc/300"} 
+                 alt="Student" 
+                 width={100} 
+                 height={150} 
+                 className="object-cover h-[120%] w-auto absolute bottom-0 object-bottom drop-shadow-xl z-20"
+               />
             </div>
           </div>
+        </div>
 
-          <div className="p-8 flex flex-col flex-1">
-            <p className="text-sm text-white/50 mb-8 line-clamp-2 leading-relaxed min-h-[2.5rem]">
-              {course.shortDescription || course.description}
-            </p>
+        {/* Bottom Content Area */}
+        <div className="p-4 flex flex-col flex-1 justify-between bg-white border-t-4 border-[#ffcc00]">
+          <p className="text-sm text-gray-500 font-medium mb-4 line-clamp-2">
+            {course.shortDescription || course.description}
+          </p>
 
-            <div className="flex items-center justify-between mb-8 pb-8 border-b border-white/5 mt-auto">
-              <div className="space-y-1">
-                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Course Fee</p>
-                <p className="text-2xl font-bold text-white tracking-tighter">₹{course.price.toLocaleString()}</p>
-              </div>
-              <div className="text-right space-y-3">
-                <div className="flex items-center gap-2 text-[10px] font-mono text-white/40 uppercase tracking-widest justify-end">
-                  <Clock className="w-3 h-3 text-[#eab308]" />
-                  <span>{course.duration}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] font-mono text-[#eab308] uppercase tracking-widest justify-end">
-                  <Users className="w-3 h-3" />
-                  <span>{course.seatsRemaining} seats left</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between group/btn">
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white transition-colors">
-                View Curriculum
-              </span>
-              <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[#eab308]/50 group-hover:bg-[#eab308]/10 transition-all">
-                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-[#eab308] transition-all" />
-              </div>
-            </div>
+          <div className="flex justify-end mt-auto">
+            <button className="bg-[#ff5500] hover:bg-[#e04a00] transition-colors text-white font-bold py-2 px-6 rounded shadow-md">
+              Details
+            </button>
           </div>
-        </GlassCard>
+        </div>
       </motion.div>
     </Link>
   );
