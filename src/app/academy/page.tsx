@@ -29,53 +29,98 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#eab308]/30">
       
-      {/* ── 1. HERO SECTION ── */}
-      <section className="relative pt-32 pb-24 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-8 mx-auto">
-            <span className="w-2 h-2 rounded-full bg-[#eab308] animate-pulse" />
-            <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Applications open for 2026 Cohort</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 max-w-4xl mx-auto">
-            Master production-grade <br className="hidden md:block"/> engineering and research.
-          </h1>
-          
-          <p className="text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Intensive, mentor-led programs taught by engineers from top institutions. 
-            Build real systems, master modern stacks, and accelerate your career.
-          </p>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="px-8 h-14 text-base">
-                Apply Now <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href="#courses">
-              <Button variant="outline" size="lg" className="px-8 h-14 text-base bg-white/5">
-                Explore Programs
-              </Button>
-            </Link>
-          </div>
+      {/* ── 1. HERO SECTION (Physics Wallah Style) ── */}
+      <section className="relative pt-32 pb-40 bg-[#f4f7fc] text-slate-900 border-b-0 overflow-visible">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Left Side: Text & CTA */}
+            <div className="text-left space-y-6">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-slate-900">
+                Bharat's <span className="text-[#5a4bda]">Trusted & <br/> Affordable</span> <br/>
+                Educational Platform
+              </h1>
+              
+              <p className="text-lg text-slate-600 max-w-md leading-relaxed">
+                Unlock your potential by signing up with Healix Academy- The most affordable learning solution
+              </p>
+              
+              <div className="pt-4">
+                <Button size="lg" className="px-8 h-12 text-base font-semibold bg-[#5a4bda] hover:bg-[#4a3bc0] text-white rounded shadow-lg shadow-[#5a4bda]/30 border-0">
+                  Get Started
+                </Button>
+              </div>
+            </div>
 
-          <div className="mt-20 pt-10 border-t border-white/5 flex flex-wrap justify-center gap-12 sm:gap-24 opacity-60">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white mb-1">1.2k+</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Alumni Network</p>
+            {/* Right Side: Circular Avatars & Bubbles */}
+            <div className="relative h-[400px] hidden lg:block">
+              {/* Dashed background circles */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] border-[1.5px] border-dashed border-blue-300 rounded-full animate-[spin_60s_linear_infinite]">
+                 <div className="absolute -top-1.5 left-1/2 w-3 h-3 bg-blue-400 rounded-full" />
+                 <div className="absolute top-1/2 -left-1.5 w-3 h-3 bg-orange-400 rounded-full" />
+                 <div className="absolute top-3/4 right-0 w-3 h-3 bg-pink-400 rounded-full" />
+              </div>
+
+              {/* Student Avatar (Top Right) */}
+              <div className="absolute top-8 right-8 z-20">
+                <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center">
+                  <Image src="https://i.pravatar.cc/300?img=5" alt="Student" width={128} height={128} className="object-cover" />
+                </div>
+                {/* Chat Bubble Student */}
+                <div className="absolute top-12 -left-40 bg-white px-3 py-2 rounded-lg rounded-tr-none shadow-md border border-gray-100 text-[13px] font-medium text-slate-700 w-40 text-center">
+                  Alakh Sir, What is PW?
+                </div>
+              </div>
+
+              {/* Teacher Avatar (Bottom Left) */}
+              <div className="absolute bottom-8 left-16 z-20">
+                <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center">
+                  <Image src="https://i.pravatar.cc/300?img=11" alt="Teacher" width={160} height={160} className="object-cover" />
+                </div>
+                {/* Chat Bubble Teacher */}
+                <div className="absolute top-8 left-36 bg-[#1e155c] px-4 py-3 rounded-lg rounded-tl-none shadow-lg text-sm text-white w-64 font-medium leading-relaxed">
+                  PW is where students learn with love and can grow with guidance
+                </div>
+              </div>
+
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white mb-1">94%</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Placement Rate</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-white mb-1">1:1</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-white/50">Mentorship</p>
+          </div>
+        </div>
+
+        {/* Bottom overlapping Banner */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-6">
+          <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-8 px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-gray-100">
+              <div className="text-center px-4 flex flex-col items-center">
+                <div className="bg-red-500 text-white font-bold text-[10px] inline-flex px-2 py-1 rounded mb-3 items-center justify-center gap-1 w-max">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+                </div>
+                <h4 className="font-bold text-slate-900 text-base">Daily Live</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Interactive classes</p>
+              </div>
+              <div className="text-center px-4">
+                <div className="text-2xl mb-2 flex justify-center text-blue-500">📝</div>
+                <h4 className="font-bold text-slate-900 text-base">10 Million +</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Tests, sample papers & notes</p>
+              </div>
+              <div className="text-center px-4">
+                <div className="text-2xl mb-2 flex justify-center text-purple-500">🧠</div>
+                <h4 className="font-bold text-slate-900 text-base">24 x 7</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Doubt solving sessions</p>
+              </div>
+              <div className="text-center px-4">
+                <div className="text-2xl mb-2 flex justify-center text-yellow-500">🏆</div>
+                <h4 className="font-bold text-slate-900 text-base">100 +</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Offline centres</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Spacer to account for the overlapping banner */}
+      <div className="h-24 bg-[#050505]"></div>
+      
       {/* ── 2. MARQUEE SECTION ── */}
       <MentorMarquee mentors={mentors} />
 
