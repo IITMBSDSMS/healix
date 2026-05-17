@@ -184,32 +184,62 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 5.5 EXAMS MARQUEE ── */}
-      <section className="py-20 overflow-hidden relative border-y border-white/5">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(234,179,8,0.05)_0%,transparent_70%)] pointer-events-none" />
-        <div className="text-center mb-10 relative z-10">
-          <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em]">Preparing students for</p>
+      <section className="py-24 overflow-hidden relative bg-black">
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+        <div className="text-center mb-16 relative z-10">
+          <p className="text-[12px] font-mono text-white/50 uppercase tracking-[0.4em]">Preparing students for top medical institutions</p>
         </div>
         
         {/* Marquee Container */}
-        <div className="relative w-full overflow-hidden flex whitespace-nowrap">
+        <div className="relative w-full overflow-hidden flex flex-col gap-12 whitespace-nowrap">
           {/* Gradient Masks */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
           
+          {/* Row 1 (Leftwards) */}
           <motion.div 
-            className="flex gap-16 min-w-max"
-            animate={{ x: [0, -1035] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 15 }}
+            className="flex gap-20 min-w-max"
+            animate={{ x: [0, -1800] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
           >
-            {/* Duplicate the items for seamless loop */}
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex gap-16 items-center">
-                {['NEET PG', 'USMLE', 'PLAB', 'INICET', 'FMGE', 'MRCP', 'MRCS'].map((exam, idx) => (
-                  <div key={idx} className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 group-hover:border-[#eab308]/50 transition-all">
-                       <Award className="w-5 h-5 text-white group-hover:text-[#eab308]" />
-                    </div>
-                    <span className="text-xl font-bold text-white/50 group-hover:text-white transition-colors">{exam}</span>
+              <div key={i} className="flex gap-20 items-center">
+                {[
+                  { name: 'NEET PG', color: 'text-blue-500' },
+                  { name: 'USMLE', color: 'text-red-500' },
+                  { name: 'PLAB', color: 'text-purple-500' },
+                  { name: 'INICET', color: 'text-emerald-500' },
+                  { name: 'FMGE', color: 'text-yellow-500' }
+                ].map((exam, idx) => (
+                  <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
+                    <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
+                      {exam.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Row 2 (Rightwards) */}
+          <motion.div 
+            className="flex gap-20 min-w-max ml-[-800px]"
+            animate={{ x: [-1800, 0] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 45 }}
+          >
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex gap-20 items-center">
+                {[
+                  { name: 'MRCP', color: 'text-indigo-500' },
+                  { name: 'MRCS', color: 'text-cyan-500' },
+                  { name: 'AIIMS', color: 'text-amber-500' },
+                  { name: 'JIPMER', color: 'text-rose-500' },
+                  { name: 'NEXT', color: 'text-teal-500' }
+                ].map((exam, idx) => (
+                  <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
+                    <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
+                      {exam.name}
+                    </span>
                   </div>
                 ))}
               </div>
