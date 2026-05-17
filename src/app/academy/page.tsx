@@ -17,6 +17,9 @@ export default function AcademyLanding() {
   const [courses, setCourses] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [mentors, setMentors] = useState<any[]>([]);
+  const [customName, setCustomName] = useState("Aman Sharma");
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [cardTheme, setCardTheme] = useState("indigo");
 
   useEffect(() => {
     getCourses().then(setCourses);
@@ -487,6 +490,288 @@ export default function AcademyLanding() {
               </div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── 5.3 CREDENTIALS SHOWCASE SECTION ── */}
+      <section className="relative py-24 bg-gradient-to-br from-[#fafbff] to-[#f2f5fa] overflow-hidden border-t border-slate-100">
+        {/* Background Vectors */}
+        <div className="absolute top-1/3 left-[-15%] w-[45%] h-[45%] rounded-full bg-[#5a4bda]/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/3 right-[-15%] w-[45%] h-[45%] rounded-full bg-[#ff5500]/5 blur-[120px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-[#5a4bda] text-xs font-bold uppercase tracking-[0.3em] bg-[#5a4bda]/10 px-3.5 py-1.5 rounded-full">Academy Credentials</span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mt-4 mb-5">
+              Official Admittance &amp; <br />
+              <span className="text-[#ff5500]">Completion Credentials</span>
+            </h2>
+            <p className="text-slate-600 font-medium text-base md:text-lg">
+              Every admitted student receives a personalized, secure official Institution ID Card, followed by a verified blockchain Certificate of Completion once course criteria are met.
+            </p>
+          </div>
+
+          {/* Real-time Interactive Control Panel */}
+          <div className="max-w-xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.04)] p-6 mb-16">
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">Customize Student Name:</label>
+                <input 
+                  type="text" 
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value.slice(0, 32))}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#5a4bda] text-slate-800 font-bold transition-all placeholder-slate-300"
+                  placeholder="Enter full name..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">Choose ID Accent Theme:</label>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'indigo', name: 'Cobalt', color: 'bg-indigo-600' },
+                    { id: 'orange', name: 'Solar', color: 'bg-[#ff5500]' },
+                    { id: 'emerald', name: 'Emerald', color: 'bg-emerald-600' },
+                    { id: 'dark', name: 'Obsidian', color: 'bg-slate-900' }
+                  ].map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => setCardTheme(theme.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-black transition-all ${cardTheme === theme.id ? 'border-slate-900 bg-slate-900 text-white shadow-md' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full ${theme.color}`} />
+                      {theme.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Showcase Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch max-w-6xl mx-auto">
+            
+            {/* LEFT SIDE: Interactive 3D Scholar ID Card (4 columns) */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center">
+              <div className="text-center mb-6">
+                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-widest bg-slate-100 px-3 py-1 rounded-full">Interactive 3D ID Card</span>
+                <p className="text-xs text-slate-500 font-medium mt-1.5">Click card below to flip and view signature panel</p>
+              </div>
+
+              {/* 3D Perspective Wrapper */}
+              <div 
+                className="w-[280px] h-[440px] cursor-pointer relative"
+                onClick={() => setIsCardFlipped(!isCardFlipped)}
+                style={{ perspective: 1200 }}
+              >
+                <motion.div 
+                  className="w-full h-full relative"
+                  style={{ transformStyle: "preserve-3d" }}
+                  animate={{ rotateY: isCardFlipped ? 180 : 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
+                  
+                  {/* FRONT OF ID CARD */}
+                  <div 
+                    className={`absolute inset-0 w-full h-full rounded-[24px] p-5 flex flex-col justify-between shadow-2xl border-4 border-white/10 text-white overflow-hidden`}
+                    style={{ 
+                      backfaceVisibility: "hidden",
+                      background: cardTheme === 'indigo' 
+                        ? 'linear-gradient(to bottom, #4f46e5, #312e81)' 
+                        : cardTheme === 'orange'
+                        ? 'linear-gradient(to bottom, #ff5500, #9a2000)'
+                        : cardTheme === 'emerald'
+                        ? 'linear-gradient(to bottom, #059669, #064e3b)'
+                        : 'linear-gradient(to bottom, #1e293b, #020617)'
+                    }}
+                  >
+                    {/* Hologram shine layer */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 pointer-events-none" />
+
+                    {/* Card Top */}
+                    <div className="flex justify-between items-start relative z-10">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">Official Admittance</p>
+                        <h4 className="text-xs font-black tracking-tighter">HEALIX ACADEMY</h4>
+                      </div>
+                      <span className="text-[9px] font-black bg-white/25 px-2 py-0.5 rounded-full">2026-27</span>
+                    </div>
+
+                    {/* Scholar profile */}
+                    <div className="flex flex-col items-center text-center space-y-3.5 relative z-10">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white/20 shadow-lg relative bg-white/10 flex items-center justify-center">
+                        <Image src="https://i.pravatar.cc/150?img=33" alt="Student" fill className="object-cover" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black tracking-tight uppercase truncate max-w-[220px]">{customName || "Aman Sharma"}</h3>
+                        <span className="text-[8px] font-extrabold uppercase bg-white/15 text-white tracking-[0.2em] px-3 py-1 rounded-full">Official Scholar</span>
+                      </div>
+                    </div>
+
+                    {/* Metadata details */}
+                    <div className="space-y-2 relative z-10 border-t border-white/15 pt-3.5 text-left">
+                      <div className="grid grid-cols-2 gap-2 text-[9px]">
+                        <div>
+                          <p className="text-white/60 font-medium">SCHOLAR ID</p>
+                          <p className="font-extrabold tracking-wider">HX-2026-9041</p>
+                        </div>
+                        <div>
+                          <p className="text-white/60 font-medium">DISCIPLINE</p>
+                          <p className="font-extrabold tracking-wider">IIT JEE CORE</p>
+                        </div>
+                      </div>
+
+                      {/* Barcode representation */}
+                      <div className="pt-2 flex justify-center">
+                        <svg className="w-full h-8 opacity-75 text-white" viewBox="0 0 100 24" fill="currentColor">
+                          <rect x="0" width="2" height="24" />
+                          <rect x="3" width="1" height="24" />
+                          <rect x="6" width="3" height="24" />
+                          <rect x="11" width="1" height="24" />
+                          <rect x="13" width="2" height="24" />
+                          <rect x="17" width="1" height="24" />
+                          <rect x="20" width="3" height="24" />
+                          <rect x="25" width="2" height="24" />
+                          <rect x="29" width="1" height="24" />
+                          <rect x="32" width="2" height="24" />
+                          <rect x="36" width="3" height="24" />
+                          <rect x="41" width="1" height="24" />
+                          <rect x="44" width="2" height="24" />
+                          <rect x="48" width="1" height="24" />
+                          <rect x="51" width="3" height="24" />
+                          <rect x="56" width="2" height="24" />
+                          <rect x="60" width="1" height="24" />
+                          <rect x="63" width="2" height="24" />
+                          <rect x="67" width="3" height="24" />
+                          <rect x="72" width="1" height="24" />
+                          <rect x="75" width="2" height="24" />
+                          <rect x="79" width="1" height="24" />
+                          <rect x="82" width="3" height="24" />
+                          <rect x="87" width="2" height="24" />
+                          <rect x="91" width="1" height="24" />
+                          <rect x="94" width="2" height="24" />
+                          <rect x="98" width="2" height="24" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BACK OF ID CARD */}
+                  <div 
+                    className="absolute inset-0 w-full h-full rounded-[24px] p-5 flex flex-col justify-between shadow-2xl border-4 border-slate-800 text-slate-300 bg-slate-950"
+                    style={{ 
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)"
+                    }}
+                  >
+                    <div className="text-left space-y-4">
+                      <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#ff5500]">Institution Terms</h4>
+                        <p className="text-[8px] text-slate-400 mt-1 leading-normal">
+                          This smart admittance token certifies that the holder is registered in the official database of Healix Academy.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-1.5 text-[8px] text-slate-400 leading-normal border-t border-slate-800 pt-3">
+                        <p>• Verification hash: <span className="font-mono text-slate-200">0x84a9...b411</span></p>
+                        <p>• Access allowed: Live Classrooms &amp; Test Portals</p>
+                        <p>• Support: reach out at connect@healix.ac</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-800 pt-4 flex justify-between items-end">
+                      <div className="text-left">
+                        <p className="text-[6px] text-slate-500">REGISTRAR SIGNATURE</p>
+                        <p className="font-serif text-slate-300 italic text-[11px] font-extrabold tracking-tight mt-0.5">Dr. Arvind Rao</p>
+                      </div>
+                      
+                      {/* Custom styled QR box */}
+                      <div className="w-12 h-12 bg-white rounded-lg p-1.5 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full text-slate-900" viewBox="0 0 100 100" fill="currentColor">
+                          <path d="M0 0h30v30H0zm40 0h20v20H40zm30 0h30v30H70zM0 40h20v20H0zm30 30h20v20H30zM0 70h30v30H0zm70 0h30v30H70zm20-30h10v20H90zm-40 0h20v10H50z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                </motion.div>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE: Premium Certificate of Completion (7 columns) */}
+            <div className="lg:col-span-7 flex flex-col items-center justify-center">
+              <div className="text-center mb-6">
+                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-widest bg-slate-100 px-3 py-1 rounded-full">Accredited Diploma</span>
+                <p className="text-xs text-slate-500 font-medium mt-1.5">Official certificate issued upon curriculum graduation</p>
+              </div>
+
+              {/* Certificate Container */}
+              <div className="w-full max-w-[580px] aspect-[1.58] bg-[#0c101d] rounded-2xl p-6 md:p-8 flex flex-col justify-between border-4 border-[#d4af37]/30 shadow-2xl relative overflow-hidden text-white font-serif">
+                
+                {/* Subtle border detailing */}
+                <div className="absolute inset-2 border border-[#d4af37]/20 pointer-events-none rounded-lg" />
+                
+                {/* Background watermarked emblem */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+                  <span className="text-[180px] font-bold">HX</span>
+                </div>
+
+                {/* Certificate Top */}
+                <div className="text-center space-y-1 relative z-10">
+                  <p className="text-[8px] md:text-[9px] font-sans font-black tracking-[0.35em] text-[#d4af37] uppercase">Certificate of Completion</p>
+                  <p className="text-[6px] md:text-[7px] font-sans font-extrabold text-slate-400 tracking-widest uppercase">HEALIX ACADEMY COMPREHENSIVE CURRICULUM</p>
+                </div>
+
+                {/* Certificate Core Text */}
+                <div className="text-center space-y-4 my-2 relative z-10">
+                  <p className="text-[9px] md:text-[10px] text-slate-300 italic font-sans font-semibold">This document serves to certify that</p>
+                  
+                  {/* Dynamic Name Display */}
+                  <h3 className="text-xl md:text-3xl font-extrabold text-white tracking-tight uppercase underline decoration-[#d4af37]/40 underline-offset-4 py-1 truncate max-w-full font-serif italic">
+                    {customName || "Aman Sharma"}
+                  </h3>
+                  
+                  <p className="text-[8px] md:text-[10px] text-slate-400 font-sans leading-relaxed max-w-md mx-auto">
+                    has successfully qualified the advanced physical mechanics, organic biochemistry, and mathematical analysis modules for the competitive IIT JEE &amp; NEET entrance examinations.
+                  </p>
+                </div>
+
+                {/* Certificate Bottom Signatures & Seal */}
+                <div className="flex justify-between items-end border-t border-[#d4af37]/20 pt-4 relative z-10 font-sans">
+                  
+                  {/* Signature 1 */}
+                  <div className="text-left space-y-1">
+                    <p className="font-serif italic text-white/90 text-sm font-extrabold">Dr. Arvind Rao</p>
+                    <div className="w-16 h-[1px] bg-slate-700" />
+                    <p className="text-[6px] md:text-[7px] text-slate-500 font-bold uppercase tracking-wider">ACADEMY DIRECTOR</p>
+                  </div>
+
+                  {/* Golden Seal Emblem */}
+                  <motion.div 
+                    whileHover={{ scale: 1.08 }}
+                    className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#ffd700] via-[#d4af37] to-[#aa7c11] flex items-center justify-center shadow-lg shadow-[#d4af37]/20 border-2 border-white/20 shrink-0 relative cursor-pointer"
+                  >
+                    {/* Seal Rays */}
+                    <div className="absolute inset-0 rounded-full border border-dashed border-white/30 animate-[spin_20s_linear_infinite]" />
+                    <span className="text-[9px] md:text-xs font-black text-slate-950 font-sans tracking-tighter">HX SEAL</span>
+                  </motion.div>
+
+                  {/* Signature 2 */}
+                  <div className="text-right space-y-1">
+                    <p className="font-serif italic text-white/90 text-sm font-extrabold">Dr. Sarah Chen</p>
+                    <div className="w-16 h-[1px] bg-slate-700 ml-auto" />
+                    <p className="text-[6px] md:text-[7px] text-slate-500 font-bold uppercase tracking-wider">CHIEF ADVISOR</p>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
