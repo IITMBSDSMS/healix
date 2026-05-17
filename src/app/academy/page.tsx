@@ -4,15 +4,12 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { 
-  ArrowRight, Terminal, Users, Play, 
-  Zap, Shield, Globe, Star,
-  MessageSquare, BarChart, Rocket, Award
+  ArrowRight, Users, MessageSquare, Rocket
 } from "lucide-react";
 import { MentorMarquee } from "@/components/academy/MentorMarquee";
 import { CourseCard } from "@/components/academy/CourseCard";
 import { getCourses, getMentors } from "@/lib/academy/db";
 import { useState, useEffect } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
 export default function AcademyLanding() {
@@ -27,7 +24,7 @@ export default function AcademyLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#eab308]/30">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
       {/* ── 1. HERO SECTION (Physics Wallah Style) ── */}
       <section className="relative pt-32 pb-40 bg-[#f4f7fc] text-slate-900 border-b-0 overflow-visible">
@@ -42,7 +39,7 @@ export default function AcademyLanding() {
               className="text-left space-y-6"
             >
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-slate-900">
-                India's <span className="text-[#5a4bda]">Premier & <br/> Clinical-Grade</span> <br/>
+                India&apos;s <span className="text-[#5a4bda]">Premier & <br/> Clinical-Grade</span> <br/>
                 Research Academy
               </h1>
               
@@ -175,17 +172,17 @@ export default function AcademyLanding() {
       </section>
 
       {/* Spacer to account for the overlapping banner */}
-      <div className="h-24 bg-[#050505]"></div>
+      <div className="h-24 bg-transparent"></div>
       
       {/* ── 2. MARQUEE SECTION ── */}
       <MentorMarquee mentors={mentors} />
 
       {/* ── 3. METHODOLOGY ── */}
-      <section className="py-40 bg-white/[0.01]">
+      <section className="py-24 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">Built by practitioners, <br/> not instructors.</h2>
-            <p className="text-white/50 text-xl max-w-2xl mx-auto">We don't teach from slides. We teach from real system architectures and production codebases.</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-slate-900">Built by practitioners, <br/> not instructors.</h2>
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto font-medium">We don&apos;t teach from slides. We teach from real system architectures and production codebases.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -194,28 +191,31 @@ export default function AcademyLanding() {
                 title: "Project-First", 
                 desc: "Every module culminates in a live capstone project. Build real systems, not toy examples.", 
                 icon: Rocket,
-                color: "text-[#eab308]" 
+                color: "text-[#ff5500]",
+                bg: "bg-[#ff5500]/10"
               },
               { 
                 title: "1:1 Mentorship", 
                 desc: "Direct access to staff engineers from Stripe, Google, and IIT. No teaching assistants.", 
                 icon: MessageSquare,
-                color: "text-blue-400" 
+                color: "text-blue-600",
+                bg: "bg-blue-600/10"
               },
               { 
                 title: "Vetted Network", 
                 desc: "Join an elite community of builders. Lifetime access to our private engineering Slack.", 
                 icon: Users,
-                color: "text-purple-400" 
+                color: "text-purple-600",
+                bg: "bg-purple-600/10"
               }
             ].map((item, i) => (
-              <GlassCard key={i} className="p-12 border-white/5 group hover:bg-white/[0.02] transition-all h-full">
-                <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-8 ${item.color}`}>
+              <div key={i} className="p-10 rounded-2xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-gray-100 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bg} ${item.color}`}>
                   <item.icon className="w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold mb-4 tracking-tight">{item.title}</h4>
-                <p className="text-white/50 leading-relaxed">{item.desc}</p>
-              </GlassCard>
+                <h4 className="text-2xl font-bold mb-3 tracking-tight text-slate-900">{item.title}</h4>
+                <p className="text-slate-500 leading-relaxed font-medium">{item.desc}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -255,25 +255,25 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 5. MENTOR TEASER ── */}
-      <section className="py-40">
+      <section className="py-24 bg-[#f8f9fc]">
         <div className="max-w-7xl mx-auto px-6">
-          <GlassCard className="p-16 md:p-24 border-white/5 bg-white/[0.02] relative overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+          <div className="p-12 md:p-16 rounded-3xl border border-gray-200 bg-white shadow-xl relative overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">Mentors from <br/> top institutions.</h2>
-                <p className="text-white/60 text-lg mb-12 leading-relaxed">
+                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-slate-900">Mentors from <br/> top institutions.</h2>
+                <p className="text-slate-600 text-lg mb-10 leading-relaxed font-medium">
                   Learn directly from those who built the infrastructure you use every day. Our mentors are vetted for both technical excellence and pedagogical skill.
                 </p>
                 <Link href="/academy/mentors">
-                  <Button size="lg" className="px-8 h-14">
+                  <Button size="lg" className="px-8 h-14 bg-[#5a4bda] hover:bg-[#4a3bc0] text-white">
                     Meet the Faculty <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 {mentors.slice(0, 4).map((mentor, i) => (
-                  <GlassCard key={i} className="p-6 text-center border-white/5 hover:border-white/20 transition-all flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10 mb-4">
+                  <div key={i} className="p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center bg-white">
+                    <div className="w-16 h-16 rounded-full overflow-hidden mb-4 shadow-sm border border-gray-100">
                       <Image 
                         src={mentor.photoUrl || "https://i.pravatar.cc/150"} 
                         alt={mentor.name} 
@@ -282,28 +282,28 @@ export default function AcademyLanding() {
                         className="object-cover w-full h-full"
                       />
                     </div>
-                    <p className="text-sm font-bold text-white mb-1">{mentor.name}</p>
-                    <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">{mentor.institution}</p>
-                  </GlassCard>
+                    <p className="text-sm font-bold text-slate-900 mb-1">{mentor.name}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{mentor.institution}</p>
+                  </div>
                 ))}
               </div>
             </div>
-          </GlassCard>
+          </div>
         </div>
       </section>
 
       {/* ── 5.5 EXAMS MARQUEE ── */}
-      <section className="py-24 overflow-hidden relative bg-black">
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+      <section className="py-24 overflow-hidden relative bg-white border-y border-gray-100">
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.01] mix-blend-overlay pointer-events-none" />
         <div className="text-center mb-16 relative z-10">
-          <p className="text-[12px] font-mono text-white/50 uppercase tracking-[0.4em]">Preparing students for top institutions & competitive exams</p>
+          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.4em]">Preparing students for top institutions & competitive exams</p>
         </div>
         
         {/* Marquee Container */}
         <div className="relative w-full overflow-hidden flex flex-col gap-12 whitespace-nowrap">
           {/* Gradient Masks */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
           
           {/* Row 1 (Leftwards) */}
           <motion.div 
@@ -315,13 +315,13 @@ export default function AcademyLanding() {
               <div key={i} className="flex gap-20 items-center">
                 {[
                   { name: 'NEET PG', color: 'text-blue-500' },
-                  { name: 'JEE MAIN', color: 'text-[#eab308]' },
+                  { name: 'JEE MAIN', color: 'text-yellow-500' },
                   { name: 'USMLE', color: 'text-red-500' },
                   { name: 'MHCET', color: 'text-orange-500' },
                   { name: 'PLAB', color: 'text-purple-500' },
                   { name: 'CBSE BOARD', color: 'text-emerald-500' }
                 ].map((exam, idx) => (
-                  <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
+                  <div key={idx} className="flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
                     <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
                       {exam.name}
                     </span>
@@ -347,7 +347,7 @@ export default function AcademyLanding() {
                   { name: 'FMGE', color: 'text-yellow-500' },
                   { name: 'JIPMER', color: 'text-teal-500' }
                 ].map((exam, idx) => (
-                  <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
+                  <div key={idx} className="flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
                     <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
                       {exam.name}
                     </span>
@@ -360,22 +360,22 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 6. FINAL CTA ── */}
-      <section className="pb-40 px-6">
+      <section className="py-24 bg-[#ff5500] text-white px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-12">Apply for the <br/> 2026 cohort.</h2>
+          <h2 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-8">Apply for the <br/> 2026 cohort.</h2>
           <div className="flex flex-wrap justify-center gap-6 mb-12">
             <Link href="/register">
-              <Button size="lg" className="px-12 h-16 text-lg">
+              <Button size="lg" className="px-12 h-16 text-lg bg-white text-[#ff5500] hover:bg-gray-100 hover:scale-105 transition-all shadow-xl font-bold">
                 Start Application
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" size="lg" className="px-12 h-16 text-lg">
+              <Button variant="outline" size="lg" className="px-12 h-16 text-lg border-white text-white hover:bg-white hover:text-[#ff5500] hover:scale-105 transition-all font-bold">
                 Book Intro Call
               </Button>
             </Link>
           </div>
-          <p className="text-xs font-mono text-white/20 uppercase tracking-[0.5em]">Selective Admission · Limited Seats · Unlimited Impact</p>
+          <p className="text-xs font-bold text-white/80 uppercase tracking-[0.3em]">Selective Admission · Limited Seats · Unlimited Impact</p>
         </div>
       </section>
       
