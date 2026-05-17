@@ -35,22 +35,27 @@ export default function AcademyLanding() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             
             {/* Left Side: Text & CTA */}
-            <div className="text-left space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-left space-y-6"
+            >
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-slate-900">
-                Bharat's <span className="text-[#5a4bda]">Trusted & <br/> Affordable</span> <br/>
-                Educational Platform
+                India's <span className="text-[#5a4bda]">Premier & <br/> Clinical-Grade</span> <br/>
+                Research Academy
               </h1>
               
               <p className="text-lg text-slate-600 max-w-md leading-relaxed">
-                Unlock your potential by signing up with Healix Academy- The most affordable learning solution
+                Unlock your potential by signing up with Healix Academy— The ultimate biomedical engineering learning solution.
               </p>
               
               <div className="pt-4">
-                <Button size="lg" className="px-8 h-12 text-base font-semibold bg-[#5a4bda] hover:bg-[#4a3bc0] text-white rounded shadow-lg shadow-[#5a4bda]/30 border-0">
+                <Button size="lg" className="px-8 h-12 text-base font-semibold bg-[#5a4bda] hover:bg-[#4a3bc0] hover:scale-105 transition-all text-white rounded shadow-lg shadow-[#5a4bda]/30 border-0">
                   Get Started
                 </Button>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Side: Circular Avatars & Bubbles */}
             <div className="relative h-[400px] hidden lg:block">
@@ -62,26 +67,44 @@ export default function AcademyLanding() {
               </div>
 
               {/* Student Avatar (Top Right) */}
-              <div className="absolute top-8 right-8 z-20">
-                <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center">
+              <motion.div 
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-8 right-8 z-20 group"
+              >
+                <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center hover:scale-105 transition-transform cursor-pointer">
                   <Image src="https://i.pravatar.cc/300?img=5" alt="Student" width={128} height={128} className="object-cover" />
                 </div>
                 {/* Chat Bubble Student */}
-                <div className="absolute top-12 -left-40 bg-white px-3 py-2 rounded-lg rounded-tr-none shadow-md border border-gray-100 text-[13px] font-medium text-slate-700 w-40 text-center">
-                  Alakh Sir, What is PW?
-                </div>
-              </div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="absolute top-12 -left-48 bg-white px-4 py-3 rounded-xl rounded-tr-none shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 text-[13px] font-semibold text-slate-700 w-48 text-center group-hover:scale-110 transition-transform origin-top-right"
+                >
+                  Dr. Sarah, What is Healix?
+                </motion.div>
+              </motion.div>
 
               {/* Teacher Avatar (Bottom Left) */}
-              <div className="absolute bottom-8 left-16 z-20">
-                <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center">
+              <motion.div 
+                animate={{ y: [0, 15, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute bottom-8 left-16 z-20 group"
+              >
+                <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center hover:scale-105 transition-transform cursor-pointer">
                   <Image src="https://i.pravatar.cc/300?img=11" alt="Teacher" width={160} height={160} className="object-cover" />
                 </div>
                 {/* Chat Bubble Teacher */}
-                <div className="absolute top-8 left-36 bg-[#1e155c] px-4 py-3 rounded-lg rounded-tl-none shadow-lg text-sm text-white w-64 font-medium leading-relaxed">
-                  PW is where students learn with love and can grow with guidance
-                </div>
-              </div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 2, duration: 0.5 }}
+                  className="absolute top-8 left-36 bg-[#1e155c] px-5 py-4 rounded-xl rounded-tl-none shadow-[0_10px_30px_rgba(30,21,92,0.3)] text-sm text-white w-64 font-medium leading-relaxed group-hover:scale-105 transition-transform origin-top-left"
+                >
+                  Healix is where engineers build real clinical systems with mentorship.
+                </motion.div>
+              </motion.div>
 
             </div>
           </div>
