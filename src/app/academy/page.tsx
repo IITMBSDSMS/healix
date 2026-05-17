@@ -114,28 +114,61 @@ export default function AcademyLanding() {
         <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-6">
           <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-8 px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-gray-100">
-              <div className="text-center px-4 flex flex-col items-center">
-                <div className="bg-red-500 text-white font-bold text-[10px] inline-flex px-2 py-1 rounded mb-3 items-center justify-center gap-1 w-max">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-center px-4 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                  <div className="bg-red-500 text-white font-bold text-[10px] inline-flex px-2 py-1 rounded mb-3 items-center justify-center gap-1 w-max shadow-sm shadow-red-500/20 group-hover:shadow-md group-hover:shadow-red-500/40 transition-shadow">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-base group-hover:text-red-500 transition-colors">Daily Live</h4>
+                  <p className="text-[11px] text-slate-500 mt-1">Interactive classes</p>
                 </div>
-                <h4 className="font-bold text-slate-900 text-base">Daily Live</h4>
-                <p className="text-[11px] text-slate-500 mt-1">Interactive classes</p>
-              </div>
-              <div className="text-center px-4">
-                <div className="text-2xl mb-2 flex justify-center text-blue-500">📝</div>
-                <h4 className="font-bold text-slate-900 text-base">10 Million +</h4>
-                <p className="text-[11px] text-slate-500 mt-1">Tests, sample papers & notes</p>
-              </div>
-              <div className="text-center px-4">
-                <div className="text-2xl mb-2 flex justify-center text-purple-500">🧠</div>
-                <h4 className="font-bold text-slate-900 text-base">24 x 7</h4>
-                <p className="text-[11px] text-slate-500 mt-1">Doubt solving sessions</p>
-              </div>
-              <div className="text-center px-4">
-                <div className="text-2xl mb-2 flex justify-center text-yellow-500">🏆</div>
-                <h4 className="font-bold text-slate-900 text-base">100 +</h4>
-                <p className="text-[11px] text-slate-500 mt-1">Offline centres</p>
-              </div>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-center px-4 group cursor-pointer"
+              >
+                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                  <div className="text-2xl mb-2 flex justify-center text-blue-500 group-hover:scale-110 transition-transform">📝</div>
+                  <h4 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors">10 Million +</h4>
+                  <p className="text-[11px] text-slate-500 mt-1">Tests, sample papers & notes</p>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-center px-4 group cursor-pointer"
+              >
+                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                  <div className="text-2xl mb-2 flex justify-center text-purple-500 group-hover:scale-110 transition-transform">🧠</div>
+                  <h4 className="font-bold text-slate-900 text-base group-hover:text-purple-600 transition-colors">24 x 7</h4>
+                  <p className="text-[11px] text-slate-500 mt-1">Doubt solving sessions</p>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="text-center px-4 group cursor-pointer"
+              >
+                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                  <div className="text-2xl mb-2 flex justify-center text-yellow-500 group-hover:scale-110 transition-transform">🏆</div>
+                  <h4 className="font-bold text-slate-900 text-base group-hover:text-yellow-600 transition-colors">100 +</h4>
+                  <p className="text-[11px] text-slate-500 mt-1">Offline centres</p>
+                </div>
+              </motion.div>
+
             </div>
           </div>
         </div>
