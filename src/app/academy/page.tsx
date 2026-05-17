@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { 
-  ArrowRight, Users, MessageSquare, Rocket
+  Users, MessageSquare, Rocket
 } from "lucide-react";
 import { MentorMarquee } from "@/components/academy/MentorMarquee";
 import { CourseCard } from "@/components/academy/CourseCard";
@@ -254,41 +254,49 @@ export default function AcademyLanding() {
         </div>
       </section>
 
-      {/* ── 5. MENTOR TEASER ── */}
-      <section className="py-24 bg-[#f8f9fc]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="p-12 md:p-16 rounded-3xl border border-gray-200 bg-white shadow-xl relative overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-slate-900">Mentors from <br/> top institutions.</h2>
-                <p className="text-slate-600 text-lg mb-10 leading-relaxed font-medium">
-                  Learn directly from those who built the infrastructure you use every day. Our mentors are vetted for both technical excellence and pedagogical skill.
-                </p>
-                <Link href="/academy/mentors">
-                  <Button size="lg" className="px-8 h-14 bg-[#5a4bda] hover:bg-[#4a3bc0] text-white">
-                    Meet the Faculty <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                {mentors.slice(0, 4).map((mentor, i) => (
-                  <div key={i} className="p-6 rounded-2xl text-center border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center bg-white">
-                    <div className="w-16 h-16 rounded-full overflow-hidden mb-4 shadow-sm border border-gray-100">
-                      <Image 
-                        src={mentor.photoUrl || "https://i.pravatar.cc/150"} 
-                        alt={mentor.name} 
-                        width={64} 
-                        height={64} 
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    <p className="text-sm font-bold text-slate-900 mb-1">{mentor.name}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{mentor.institution}</p>
+      {/* ── 5. TOP INSTITUTIONS MARQUEE ── */}
+      <section className="py-24 overflow-hidden relative bg-[#f8f9fc]">
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.01] mix-blend-overlay pointer-events-none" />
+        <div className="text-center mb-16 relative z-10">
+          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.4em]">Mentors from top institutions</p>
+        </div>
+        
+        {/* Marquee Container */}
+        <div className="relative w-full overflow-hidden flex flex-col gap-12 whitespace-nowrap">
+          {/* Gradient Masks */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#f8f9fc] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#f8f9fc] to-transparent z-10 pointer-events-none" />
+          
+          {/* Row 1 (Rightwards / Left to Right) */}
+          <motion.div 
+            className="flex gap-20 min-w-max ml-[-1200px]"
+            animate={{ x: [-2200, 0] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 45 }}
+          >
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex gap-20 items-center">
+                {[
+                  { name: 'IIT DELHI', color: 'text-slate-400' },
+                  { name: 'IIT BOMBAY', color: 'text-slate-400' },
+                  { name: 'AIIMS DELHI', color: 'text-slate-400' },
+                  { name: 'AIIMS BHOPAL', color: 'text-slate-400' },
+                  { name: "NIT's", color: 'text-slate-400' },
+                  { name: 'IIT ROORKEE', color: 'text-slate-400' },
+                  { name: 'IIT JODHPUR', color: 'text-slate-400' },
+                  { name: 'IIT GUWAHATI', color: 'text-slate-400' },
+                  { name: 'AIIMS KALYANI', color: 'text-slate-400' },
+                  { name: 'AIIMS RAEBARELI', color: 'text-slate-400' },
+                  { name: 'TOP GMC', color: 'text-slate-400' }
+                ].map((inst, idx) => (
+                  <div key={idx} className="flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-300 scale-95 hover:scale-105 cursor-pointer">
+                    <span className={`text-4xl md:text-5xl font-black tracking-tighter ${inst.color} hover:text-[#5a4bda] transition-colors`}>
+                      {inst.name}
+                    </span>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
