@@ -663,6 +663,295 @@ export default function AcademyLanding() {
         </div>
       </section>
 
+      {/* ── 5.4 STUDY RESOURCES SECTION ── */}
+      <section className="relative py-24 bg-white overflow-hidden border-t border-slate-100">
+        {/* Background decorative patterns */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-[0.02] pointer-events-none bg-[radial-gradient(#5a4bda_1px,transparent_1px)] [background-size:24px_24px]" />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+              Study Resources
+            </h2>
+            <p className="text-slate-600 font-medium text-base md:text-lg">
+              A diverse array of learning materials to enhance your educational journey.
+            </p>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+            
+            {/* CARD 1: Reference Books */}
+            <div className="rounded-3xl bg-[#edf5ff] p-8 md:p-10 flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-blue-100/50 hover:shadow-[0_20px_45px_rgba(0,0,0,0.05)] transition-all duration-300 group">
+              <div className="text-left">
+                <h3 className="text-2xl font-black text-[#1e3a8a] tracking-tight mb-3">Reference Books</h3>
+                <p className="text-[#1e3a8a]/70 font-semibold text-sm leading-relaxed mb-8">
+                  Our experts have created thorough study materials that break down complicated concepts into easily understandable content.
+                </p>
+              </div>
+
+              {/* 3D Book Display Stand */}
+              <div className="relative w-full h-[220px] flex items-center justify-center mt-auto overflow-visible select-none pb-4">
+                {/* Podium steps */}
+                <div className="absolute bottom-2 left-[10%] w-[110px] h-[24px] rounded-full bg-gradient-to-b from-white to-slate-200 shadow-md border border-slate-300/30 z-10" />
+                <div className="absolute bottom-2 right-[10%] w-[110px] h-[24px] rounded-full bg-gradient-to-b from-white to-slate-200 shadow-md border border-slate-300/30 z-10" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140px] h-[30px] rounded-full bg-gradient-to-b from-white to-slate-100 shadow-lg border border-slate-300/25 z-20" />
+
+                {/* Left Book: NCERT Exemplar (Red) */}
+                <motion.div 
+                  whileHover={{ y: -6, rotate: -12 }}
+                  className="absolute bottom-7 left-[14%] w-[70px] h-[100px] bg-gradient-to-br from-red-600 via-red-500 to-red-700 rounded-md shadow-[5px_15px_25px_rgba(0,0,0,0.2)] border-l-4 border-red-800 z-30 transform rotate-[-8deg] flex flex-col justify-between p-2 text-white font-sans text-left transition-all duration-300"
+                >
+                  <div className="space-y-1">
+                    <p className="text-[7px] font-black tracking-widest opacity-80 uppercase">NCERT</p>
+                    <p className="text-[8px] font-black uppercase tracking-tight leading-none">Exemplar</p>
+                  </div>
+                  <div className="border-t border-white/20 pt-1 flex justify-between items-center">
+                    <span className="text-[6px] font-bold opacity-60">PHYSICS</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                  </div>
+                </motion.div>
+
+                {/* Right Book: Punch Chemistry (Black/Neon Pink) */}
+                <motion.div 
+                  whileHover={{ y: -6, rotate: 12 }}
+                  className="absolute bottom-7 right-[14%] w-[70px] h-[100px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-md shadow-[-5px_15px_25px_rgba(0,0,0,0.2)] border-l-4 border-pink-600 z-30 transform rotate-[8deg] flex flex-col justify-between p-2 text-white font-sans text-left transition-all duration-300"
+                >
+                  <div className="space-y-1">
+                    <p className="text-[7px] font-black tracking-widest text-pink-500 uppercase">PUNCH</p>
+                    <p className="text-[8px] font-black uppercase tracking-tight leading-none">Chemistry</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-1 flex justify-between items-center">
+                    <span className="text-[6px] font-bold text-pink-400">ORGANIC</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-pink-500/40" />
+                  </div>
+                </motion.div>
+
+                {/* Center Book: Main Featured Core Modules (Yellow/Green) */}
+                <motion.div 
+                  whileHover={{ y: -8, scale: 1.05 }}
+                  className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85px] h-[120px] bg-gradient-to-br from-yellow-500 via-[#ff5500] to-orange-700 rounded-md shadow-[0_20px_35px_rgba(0,0,0,0.25)] border-l-4 border-orange-950 z-40 flex flex-col justify-between p-3 text-white font-sans text-left transition-all duration-300"
+                >
+                  <div className="space-y-1">
+                    <p className="text-[7px] font-black tracking-wider text-yellow-300 uppercase">HEALIX CORE</p>
+                    <p className="text-[9px] font-black uppercase tracking-tight leading-tight">Yakeen<br />JEE/NEET</p>
+                  </div>
+                  <div className="border-t border-white/20 pt-1.5 flex justify-between items-end">
+                    <div>
+                      <p className="text-[5px] font-medium opacity-60">SET OF 4</p>
+                      <p className="text-[6px] font-bold">MODULES</p>
+                    </div>
+                    <span className="text-[7px] font-black bg-white/20 px-1 rounded">HX</span>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Centered Explore Button */}
+              <div className="flex justify-center mt-6">
+                <button className="px-7 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg transition-colors shadow-md shadow-slate-950/10 tracking-wider uppercase">
+                  Explore
+                </button>
+              </div>
+            </div>
+
+            {/* CARD 2: NCERT Solutions */}
+            <div className="rounded-3xl bg-[#fffbf0] p-8 md:p-10 flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-orange-100/50 hover:shadow-[0_20px_45px_rgba(0,0,0,0.05)] transition-all duration-300 group">
+              <div className="text-left">
+                <h3 className="text-2xl font-black text-[#7c2d12] tracking-tight mb-3">NCERT Solutions</h3>
+                <p className="text-[#7c2d12]/70 font-semibold text-sm leading-relaxed mb-8">
+                  Unlock academic excellence with Healix Academy&apos;s NCERT Solutions which provides you step-by-step solutions.
+                </p>
+              </div>
+
+              {/* Fan of Mock Solutions Sheets */}
+              <div className="relative w-full h-[220px] flex items-center justify-center mt-auto overflow-visible select-none pb-4">
+                
+                {/* Left sheet */}
+                <motion.div 
+                  whileHover={{ rotate: -18, y: -4 }}
+                  className="absolute bottom-6 left-[10%] w-[115px] h-[155px] bg-white border border-slate-200/80 rounded-lg shadow-md transform rotate-[-12deg] origin-bottom-right p-3 text-slate-700 transition-all duration-300 z-10"
+                >
+                  <div className="border-b border-slate-100 pb-1.5 mb-1.5 flex justify-between items-center">
+                    <span className="text-[6px] font-extrabold text-[#7c2d12]">MCQ GRID</span>
+                    <span className="text-[5px] font-mono text-slate-400">PAGE 4</span>
+                  </div>
+                  {/* Mock content grid */}
+                  <div className="space-y-1.5">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <span className="text-[5px] font-bold text-slate-400">Q{i+1}.</span>
+                        <div className="w-12 h-1 bg-slate-100 rounded" />
+                        <span className="text-[5px] font-bold text-emerald-500 ml-auto">✓</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Right sheet */}
+                <motion.div 
+                  whileHover={{ rotate: 18, y: -4 }}
+                  className="absolute bottom-6 right-[10%] w-[115px] h-[155px] bg-white border border-slate-200/80 rounded-lg shadow-md transform rotate-[12deg] origin-bottom-left p-3 text-slate-700 transition-all duration-300 z-20"
+                >
+                  <div className="border-b border-slate-100 pb-1.5 mb-1.5 flex justify-between items-center">
+                    <span className="text-[6px] font-extrabold text-[#7c2d12]">CHEM CORE</span>
+                    <span className="text-[5px] font-mono text-slate-400">P. 12</span>
+                  </div>
+                  {/* Benzene Ring Mock Vector drawing */}
+                  <div className="flex flex-col items-center gap-1.5 py-1">
+                    <svg className="w-8 h-8 text-[#7c2d12]/30" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6">
+                      <polygon points="50,5 90,28 90,72 50,95 10,72 10,28" />
+                      <circle cx="50" cy="50" r="28" strokeDasharray="10 5" />
+                    </svg>
+                    <span className="text-[5px] font-mono text-slate-400">Fig 2.1: Benzene Resonance</span>
+                  </div>
+                </motion.div>
+
+                {/* Center Main Sheet */}
+                <motion.div 
+                  whileHover={{ y: -8, scale: 1.03 }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[130px] h-[175px] bg-white border border-slate-200 rounded-lg shadow-[0_15px_30px_rgba(0,0,0,0.06)] p-3 text-slate-800 transition-all duration-300 z-30"
+                >
+                  {/* Sheet Header */}
+                  <div className="border-b border-slate-100 pb-2 mb-2 flex justify-between items-center">
+                    <span className="text-[7px] font-black text-[#ff5500] uppercase tracking-wider">NCERT Solution</span>
+                    <span className="text-[6px] font-bold bg-[#ff5500]/10 text-[#ff5500] px-1 rounded">HX CLASS</span>
+                  </div>
+                  
+                  {/* Physics Drawing inclined plane */}
+                  <div className="space-y-2">
+                    <p className="text-[6px] font-bold text-slate-700 leading-tight">Q1: Find critical velocity on inclined plane with coefficient of friction &mu;.</p>
+                    
+                    {/* Sketch vector */}
+                    <div className="w-full h-12 bg-slate-50/80 rounded border border-slate-100/50 flex items-center justify-center relative">
+                      <svg className="w-20 h-10 text-slate-400" viewBox="0 0 100 50" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        {/* Inclined plane */}
+                        <line x1="10" y1="40" x2="90" y2="40" />
+                        <line x1="10" y1="40" x2="90" y2="10" />
+                        <line x1="90" y1="10" x2="90" y2="40" />
+                        {/* Block */}
+                        <rect x="45" y="16" width="12" height="8" transform="rotate(-20 45 16)" fill="currentColor" opacity="0.1" />
+                        <rect x="45" y="16" width="12" height="8" transform="rotate(-20 45 16)" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                        {/* Gravity vector arrow */}
+                        <path d="M50,22 L50,38 M50,38 L48,34 M50,38 L52,34" strokeWidth="1" />
+                        <text x="53" y="36" fontSize="5" fill="currentColor">mg</text>
+                      </svg>
+                    </div>
+
+                    {/* Equations list */}
+                    <div className="space-y-1 font-mono text-[5.5px] text-slate-500">
+                      <p className="">&bull; N = mg cos(&theta;)</p>
+                      <p className="">&bull; F_fric = &mu; N = &mu; mg cos(&theta;)</p>
+                      <p className="font-bold text-[#ff5500]">&bull; a_net = g(sin(&theta;) - &mu;cos(&theta;))</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Empty placeholder to align button perfectly */}
+              <div className="h-10 mt-6" />
+            </div>
+
+            {/* CARD 3: Notes */}
+            <div className="rounded-3xl bg-[#f0fdf4] p-8 md:p-10 flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-emerald-100/50 hover:shadow-[0_20px_45px_rgba(0,0,0,0.05)] transition-all duration-300 group">
+              <div className="text-left">
+                <h3 className="text-2xl font-black text-[#065f46] tracking-tight mb-3">Notes</h3>
+                <p className="text-[#065f46]/70 font-semibold text-sm leading-relaxed mb-8">
+                  Use Healix Academy&apos;s detailed study materials that simplify complex ideas into easily understandable language.
+                </p>
+              </div>
+
+              {/* Fan of Mock Revision Notes */}
+              <div className="relative w-full h-[220px] flex items-center justify-center mt-auto overflow-visible select-none pb-4">
+                
+                {/* Left sheet */}
+                <motion.div 
+                  whileHover={{ rotate: -18, y: -4 }}
+                  className="absolute bottom-6 left-[10%] w-[115px] h-[155px] bg-white border border-slate-200/80 rounded-lg shadow-md transform rotate-[-10deg] origin-bottom-right p-3 text-slate-700 transition-all duration-300 z-10"
+                >
+                  <div className="border-b border-slate-100 pb-1.5 mb-1.5 flex justify-between items-center">
+                    <span className="text-[6px] font-extrabold text-[#065f46]">FORMULA CHEAT</span>
+                    <span className="text-[5px] font-mono text-slate-400">HX SHEETS</span>
+                  </div>
+                  <div className="space-y-1.5 font-mono text-[5px] text-slate-500">
+                    <p className="font-bold text-slate-800">THERMODYNAMICS</p>
+                    <p>&bull; dQ = dU + dW</p>
+                    <p>&bull; W = &int; P dV</p>
+                    <p>&bull; &eta; = 1 - T_c / T_h</p>
+                    <div className="w-full h-[1.5px] bg-emerald-500/10 my-1" />
+                    <p>&bull; PV^&gamma; = Constant</p>
+                  </div>
+                </motion.div>
+
+                {/* Right-most sheet (layered on top right) */}
+                <motion.div 
+                  whileHover={{ rotate: 18, y: -4 }}
+                  className="absolute bottom-6 right-[10%] w-[115px] h-[155px] bg-white border border-slate-200/80 rounded-lg shadow-md transform rotate-[14deg] origin-bottom-left p-3 text-slate-700 transition-all duration-300 z-30"
+                >
+                  <div className="border-b border-slate-100 pb-1.5 mb-1.5 flex justify-between items-center">
+                    <span className="text-[6px] font-extrabold text-[#065f46]">MATH CORE</span>
+                    <span className="text-[5px] font-mono text-slate-400">SEC A</span>
+                  </div>
+                  {/* Graph representation */}
+                  <div className="space-y-2">
+                    <p className="text-[5.5px] font-bold text-slate-700">Calculus &amp; Slopes of tangent curves:</p>
+                    <div className="w-full h-12 bg-slate-50/80 rounded flex items-center justify-center">
+                      <svg className="w-16 h-10 text-slate-400" viewBox="0 0 80 40" fill="none" stroke="currentColor" strokeWidth="1.2">
+                        {/* Axes */}
+                        <line x1="5" y1="35" x2="75" y2="35" />
+                        <line x1="15" y1="5" x2="15" y2="38" />
+                        {/* Curve */}
+                        <path d="M15,35 C35,35 45,10 70,5" stroke="#065f46" strokeWidth="1.5" />
+                        {/* Tangent line */}
+                        <line x1="30" y1="30" x2="60" y2="5" stroke="#ff5500" strokeDasharray="2 2" />
+                      </svg>
+                    </div>
+                    <p className="text-[5px] font-mono text-slate-400 text-center">dy/dx = Tan(&theta;)</p>
+                  </div>
+                </motion.div>
+
+                {/* Center Main Revision sheet */}
+                <motion.div 
+                  whileHover={{ y: -8, scale: 1.03 }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[130px] h-[175px] bg-white border border-slate-200 rounded-lg shadow-[0_15px_30px_rgba(0,0,0,0.06)] p-3 text-slate-800 transition-all duration-300 z-20"
+                >
+                  {/* Sheet Header */}
+                  <div className="border-b border-slate-100 pb-2 mb-2 flex justify-between items-center">
+                    <span className="text-[7px] font-black text-[#5a4bda] uppercase tracking-wider">Revision Notes</span>
+                    <span className="text-[5px] font-bold bg-[#5a4bda]/10 text-[#5a4bda] px-1.5 py-0.5 rounded-full">CORE</span>
+                  </div>
+                  
+                  {/* Lecture summary notes mock text */}
+                  <div className="space-y-2 text-left">
+                    <span className="text-[6px] font-extrabold bg-[#065f46]/10 text-[#065f46] px-1 py-0.5 rounded">CLASS 11</span>
+                    <p className="text-[7px] font-black text-slate-900 leading-tight">Key takeaways from Mechanics:</p>
+                    
+                    <div className="space-y-1.5">
+                      <div className="flex items-start gap-1">
+                        <span className="text-[6px] text-emerald-500 font-bold">&bull;</span>
+                        <p className="text-[5.5px] text-slate-500 leading-tight">Conservation of momentum applies in all closed, isolated systems.</p>
+                      </div>
+                      <div className="flex items-start gap-1">
+                        <span className="text-[6px] text-emerald-500 font-bold">&bull;</span>
+                        <p className="text-[5.5px] text-slate-500 leading-tight">Elastic collisions preserve both kinetic energy and momentum.</p>
+                      </div>
+                      <div className="flex items-start gap-1">
+                        <span className="text-[6px] text-emerald-500 font-bold">&bull;</span>
+                        <p className="text-[5.5px] text-slate-500 leading-tight">Inelastic collisions lose kinetic energy to internal mechanical work.</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Empty placeholder to align button perfectly */}
+              <div className="h-10 mt-6" />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── 5. TOP INSTITUTIONS MARQUEE ── */}
       <section className="py-24 overflow-hidden relative bg-[#f8f9fc]">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.01] mix-blend-overlay pointer-events-none" />
