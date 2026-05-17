@@ -27,7 +27,7 @@ export default function AcademyLanding() {
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
       {/* ── 1. HERO SECTION (Physics Wallah Style) ── */}
-      <section className="relative pt-32 pb-40 bg-[#f4f7fc] text-slate-900 border-b-0 overflow-visible">
+      <section className="relative pt-24 md:pt-32 pb-16 md:pb-40 bg-[#f4f7fc] text-slate-900 border-b-0 overflow-visible">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             
@@ -36,21 +36,26 @@ export default function AcademyLanding() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-left space-y-6"
+              className="text-center lg:text-left space-y-6"
             >
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-slate-900">
-                India&apos;s <span className="text-[#5a4bda]">Premier & <br/> JEE/NEET Oriented</span> <br/>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] text-slate-900">
+                India&apos;s <span className="text-[#5a4bda]">Premier &amp; JEE/NEET Oriented</span>{" "}
                 Competitive Exams Academy
               </h1>
               
-              <p className="text-lg text-slate-600 max-w-md leading-relaxed">
+              <p className="text-base md:text-lg text-slate-600 max-w-md leading-relaxed mx-auto lg:mx-0">
                 Unlock your potential by signing up with Healix Academy— The ultimate learning solution for competitive exams.
               </p>
               
-              <div className="pt-4">
+              <div className="pt-4 flex justify-center lg:justify-start gap-3 flex-wrap">
                 <Button size="lg" className="px-8 h-12 text-base font-semibold bg-[#5a4bda] hover:bg-[#4a3bc0] hover:scale-105 transition-all text-white rounded shadow-lg shadow-[#5a4bda]/30 border-0">
                   Get Started
                 </Button>
+                <Link href="#courses">
+                  <Button variant="outline" size="lg" className="px-8 h-12 text-base font-semibold border-slate-300 text-slate-700 hover:border-[#5a4bda] hover:text-[#5a4bda] rounded">
+                    View Courses
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 
@@ -178,9 +183,9 @@ export default function AcademyLanding() {
         </div>
 
         {/* Bottom overlapping Banner */}
-        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-6">
-          <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-8 px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-gray-100">
+        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-4 md:px-6">
+          <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-6 md:py-8 px-3 md:px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 md:divide-x md:divide-gray-100">
               
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -242,7 +247,7 @@ export default function AcademyLanding() {
       </section>
 
       {/* Spacer to account for the overlapping banner */}
-      <div className="h-24 bg-transparent"></div>
+      <div className="h-20 md:h-24 bg-transparent"></div>
       
       {/* ── 2. MARQUEE SECTION ── */}
       <MentorMarquee mentors={mentors} />
@@ -292,20 +297,20 @@ export default function AcademyLanding() {
       </section>
 
       {/* ── 4. COURSES SECTION ── */}
-      <section id="courses" className="py-24 bg-[#f2b992]">
+      <section id="courses" className="py-12 md:py-24 bg-[#f2b992]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight mb-4">Our Courses</h2>
-            <p className="text-black/90 font-bold text-lg md:text-xl max-w-4xl mx-auto leading-snug">
+          <div className="text-center mb-8 md:mb-10">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-black tracking-tight mb-3 md:mb-4">Our Courses</h2>
+            <p className="text-black/90 font-bold text-base md:text-xl max-w-4xl mx-auto leading-snug px-2">
               Being true Mentors, our objective is to guide the students on the track of their academic growth by bringing out their latent potential
             </p>
           </div>
 
-          <div className="flex justify-center mb-12">
-            <div className="flex bg-[#ff5500] rounded overflow-hidden shadow-lg border border-[#ff5500]">
-               <button className="px-8 py-3 text-white font-bold bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Foundation</button>
-               <button className="px-8 py-3 text-white font-bold hover:bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Engineering</button>
-               <button className="px-8 py-3 text-white font-bold hover:bg-[#ff7b3a] transition-colors">Medical</button>
+          <div className="flex justify-center mb-8 md:mb-12 px-2">
+            <div className="flex flex-wrap justify-center bg-[#ff5500] rounded overflow-hidden shadow-lg border border-[#ff5500]">
+               <button className="px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base text-white font-bold bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Foundation</button>
+               <button className="px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base text-white font-bold hover:bg-[#ff7b3a] transition-colors border-r border-[#ff7b3a]">Engineering</button>
+               <button className="px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base text-white font-bold hover:bg-[#ff7b3a] transition-colors">Medical</button>
             </div>
           </div>
 
@@ -426,7 +431,7 @@ export default function AcademyLanding() {
                   { name: 'JIPMER', color: 'text-teal-500' }
                 ].map((exam, idx) => (
                   <div key={idx} className="flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
-                    <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
+                    <span className={`text-2xl md:text-4xl lg:text-5xl font-black tracking-tighter ${exam.color}`}>
                       {exam.name}
                     </span>
                   </div>
@@ -440,15 +445,15 @@ export default function AcademyLanding() {
       {/* ── 6. FINAL CTA ── */}
       <section className="py-24 bg-[#ff5500] text-white px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-8">Apply for the <br/> 2026 cohort.</h2>
-          <div className="flex flex-wrap justify-center gap-6 mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter mb-6 md:mb-8">Apply for the <br/> 2026 cohort.</h2>
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-8 md:mb-12">
             <Link href="/register">
-              <Button size="lg" className="px-12 h-16 text-lg bg-white text-[#ff5500] hover:bg-gray-100 hover:scale-105 transition-all shadow-xl font-bold">
+              <Button size="lg" className="w-full sm:w-auto px-8 md:px-12 h-14 md:h-16 text-base md:text-lg bg-white text-[#ff5500] hover:bg-gray-100 hover:scale-105 transition-all shadow-xl font-bold">
                 Start Application
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" size="lg" className="px-12 h-16 text-lg border-white text-white hover:bg-white hover:text-[#ff5500] hover:scale-105 transition-all font-bold">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 md:px-12 h-14 md:h-16 text-base md:text-lg border-white text-white hover:bg-white hover:text-[#ff5500] hover:scale-105 transition-all font-bold">
                 Book Intro Call
               </Button>
             </Link>

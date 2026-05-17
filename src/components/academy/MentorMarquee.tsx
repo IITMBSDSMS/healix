@@ -64,7 +64,7 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
   const item = displayItems[currentIndex];
 
   return (
-    <section className="relative py-28 overflow-hidden bg-white">
+    <section className="relative py-16 md:py-28 overflow-hidden bg-white">
       {/* ── Decorative background blobs ── */}
       <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#5a4bda]/5 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#ff5500]/5 blur-3xl pointer-events-none" />
@@ -87,14 +87,14 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
             animate="center"
             exit="exit"
             transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-            className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-16 items-center"
+            className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 md:gap-16 items-center"
           >
             {/* ── LEFT: Text content ── */}
             <div className="relative">
               {/* Giant decorative quote mark */}
-              <Quote className="absolute -top-6 -left-4 w-20 h-20 text-[#5a4bda]/10 fill-[#5a4bda]/10" />
+              <Quote className="absolute -top-4 md:-top-6 -left-2 md:-left-4 w-14 md:w-20 h-14 md:h-20 text-[#5a4bda]/10 fill-[#5a4bda]/10" />
 
-              <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight leading-tight">
                 A message from{" "}
                 <span className="relative inline-block">
                   <span className="text-[#ff5500]">Our Mentors</span>
@@ -105,11 +105,11 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
                 </span>
               </h2>
 
-              <p className="text-lg text-slate-500 mb-10 font-medium italic">
+              <p className="text-base md:text-lg text-slate-500 mb-8 md:mb-10 font-medium italic">
                 &ldquo;Leading with vision and compassion&rdquo;
               </p>
 
-              <blockquote className="text-slate-600 text-lg leading-relaxed mb-10 pl-5 border-l-4 border-[#5a4bda]/30">
+              <blockquote className="text-slate-600 text-base md:text-lg leading-relaxed mb-8 md:mb-10 pl-4 md:pl-5 border-l-4 border-[#5a4bda]/30">
                 {item.message}
               </blockquote>
 
@@ -133,7 +133,7 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
             </div>
 
             {/* ── RIGHT: Photo ── */}
-            <div className="relative flex justify-center items-end lg:justify-end">
+            <div className="hidden lg:flex justify-center items-end lg:justify-end">
               {/* Blob behind image */}
               <motion.div
                 animate={{ scale: [1, 1.04, 1], rotate: [0, 3, 0] }}
@@ -173,7 +173,7 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
         </AnimatePresence>
 
         {/* ── Controls ── */}
-        <div className="flex items-center justify-between mt-16">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 md:mt-16">
           {/* Prev / Next arrows */}
           <div className="flex gap-3">
             <button
