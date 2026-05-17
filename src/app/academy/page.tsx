@@ -54,53 +54,123 @@ export default function AcademyLanding() {
               </div>
             </motion.div>
 
-            {/* Right Side: Circular Avatars & Bubbles */}
-            <div className="relative h-[400px] hidden lg:block">
-              {/* Dashed background circles */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] border-[1.5px] border-dashed border-blue-300 rounded-full animate-[spin_60s_linear_infinite]">
-                 <div className="absolute -top-1.5 left-1/2 w-3 h-3 bg-blue-400 rounded-full" />
-                 <div className="absolute top-1/2 -left-1.5 w-3 h-3 bg-orange-400 rounded-full" />
-                 <div className="absolute top-3/4 right-0 w-3 h-3 bg-pink-400 rounded-full" />
+            {/* Right Side: Rich Interactive Visual */}
+            <div className="relative h-[460px] hidden lg:flex items-center justify-center">
+
+              {/* ── Outer glow ring ── */}
+              <div className="absolute w-[420px] h-[420px] rounded-full border border-[#5a4bda]/15 animate-[spin_80s_linear_infinite]">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#5a4bda] shadow-[0_0_12px_4px_rgba(90,75,218,0.5)]" />
+                <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#ff5500] shadow-[0_0_10px_3px_rgba(255,85,0,0.5)]" />
               </div>
 
-              {/* Student Avatar (Top Right) */}
-              <motion.div 
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 right-8 z-20 group"
-              >
-                <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center hover:scale-105 transition-transform cursor-pointer">
-                  <Image src="https://i.pravatar.cc/300?img=5" alt="Student" width={128} height={128} className="object-cover" />
+              {/* ── Inner ring ── */}
+              <div className="absolute w-[280px] h-[280px] rounded-full border border-dashed border-blue-300/50 animate-[spin_40s_linear_infinite_reverse]">
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-pink-400 shadow-[0_0_8px_3px_rgba(244,114,182,0.6)]" />
+                <div className="absolute top-1/4 -left-2 w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_3px_rgba(52,211,153,0.5)]" />
+              </div>
+
+              {/* ── Central glowing core ── */}
+              <div className="absolute w-[140px] h-[140px] rounded-full bg-gradient-to-br from-[#5a4bda] to-[#8b5cf6] shadow-[0_0_60px_20px_rgba(90,75,218,0.25)] flex items-center justify-center z-10">
+                <div className="text-center text-white">
+                  <div className="text-3xl font-black leading-none">H</div>
+                  <div className="text-[9px] font-bold tracking-[0.2em] uppercase mt-1 opacity-80">Healix</div>
                 </div>
-                {/* Chat Bubble Student */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1, duration: 0.5 }}
-                  className="absolute top-12 -left-48 bg-white px-4 py-3 rounded-xl rounded-tr-none shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 text-[13px] font-semibold text-slate-700 w-48 text-center group-hover:scale-110 transition-transform origin-top-right"
+              </div>
+
+              {/* ── Student avatar (top right, orbiting) ── */}
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[380px] h-[380px] rounded-full"
+                style={{ transformOrigin: "center center" }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, -360] }}
+                  transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                  className="absolute -top-16 left-1/2 -translate-x-1/2 group cursor-pointer"
                 >
-                  Dr. Sarah, What is Healix?
+                  <div className="relative">
+                    <div className="w-[70px] h-[70px] rounded-full border-3 border-white shadow-xl overflow-hidden ring-4 ring-[#5a4bda]/30">
+                      <Image src="https://i.pravatar.cc/150?img=5" alt="Student" width={70} height={70} className="object-cover w-full h-full" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-white flex items-center justify-center text-[8px] font-black text-white shadow">✓</div>
+                    <div className="absolute top-1/2 -translate-y-1/2 left-full ml-3 bg-white rounded-2xl rounded-tl-none px-4 py-2.5 shadow-xl border border-gray-100 whitespace-nowrap text-xs font-bold text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                      JEE 2025 Dropper 🎯
+                    </div>
+                  </div>
                 </motion.div>
               </motion.div>
 
-              {/* Teacher Avatar (Bottom Left) */}
-              <motion.div 
-                animate={{ y: [0, 15, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-8 left-16 z-20 group"
+              {/* ── Mentor avatar (bottom left, counter-orbiting) ── */}
+              <motion.div
+                animate={{ rotate: [0, -360] }}
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[300px] h-[300px] rounded-full"
               >
-                <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden bg-blue-100 flex items-end justify-center hover:scale-105 transition-transform cursor-pointer">
-                  <Image src="https://i.pravatar.cc/300?img=11" alt="Teacher" width={160} height={160} className="object-cover" />
-                </div>
-                {/* Chat Bubble Teacher */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 2, duration: 0.5 }}
-                  className="absolute top-8 left-36 bg-[#1e155c] px-5 py-4 rounded-xl rounded-tl-none shadow-[0_10px_30px_rgba(30,21,92,0.3)] text-sm text-white w-64 font-medium leading-relaxed group-hover:scale-105 transition-transform origin-top-left"
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                  className="absolute -bottom-14 left-1/2 -translate-x-1/2 group cursor-pointer"
                 >
-                  Healix is where engineers build real clinical systems with mentorship.
+                  <div className="relative">
+                    <div className="w-[80px] h-[80px] rounded-full border-3 border-white shadow-xl overflow-hidden ring-4 ring-[#ff5500]/30">
+                      <Image src="https://i.pravatar.cc/150?img=33" alt="Mentor" width={80} height={80} className="object-cover w-full h-full" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#ff5500] border-2 border-white flex items-center justify-center text-[8px] text-white font-black shadow">★</div>
+                  </div>
                 </motion.div>
+              </motion.div>
+
+              {/* ── Floating chat bubble (student question) ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: [0, -6, 0], scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.5, y: { delay: 1, duration: 4, repeat: Infinity, ease: "easeInOut" } }}
+                className="absolute top-6 right-4 z-20 bg-white rounded-2xl rounded-tr-none shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 px-4 py-3 max-w-[180px]"
+              >
+                <p className="text-xs font-bold text-slate-700 leading-snug">Which chapters are most important for NEET Physics? 📚</p>
+                <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full overflow-hidden border-2 border-white shadow">
+                  <Image src="https://i.pravatar.cc/40?img=5" alt="" width={24} height={24} className="object-cover" />
+                </div>
+              </motion.div>
+
+              {/* ── Floating reply bubble (mentor answer) ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: [0, 6, 0], scale: 1 }}
+                transition={{ delay: 1.6, duration: 0.5, y: { delay: 1.8, duration: 5, repeat: Infinity, ease: "easeInOut" } }}
+                className="absolute bottom-14 left-0 z-20 bg-gradient-to-br from-[#1e155c] to-[#5a4bda] rounded-2xl rounded-bl-none shadow-[0_8px_30px_rgba(30,21,92,0.35)] px-4 py-3 max-w-[200px]"
+              >
+                <p className="text-xs font-bold text-white/90 leading-snug">Thermodynamics &amp; Laws of Motion — master these first! ⚡</p>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/30">
+                    <Image src="https://i.pravatar.cc/40?img=33" alt="" width={16} height={16} className="object-cover" />
+                  </div>
+                  <span className="text-[9px] text-white/60 font-medium">Dr. Arvind Rao</span>
+                </div>
+              </motion.div>
+
+              {/* ── Floating subject pills ── */}
+              <motion.div
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/4 left-0 z-20 bg-white rounded-full px-3 py-1.5 shadow-lg border border-gray-100 text-[10px] font-black text-[#5a4bda] uppercase tracking-wide"
+              >
+                ⚗️ Chemistry
+              </motion.div>
+              <motion.div
+                animate={{ y: [4, -4, 4] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute top-1/3 right-0 z-20 bg-white rounded-full px-3 py-1.5 shadow-lg border border-gray-100 text-[10px] font-black text-[#ff5500] uppercase tracking-wide"
+              >
+                🔢 Maths
+              </motion.div>
+              <motion.div
+                animate={{ y: [-3, 5, -3] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-1/4 right-4 z-20 bg-white rounded-full px-3 py-1.5 shadow-lg border border-gray-100 text-[10px] font-black text-emerald-600 uppercase tracking-wide"
+              >
+                ⚡ Physics
               </motion.div>
 
             </div>
