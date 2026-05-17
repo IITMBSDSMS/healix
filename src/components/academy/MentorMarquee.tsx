@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Mentor {
   id: string;
@@ -16,105 +17,205 @@ interface MentorMarqueeProps {
 }
 
 const DEFAULT_MESSAGES = [
-  "We are driven by a singular mission to make high-quality healthcare and engineering education understandable, accessible, and affordable for millions. In today's fast-paced world, education is not just limited to theory; it's about practical, proactive engagement.",
-  "Our commitment to excellence and integrity remains steadfast. We are proud to partner with emerging engineers who share our passion for making a meaningful impact in clinical tech.",
-  "Together, we can empower communities and revolutionise biomedical engineering for a healthier tomorrow. Your trust in Healix is what inspires us.",
+  "We are driven by a singular mission to make high-quality healthcare and engineering education understandable, accessible, and affordable for millions. Education is not just limited to theory—it's about practical, proactive engagement that transforms lives.",
+  "Our commitment to excellence and integrity remains steadfast. We partner with emerging engineers who share our passion for making a meaningful impact in clinical technology and biomedical innovation.",
+  "Together, we can empower communities and revolutionise biomedical engineering for a healthier tomorrow. Your trust in Healix is what inspires us to keep pushing boundaries.",
+];
+
+const FALLBACK_MENTORS = [
+  { name: "Dr. Priya Patel", image: "https://i.pravatar.cc/600?img=47", role: "Lead Hardware Systems Engineer", institution: "IIT Delhi", message: DEFAULT_MESSAGES[0] },
+  { name: "Dr. Arvind Rao", image: "https://i.pravatar.cc/600?img=3",  role: "AI Systems Architect",         institution: "IIT Bombay",  message: DEFAULT_MESSAGES[1] },
+  { name: "Dr. Sarah Chen",  image: "https://i.pravatar.cc/600?img=1",  role: "Head of Bioinformatics",       institution: "AIIMS Delhi",  message: DEFAULT_MESSAGES[2] },
 ];
 
 export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
 
-  const displayItems = mentors.length > 0 
-    ? mentors.map((m, i) => ({ 
-        name: m.name, 
-        image: m.photoUrl || "https://i.pravatar.cc/300?img=" + (i + 1), 
+  const displayItems = mentors.length > 0
+    ? mentors.map((m, i) => ({
+        name: m.name,
+        image: m.photoUrl || `https://i.pravatar.cc/600?img=${i + 1}`,
         role: m.role || m.institution,
-        message: DEFAULT_MESSAGES[i % DEFAULT_MESSAGES.length]
+        institution: m.institution,
+        message: DEFAULT_MESSAGES[i % DEFAULT_MESSAGES.length],
       }))
-    : [
-        { name: "Dr. Sarah Chen", image: "https://i.pravatar.cc/400?img=1", role: "Head of Bioinformatics", message: DEFAULT_MESSAGES[0] },
-        { name: "Vikram Sharma", image: "https://i.pravatar.cc/400?img=11", role: "Staff Product Engineer", message: DEFAULT_MESSAGES[1] },
-        { name: "Dr. Arvind Rao", image: "https://i.pravatar.cc/400?img=3", role: "AI Systems Architect", message: DEFAULT_MESSAGES[2] },
-      ];
+    : FALLBACK_MENTORS;
 
   useEffect(() => {
     const timer = setInterval(() => {
+      setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % displayItems.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [displayItems.length]);
 
+  const go = (dir: number) => {
+    setDirection(dir);
+    setCurrentIndex((prev) => (prev + dir + displayItems.length) % displayItems.length);
+  };
+
+  const variants = {
+    enter:  (d: number) => ({ opacity: 0, x: d > 0 ?  60 : -60 }),
+    center: { opacity: 1, x: 0 },
+    exit:   (d: number) => ({ opacity: 0, x: d > 0 ? -60 :  60 }),
+  };
+
+  const item = displayItems[currentIndex];
+
   return (
-    <div className="py-24 bg-[#fafafa] overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 relative">
-        <AnimatePresence mode="wait">
+    <section className="relative py-28 overflow-hidden bg-white">
+      {/* ── Decorative background blobs ── */}
+      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#5a4bda]/5 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#ff5500]/5 blur-3xl pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+
+        {/* ── Section label ── */}
+        <div className="flex items-center gap-3 mb-16">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gray-200" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-slate-400 px-4">From Our Mentors</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gray-200" />
+        </div>
+
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col md:flex-row items-center gap-16"
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-16 items-center"
           >
-            {/* Left Content */}
-            <div className="flex-1 md:pr-12">
-              <h2 className="text-4xl md:text-5xl font-extrabold text-[#111] mb-2 tracking-tight">
-                A message from <span className="text-[#ff5500]">Our Mentors</span>
-              </h2>
-              <p className="text-xl md:text-2xl text-[#333] mb-8 font-medium">
-                Leading with vision and compassion
-              </p>
-              
-              <div className="text-[#555] space-y-6 text-base md:text-lg leading-relaxed">
-                <p>{displayItems[currentIndex].message}</p>
-                <p>
-                  To our current and future engineers—your drive is what inspires us. Together, we are transforming lives by delivering exceptional healthcare services that drive positive change.
-                </p>
-              </div>
+            {/* ── LEFT: Text content ── */}
+            <div className="relative">
+              {/* Giant decorative quote mark */}
+              <Quote className="absolute -top-6 -left-4 w-20 h-20 text-[#5a4bda]/10 fill-[#5a4bda]/10" />
 
-              <div className="mt-12 text-[#333]">
-                <p className="mb-1 text-gray-500 font-medium">Warm regards,</p>
-                <p className="font-bold text-xl">{displayItems[currentIndex].name}</p>
-                <p className="text-sm text-gray-500 font-medium uppercase tracking-wide mt-1">{displayItems[currentIndex].role}</p>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight leading-tight">
+                A message from{" "}
+                <span className="relative inline-block">
+                  <span className="text-[#ff5500]">Our Mentors</span>
+                  <motion.span
+                    layoutId="underline"
+                    className="absolute -bottom-1 left-0 right-0 h-[3px] bg-gradient-to-r from-[#ff5500] to-[#ff8c00] rounded-full"
+                  />
+                </span>
+              </h2>
+
+              <p className="text-lg text-slate-500 mb-10 font-medium italic">
+                &ldquo;Leading with vision and compassion&rdquo;
+              </p>
+
+              <blockquote className="text-slate-600 text-lg leading-relaxed mb-10 pl-5 border-l-4 border-[#5a4bda]/30">
+                {item.message}
+              </blockquote>
+
+              <p className="text-slate-500 mb-2 text-sm">
+                To our current and future engineers—your drive is what inspires us. Together, we are transforming lives by delivering exceptional healthcare services that drive positive change.
+              </p>
+
+              {/* Signature block */}
+              <div className="mt-10 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#ff5500]/30 shadow-md shrink-0">
+                  <Image src={item.image} alt={item.name} width={56} height={56} className="object-cover w-full h-full" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-slate-900 text-lg leading-tight">{item.name}</p>
+                  <p className="text-[#ff5500] font-bold text-sm mt-0.5">{item.role}</p>
+                  {item.institution && (
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mt-0.5">{item.institution}</p>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Right Content - Photo */}
-            <div className="w-full md:w-[450px] shrink-0 relative flex justify-center items-end mt-12 md:mt-0">
-               {/* Background Blob/Shape */}
-               <div className="absolute right-0 bottom-12 w-[350px] h-[400px] bg-[#ffc3ad] rounded-t-[150px] rounded-bl-[50px] rounded-br-[120px] -z-10 shadow-inner" />
-               
-               {/* Image Container */}
-               <div className="relative w-[320px] h-[450px] overflow-hidden rounded-t-[140px] rounded-bl-[40px] rounded-br-[100px] shadow-2xl">
-                 <Image 
-                   src={displayItems[currentIndex].image}
-                   alt={displayItems[currentIndex].name}
-                   fill
-                   className="object-cover object-center"
-                 />
-               </div>
-               
-               {/* Floating Tag */}
-               <div className="absolute -bottom-6 right-4 md:right-10 bg-white p-5 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-100 z-20 min-w-[220px]">
-                 <p className="font-extrabold text-gray-900 text-lg">{displayItems[currentIndex].name}</p>
-                 <p className="text-[#ff5500] font-bold text-sm mt-1">{displayItems[currentIndex].role}</p>
-               </div>
+            {/* ── RIGHT: Photo ── */}
+            <div className="relative flex justify-center items-end lg:justify-end">
+              {/* Blob behind image */}
+              <motion.div
+                animate={{ scale: [1, 1.04, 1], rotate: [0, 3, 0] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 m-auto w-[360px] h-[420px] bg-gradient-to-br from-[#ffc3ad] via-[#ffd5c5] to-[#ffe0d5] rounded-[40%_60%_60%_40%/40%_40%_60%_60%] -z-10"
+              />
+
+              {/* Photo frame */}
+              <div className="relative w-[300px] h-[420px] rounded-[30px] overflow-hidden shadow-2xl shadow-[#5a4bda]/20 border-4 border-white">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  className="object-cover object-top"
+                  sizes="300px"
+                />
+                {/* Bottom gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                {/* Floating name card inside photo */}
+                <div className="absolute bottom-5 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                  <p className="font-extrabold text-slate-900 text-base leading-tight">{item.name}</p>
+                  <p className="text-[#ff5500] font-bold text-xs mt-1">{item.role}</p>
+                </div>
+              </div>
+
+              {/* Floating accent badge */}
+              <motion.div
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-4 -left-4 bg-[#5a4bda] text-white text-xs font-black px-4 py-2 rounded-2xl shadow-lg shadow-[#5a4bda]/40"
+              >
+                ✦ Top Mentor
+              </motion.div>
             </div>
           </motion.div>
         </AnimatePresence>
-        
-        {/* Navigation Dots */}
-        <div className="flex gap-3 justify-center mt-20">
-          {displayItems.map((_, idx) => (
-            <button 
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-[#ff5500] w-10 shadow-[0_0_10px_rgba(255,85,0,0.4)]' : 'bg-gray-300 w-2.5 hover:bg-gray-400'}`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
+
+        {/* ── Controls ── */}
+        <div className="flex items-center justify-between mt-16">
+          {/* Prev / Next arrows */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => go(-1)}
+              className="w-11 h-11 rounded-full border-2 border-slate-200 hover:border-[#5a4bda] hover:bg-[#5a4bda] hover:text-white text-slate-500 flex items-center justify-center transition-all group"
+              aria-label="Previous mentor"
+            >
+              <ChevronLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+            <button
+              onClick={() => go(1)}
+              className="w-11 h-11 rounded-full border-2 border-slate-200 hover:border-[#5a4bda] hover:bg-[#5a4bda] hover:text-white text-slate-500 flex items-center justify-center transition-all group"
+              aria-label="Next mentor"
+            >
+              <ChevronRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
+
+          {/* Progress dots */}
+          <div className="flex gap-2.5 items-center">
+            {displayItems.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => { setDirection(idx > currentIndex ? 1 : -1); setCurrentIndex(idx); }}
+                className={`rounded-full transition-all duration-400 ${
+                  idx === currentIndex
+                    ? "bg-[#ff5500] w-8 h-2.5 shadow-[0_0_12px_rgba(255,85,0,0.5)]"
+                    : "bg-slate-200 w-2.5 h-2.5 hover:bg-slate-300"
+                }`}
+                aria-label={`Go to mentor ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Counter */}
+          <p className="text-sm font-bold text-slate-400 tabular-nums">
+            <span className="text-slate-700">{String(currentIndex + 1).padStart(2, "0")}</span>
+            {" / "}
+            {String(displayItems.length).padStart(2, "0")}
+          </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
