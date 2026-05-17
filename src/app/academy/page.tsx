@@ -187,7 +187,7 @@ export default function AcademyLanding() {
       <section className="py-24 overflow-hidden relative bg-black">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
         <div className="text-center mb-16 relative z-10">
-          <p className="text-[12px] font-mono text-white/50 uppercase tracking-[0.4em]">Preparing students for top medical institutions</p>
+          <p className="text-[12px] font-mono text-white/50 uppercase tracking-[0.4em]">Preparing students for top institutions & competitive exams</p>
         </div>
         
         {/* Marquee Container */}
@@ -199,17 +199,18 @@ export default function AcademyLanding() {
           {/* Row 1 (Leftwards) */}
           <motion.div 
             className="flex gap-20 min-w-max"
-            animate={{ x: [0, -1800] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+            animate={{ x: [0, -2200] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 45 }}
           >
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex gap-20 items-center">
                 {[
                   { name: 'NEET PG', color: 'text-blue-500' },
+                  { name: 'JEE MAIN', color: 'text-[#eab308]' },
                   { name: 'USMLE', color: 'text-red-500' },
+                  { name: 'MHCET', color: 'text-orange-500' },
                   { name: 'PLAB', color: 'text-purple-500' },
-                  { name: 'INICET', color: 'text-emerald-500' },
-                  { name: 'FMGE', color: 'text-yellow-500' }
+                  { name: 'CBSE BOARD', color: 'text-emerald-500' }
                 ].map((exam, idx) => (
                   <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
                     <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
@@ -223,18 +224,19 @@ export default function AcademyLanding() {
 
           {/* Row 2 (Rightwards) */}
           <motion.div 
-            className="flex gap-20 min-w-max ml-[-800px]"
-            animate={{ x: [-1800, 0] }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 45 }}
+            className="flex gap-20 min-w-max ml-[-1200px]"
+            animate={{ x: [-2200, 0] }}
+            transition={{ repeat: Infinity, ease: "linear", duration: 50 }}
           >
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex gap-20 items-center">
                 {[
                   { name: 'MRCP', color: 'text-indigo-500' },
-                  { name: 'MRCS', color: 'text-cyan-500' },
+                  { name: 'JEE ADVANCED', color: 'text-rose-500' },
                   { name: 'AIIMS', color: 'text-amber-500' },
-                  { name: 'JIPMER', color: 'text-rose-500' },
-                  { name: 'NEXT', color: 'text-teal-500' }
+                  { name: 'INICET', color: 'text-cyan-500' },
+                  { name: 'FMGE', color: 'text-yellow-500' },
+                  { name: 'JIPMER', color: 'text-teal-500' }
                 ].map((exam, idx) => (
                   <div key={idx} className="flex items-center justify-center opacity-50 hover:opacity-100 transition-all duration-300 grayscale hover:grayscale-0 scale-95 hover:scale-105 cursor-pointer">
                     <span className={`text-4xl md:text-5xl font-black tracking-tighter ${exam.color}`}>
