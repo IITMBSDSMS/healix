@@ -60,6 +60,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
       { protocol: "https", hostname: "api.qrserver.com" },
       { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "i.pravatar.cc" },
     ],
   },
 
