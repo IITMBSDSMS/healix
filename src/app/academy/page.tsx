@@ -39,12 +39,12 @@ export default function AcademyLanding() {
               className="text-left space-y-6"
             >
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-slate-900">
-                India&apos;s <span className="text-[#5a4bda]">Premier & <br/> Clinical-Grade</span> <br/>
-                Research Academy
+                India&apos;s <span className="text-[#5a4bda]">Premier & <br/> JEE/NEET Oriented</span> <br/>
+                Competitive Exams Academy
               </h1>
               
               <p className="text-lg text-slate-600 max-w-md leading-relaxed">
-                Unlock your potential by signing up with Healix Academy— The ultimate biomedical engineering learning solution.
+                Unlock your potential by signing up with Healix Academy— The ultimate learning solution for competitive exams.
               </p>
               
               <div className="pt-4">
