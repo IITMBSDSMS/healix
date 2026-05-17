@@ -143,7 +143,7 @@ export default function HealixCare() {
               { title: "Emergency Intelligence", icon: ShieldAlert, color: "text-red-500", glow: "hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]", border: "hover:border-red-500/30", features: ["Ambulance dispatch", "Hospital routing", "Family alert automation"], cta: "Emergency SOS" },
               { title: "30-Min Medicine", icon: Pill, color: "text-emerald-400", features: ["Prescription verification", "Pharmacy automation", "Live route tracking"], cta: "Order Medicines" }
             ].map((s, i) => (
-              <GlassCard key={i} className={`p-8 group hover:-translate-y-2 transition-all duration-300 ${s.glow || 'hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]'} ${s.border || 'hover:border-white/20'}`}>
+              <GlassCard key={i} delay={i * 0.1} className={`p-8 group hover:-translate-y-2 transition-all duration-300 ${s.glow || 'hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]'} ${s.border || 'hover:border-white/20'}`}>
                 <s.icon className={`w-8 h-8 ${s.color} mb-6`} />
                 <h3 className="text-xl font-bold mb-4">{s.title}</h3>
                 <ul className="space-y-3 mb-8">
