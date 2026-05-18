@@ -29,140 +29,144 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
-      {/* ── 1. HERO SECTION (Physics Wallah Style) ── */}
-      <section className="relative pt-24 md:pt-32 pb-16 md:pb-40 bg-[#f4f7fc] text-slate-900 border-b-0 overflow-visible">
+      {/* ── 1. HERO SECTION (BYJU'S Inspired Premium Style) ── */}
+      <section className="relative pt-24 md:pt-36 pb-20 md:pb-44 bg-gradient-to-br from-[#2e1a82] via-[#1c0f5c] to-[#0d0735] text-white overflow-hidden border-b-0">
+        
+        {/* Subtle Decorative Wave & Dot Background Grids */}
+        <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="#fff" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </div>
+
+        {/* Ambient background light shapes */}
+        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full bg-[#5a4bda]/20 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#ff5500]/10 blur-[100px] pointer-events-none" />
+
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             
-            {/* Left Side: Text & CTA */}
+            {/* Left Side: Text & Custom Features */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center lg:text-left space-y-6"
+              className="text-center lg:text-left space-y-7"
             >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] text-slate-900">
-                India&apos;s <span className="text-[#5a4bda]">Premier &amp; JEE/NEET Oriented</span>{" "}
-                Competitive Exams Academy
+              {/* Minimalist Branded Badge Header */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-xs font-black uppercase tracking-wider text-amber-300">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" /> India&apos;s Elite JEE/NEET Hub
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black tracking-tight leading-[1.2] text-white">
+                Map your learning journey <br/>
+                <span className="text-[#ffdd00] drop-shadow-md">with Healix&apos;s Education Experts!</span>
               </h1>
               
-              <p className="text-base md:text-lg text-slate-600 max-w-md leading-relaxed mx-auto lg:mx-0">
-                Unlock your potential by signing up with Healix Academy— The ultimate learning solution for competitive exams.
+              <p className="text-sm md:text-base text-slate-200 max-w-lg leading-relaxed mx-auto lg:mx-0 font-medium">
+                Unlock your absolute potential with highly customized, diagnostic-driven learning programs designed by the nation&apos;s top IITian and clinical minds.
               </p>
               
-              <div className="pt-4 flex justify-center lg:justify-start gap-3 flex-wrap">
-                <Button size="lg" className="px-8 h-12 text-base font-semibold bg-[#5a4bda] hover:bg-[#4a3bc0] hover:scale-105 transition-all text-white rounded shadow-lg shadow-[#5a4bda]/30 border-0">
-                  Get Started
-                </Button>
-                <Link href="#courses">
-                  <Button variant="outline" size="lg" className="px-8 h-12 text-base font-semibold border-slate-300 text-slate-700 hover:border-[#5a4bda] hover:text-[#5a4bda] rounded">
-                    View Courses
+              {/* BYJU'S Signature Double Feature Capsules */}
+              <div className="grid sm:grid-cols-2 gap-4 pt-2 max-w-2xl text-left">
+                {/* Diagnostic Style Badge */}
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center gap-3.5 group hover:bg-white/10 transition-all duration-300">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-lg shrink-0 shadow-lg shadow-orange-500/20">
+                    📊
+                  </div>
+                  <div>
+                    <h4 className="text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none">Diagnostic Tools</h4>
+                    <p className="text-xs font-bold text-white/90 leading-snug mt-1">Assess your unique learning style with custom diagnostics</p>
+                  </div>
+                </div>
+
+                {/* Personalised Program Badge */}
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center gap-3.5 group hover:bg-white/10 transition-all duration-300">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center text-lg shrink-0 shadow-lg shadow-red-500/20">
+                    🎯
+                  </div>
+                  <div>
+                    <h4 className="text-[9px] font-black text-pink-400 uppercase tracking-widest leading-none">Personalised Plan</h4>
+                    <p className="text-xs font-bold text-white/90 leading-snug mt-1">Get a custom study program to learn effectively</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* counseling Booking Input Session Block */}
+              <div className="pt-2 space-y-3.5 text-left border-t border-white/10 max-w-lg">
+                <p className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" /> Book a free, 1-on-1 counseling session
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <input 
+                      type="tel" 
+                      placeholder="Enter your Mobile Number" 
+                      className="w-full h-12 pl-4 pr-3 rounded-xl bg-white text-slate-900 placeholder-slate-400 text-sm font-semibold border-2 border-transparent focus:border-[#ffdd00] focus:ring-0 outline-none transition-all shadow-md"
+                    />
+                  </div>
+                  <Button className="h-12 px-6 bg-[#ffdd00] hover:bg-[#e6c700] hover:scale-[1.02] active:scale-[0.98] transition-all text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-400/25 border-0 shrink-0">
+                    Book Free Session
                   </Button>
-                </Link>
+                </div>
               </div>
             </motion.div>
 
-            {/* Right Side: Rich Interactive Visual */}
-            <div className="relative h-[460px] hidden lg:flex items-center justify-center">
-
-              {/* ── Background Glow sphere ── */}
-              <div className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-br from-[#5a4bda]/10 via-[#ff5500]/5 to-transparent blur-[100px] pointer-events-none" />
-
-              {/* ── Outer rotating glow ring ── */}
-              <div className="absolute w-[440px] h-[440px] rounded-full border border-[#5a4bda]/10 animate-[spin_80s_linear_infinite] pointer-events-none">
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#5a4bda] shadow-[0_0_10px_3px_rgba(90,75,218,0.4)]" />
-                <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-2 h-2 rounded-full bg-[#ff5500] shadow-[0_0_8px_2px_rgba(255,85,0,0.4)]" />
+            {/* Right Side: Gigantic Model Cut-out & Waves */}
+            <div className="relative h-[480px] hidden lg:flex items-end justify-center">
+              
+              {/* Sleek Orbiting/Fanning Brand Waves behind the Model */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[380px] h-[380px] rounded-full border border-white/10 animate-[spin_100s_linear_infinite] absolute" />
+                <div className="w-[280px] h-[280px] rounded-full border border-dashed border-white/5 animate-[spin_60s_linear_infinite_reverse] absolute" />
+                <div className="w-[450px] h-[450px] rounded-full bg-[#5a4bda]/20 blur-[100px] absolute" />
               </div>
 
-              {/* ── Inner rotating dashed ring ── */}
-              <div className="absolute w-[360px] h-[360px] rounded-full border border-dashed border-[#5a4bda]/20 animate-[spin_50s_linear_infinite_reverse] pointer-events-none" />
-
-              {/* ── Main featured model portrait banner ── */}
-              <div className="relative w-[320px] h-[320px] rounded-[2.2rem] overflow-hidden border-4 border-white shadow-[0_20px_50px_rgba(90,75,218,0.12)] ring-8 ring-[#5a4bda]/5 z-20 group transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_25px_60px_rgba(90,75,218,0.2)]">
+              {/* ── Main Spokesperson Model holding Tablet ── */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="relative w-[380px] h-[460px] z-20"
+              >
                 <Image 
-                  src="/academy-hero-model.png" 
-                  alt="Healix Academy Top Student" 
+                  src="/academy-byjus-model.png" 
+                  alt="Healix Academy Education Model" 
                   fill 
                   priority
-                  className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                  className="object-cover object-bottom" 
                 />
                 
-                {/* Image Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-80" />
-
-                {/* Verified Student Pill */}
-                <div className="absolute bottom-4 right-4 bg-emerald-500 text-white flex items-center gap-1 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20 z-30 select-none">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Verified Student
-                </div>
-              </div>
-
-              {/* ── Floating Widget 1: Progress Tracker (Top Left) ── */}
-              <motion.div
-                initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="absolute top-4 left-[-8%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_15px_30px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col gap-2 z-30 select-none max-w-[170px]"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[8px] font-black bg-[#5a4bda]/10 text-[#5a4bda] px-1.5 py-0.5 rounded">NEET 2026</span>
-                  <span className="text-[8px] font-bold text-slate-400">PHYSICS PREP</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[9px] font-extrabold text-slate-700">
-                    <span>Curriculum</span>
-                    <span>84%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#5a4bda] to-[#ff5500] rounded-full" style={{ width: "84%" }} />
-                  </div>
+                {/* Verified Badge Overlay */}
+                <div className="absolute top-8 right-0 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg shadow-orange-500/30 z-30 select-none">
+                  <span>🎓</span> HEALIX AMBASSADOR
                 </div>
               </motion.div>
 
-              {/* ── Floating Widget 2: Live Mentorship Chat Bubble (Bottom Left) ── */}
+              {/* Floating Micro-illustrations (Subtle BYJU'S space objects) */}
               <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-                className="absolute bottom-4 left-[-12%] z-30 bg-gradient-to-br from-[#1e155c] to-[#5a4bda] text-white rounded-2xl rounded-bl-none p-4 shadow-[0_15px_30px_rgba(30,21,92,0.22)] max-w-[210px]"
+                animate={{ y: [-5, 5, -5] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-12 left-6 z-30 bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-white/10 text-xs font-bold text-white/90 shadow-lg flex items-center gap-2"
               >
-                <p className="text-[11px] font-bold text-white/90 leading-snug">Thermodynamics &amp; Laws of Motion — master these first! ⚡</p>
-                <div className="mt-2.5 flex items-center gap-2 border-t border-white/10 pt-2">
-                  <div className="w-4.5 h-4.5 rounded-full overflow-hidden border border-white/20">
-                    <Image src="https://i.pravatar.cc/40?img=33" alt="" width={18} height={18} className="object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-white font-extrabold leading-none">Dr. Arvind Rao</p>
-                    <p className="text-[7px] text-white/60 font-semibold mt-0.5">CHIEF PHYSICS MENTOR</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* ── Floating Subject Pills (Right Side) ── */}
-              <motion.div
-                animate={{ y: [-4, 4, -4] }}
-                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-1/4 right-[-5%] z-30 bg-white rounded-full px-4 py-2 shadow-lg border border-slate-100 text-[10px] font-black text-[#5a4bda] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform"
-              >
-                <span>🧪</span> Chemistry
+                🚀 NEET/JEE 2026
               </motion.div>
 
               <motion.div
-                animate={{ y: [4, -4, 4] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute top-1/2 right-[-10%] z-30 bg-white rounded-full px-4 py-2 shadow-lg border border-slate-100 text-[10px] font-black text-[#ff5500] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform"
+                animate={{ y: [6, -6, 6] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute bottom-20 right-6 z-30 bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-white/10 text-xs font-bold text-white/90 shadow-lg flex items-center gap-2"
               >
-                <span>🔢</span> Maths
+                🧬 Interactive AI
               </motion.div>
-
-              <motion.div
-                animate={{ y: [-3, 5, -3] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-1/4 right-[-4%] z-30 bg-white rounded-full px-4 py-2 shadow-lg border border-slate-100 text-[10px] font-black text-emerald-600 uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform"
-              >
-                <span>⚡</span> Physics
-              </motion.div>
-
             </div>
+
           </div>
         </div>
 
