@@ -103,7 +103,7 @@ export default function AcademyLanding() {
             className="absolute bottom-0 left-1/2 -translate-x-1/2 md:translate-x-[-40%] w-[350px] h-[450px] md:w-[500px] md:h-[650px] z-30"
           >
             <Image 
-              src="/academy-founder-realistic.png" 
+              src="/academy-founder-clean.png" 
               alt="Healix Academy Model" 
               fill 
               priority
