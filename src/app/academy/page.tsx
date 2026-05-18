@@ -29,54 +29,60 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
-      {/* ── 1. HERO SECTION (Founder Quote Style) ── */}
-      <section className="relative pt-24 md:pt-28 pb-36 md:pb-48 bg-[#0a9b8e] text-white overflow-hidden border-b-0">
+      {/* ── 1. HERO SECTION (Premium Founder Quote Layout) ── */}
+      <section className="relative pt-24 md:pt-28 pb-36 md:pb-48 bg-gradient-to-br from-[#0a9b8e] via-[#0c8577] to-[#046e63] text-white overflow-hidden border-b-0 shadow-inner">
         
-        {/* Subtle decorative elements */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-black/10 rounded-full blur-[80px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
+        {/* Advanced Subtle Ambient Lighting & Geometry */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-b from-white/10 to-transparent rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-900/40 rounded-full blur-[90px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
+        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-teal-300/10 rounded-full blur-[60px] pointer-events-none animate-pulse" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 h-full">
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-8">
             
-            {/* Left Side: Founder Model */}
+            {/* Left Side: Founder Model (Hyper-Realistic) */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="w-full lg:w-[45%] flex justify-center lg:justify-end"
+              className="w-full lg:w-[45%] flex justify-center lg:justify-end relative"
             >
-              <div className="relative w-[380px] h-[460px] md:w-[480px] md:h-[580px]">
+              {/* Subtle back-glow behind the model */}
+              <div className="absolute bottom-0 w-[300px] h-[400px] bg-white/5 rounded-[100px] blur-[60px]" />
+              
+              <div className="relative w-[380px] h-[460px] md:w-[480px] md:h-[580px] z-10">
                 <Image 
-                  src="/academy-founder-transparent.png" 
+                  src="/academy-founder-realistic.png" 
                   alt="Healix Academy Founder" 
                   fill 
                   priority
-                  className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.2)]" 
+                  quality={100}
+                  className="object-contain object-bottom drop-shadow-[0_25px_50px_rgba(0,0,0,0.35)]" 
                 />
               </div>
             </motion.div>
 
-            {/* Right Side: Inspirational Quote */}
+            {/* Right Side: Inspirational Quote & Elegant Typography */}
             <motion.div 
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="w-full lg:w-[55%] text-center space-y-6 lg:pl-10"
+              className="w-full lg:w-[55%] text-center lg:text-left space-y-7 lg:pl-12"
             >
-              <h2 className="text-2xl md:text-3xl font-extrabold tracking-wider text-white/95 uppercase drop-shadow-sm">
-                On Redefining JEE & NEET <br className="hidden md:block"/> Preparation:
+              <h2 className="text-xl md:text-2xl font-extrabold tracking-[0.2em] text-teal-100 uppercase drop-shadow-sm flex items-center justify-center lg:justify-start gap-3">
+                <span className="w-12 h-[2px] bg-teal-200/60 hidden md:block" />
+                On Redefining JEE & NEET Preparation
               </h2>
               
-              <div className="text-xl md:text-2xl lg:text-[1.65rem] font-bold leading-[1.6] text-white tracking-wide">
+              <div className="text-2xl md:text-3xl lg:text-[1.85rem] font-bold leading-[1.55] text-white tracking-wide drop-shadow-md">
                 &ldquo;We are proud to build the ultimate learning platform for Indian students. Medical and engineering dreams are the heartbeat of our youth, and we are thrilled to be an integral part of this journey. As an education platform, Healix has always recognized the critical role that expert mentorship plays in a student&apos;s success. Just as cracking JEE or NEET inspires a billion budding dreams across India, we too hope to inspire the love of learning in every student&apos;s heart.&rdquo;
               </div>
               
-              <div className="pt-4">
-                <h3 className="text-xl md:text-2xl font-black uppercase tracking-widest text-white drop-shadow-md">
+              <div className="pt-6 border-t border-white/10 max-w-md mx-auto lg:mx-0">
+                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white drop-shadow-lg">
                   Ananya Sharma
                 </h3>
-                <p className="text-sm md:text-base font-bold text-white/80 tracking-wide mt-1">
+                <p className="text-base md:text-lg font-semibold text-teal-100 tracking-wider mt-1.5 flex items-center justify-center lg:justify-start gap-2">
                   Founder & CEO, Healix
                 </p>
               </div>
