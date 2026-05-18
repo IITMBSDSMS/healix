@@ -105,61 +105,37 @@ export default function AcademyLanding() {
               </div>
             </motion.div>
 
-            {/* Right Side: High-Fidelity Mockup Card & Minimalist Geometry */}
+            {/* Right Side: Gigantic Real Model Cut-out & Minimalist Geometry */}
             <div className="relative h-[560px] hidden lg:flex items-center justify-center">
               
-              {/* Sleek soft glowing geometry behind the model card */}
+              {/* Sleek soft glowing geometry behind the model */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-[460px] h-[460px] rounded-full bg-gradient-to-tr from-[#5a4bda]/10 via-[#8b5cf6]/5 to-transparent blur-[80px]" />
                 <div className="w-[380px] h-[380px] rounded-full border border-slate-200/50 bg-white/40 backdrop-blur-3xl shadow-inner" />
                 <div className="w-[300px] h-[300px] rounded-full border border-dashed border-slate-200/60 animate-[spin_120s_linear_infinite]" />
               </div>
 
-              {/* ── Main Spokesperson Model: Real Selfie Portrait in Premium Card Mockup ── */}
+              {/* ── Main Spokesperson Model: Real Scholar holding Tablet in Healix T-shirt ── */}
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95, rotate: -2 }}
-                animate={{ opacity: 1, scale: 1, rotate: -1 }}
-                whileHover={{ scale: 1.02, rotate: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="relative w-[380px] h-[480px] rounded-[32px] border border-slate-200/80 bg-white p-3.5 shadow-[0_24px_50px_rgba(90,75,218,0.12)] z-20 cursor-pointer group transition-all"
+                className="relative w-[480px] h-[520px] z-20"
               >
-                <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-slate-50 border border-slate-100">
-                  <Image 
-                    src="/academy-real-model.jpg" 
-                    alt="Healix Academy Mentor Model" 
-                    fill 
-                    priority
-                    className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-700" 
-                  />
-                  
-                  {/* Sleek Gradient Overlay at the bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent z-10" />
-
-                  {/* Premium badge overlay at the top left */}
-                  <div className="absolute top-4 left-4 z-20 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-md border border-white/50 text-[10px] font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-pulse" /> Elite Scholar
-                  </div>
-
-                  {/* Premium nameplate overlay at the bottom */}
-                  <div className="absolute bottom-4 left-4 right-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-white/50">
-                    <div className="flex items-center justify-between">
-                      <div className="text-left">
-                        <h4 className="font-extrabold text-slate-800 text-sm">Arshia Sharma</h4>
-                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5">IIT-JEE Scholar & Mentor</p>
-                      </div>
-                      <div className="px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[9px] font-black text-[#5a4bda] uppercase tracking-wider flex items-center gap-1">
-                        ✓ Verified
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Image 
+                  src="/academy-real-model-final.png" 
+                  alt="Healix Academy Education Model" 
+                  fill 
+                  priority
+                  className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(90,75,218,0.15)]" 
+                />
               </motion.div>
 
               {/* Floating Rank Badge 1 */}
               <motion.div
                 animate={{ y: [-6, 6, -6] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 left-[-10%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
+                className="absolute top-8 left-[-5%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
                   🏆
@@ -174,7 +150,7 @@ export default function AcademyLanding() {
               <motion.div
                 animate={{ y: [6, -6, 6] }}
                 transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute bottom-12 right-[-10%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
+                className="absolute bottom-12 right-[-5%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
                   ⚡
