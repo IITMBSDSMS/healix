@@ -30,7 +30,7 @@ export default function AcademyLanding() {
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
       {/* ── 1. HERO SECTION (BYJU'S Inspired Premium Style) ── */}
-      <section className="relative pt-24 md:pt-36 pb-20 md:pb-44 bg-gradient-to-br from-[#2e1a82] via-[#1c0f5c] to-[#0d0735] text-white overflow-hidden border-b-0">
+      <section className="relative pt-32 md:pt-48 pb-20 md:pb-44 bg-gradient-to-br from-[#2e1a82] via-[#1c0f5c] to-[#0d0735] text-white overflow-hidden border-b-0">
         
         {/* Subtle Decorative Wave & Dot Background Grids */}
         <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
@@ -119,13 +119,13 @@ export default function AcademyLanding() {
             </motion.div>
 
             {/* Right Side: Gigantic Model Cut-out & Waves */}
-            <div className="relative h-[480px] hidden lg:flex items-end justify-center">
+            <div className="relative h-[560px] hidden lg:flex items-end justify-center">
               
               {/* Sleek Orbiting/Fanning Brand Waves behind the Model */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[380px] h-[380px] rounded-full border border-white/10 animate-[spin_100s_linear_infinite] absolute" />
-                <div className="w-[280px] h-[280px] rounded-full border border-dashed border-white/5 animate-[spin_60s_linear_infinite_reverse] absolute" />
-                <div className="w-[450px] h-[450px] rounded-full bg-[#5a4bda]/20 blur-[100px] absolute" />
+                <div className="w-[450px] h-[450px] rounded-full border border-white/10 animate-[spin_100s_linear_infinite] absolute" />
+                <div className="w-[350px] h-[350px] rounded-full border border-dashed border-white/5 animate-[spin_60s_linear_infinite_reverse] absolute" />
+                <div className="w-[550px] h-[550px] rounded-full bg-[#5a4bda]/20 blur-[120px] absolute" />
               </div>
 
               {/* ── Main Spokesperson Model holding Tablet ── */}
@@ -133,37 +133,15 @@ export default function AcademyLanding() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="relative w-[380px] h-[460px] z-20"
+                className="relative w-[480px] h-[540px] z-20"
               >
                 <Image 
                   src="/academy-byjus-model.png" 
                   alt="Healix Academy Education Model" 
                   fill 
                   priority
-                  className="object-cover object-bottom" 
+                  className="object-contain object-bottom" 
                 />
-                
-                {/* Verified Badge Overlay */}
-                <div className="absolute top-8 right-0 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg shadow-orange-500/30 z-30 select-none">
-                  <span>🎓</span> HEALIX AMBASSADOR
-                </div>
-              </motion.div>
-
-              {/* Floating Micro-illustrations (Subtle BYJU'S space objects) */}
-              <motion.div
-                animate={{ y: [-5, 5, -5] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-12 left-6 z-30 bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-white/10 text-xs font-bold text-white/90 shadow-lg flex items-center gap-2"
-              >
-                🚀 NEET/JEE 2026
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [6, -6, 6] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute bottom-20 right-6 z-30 bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-white/10 text-xs font-bold text-white/90 shadow-lg flex items-center gap-2"
-              >
-                🧬 Interactive AI
               </motion.div>
             </div>
 
