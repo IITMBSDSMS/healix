@@ -29,142 +29,61 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
-      {/* ── 1. HERO SECTION (Ultra-Premium Tech Academy Style) ── */}
-      <section className="relative pt-32 md:pt-48 pb-24 md:pb-44 bg-gradient-to-b from-[#f8fafc] via-[#f0f4ff] to-[#f8fafc] text-slate-900 overflow-hidden border-b-0">
+      {/* ── 1. HERO SECTION (Founder Quote Style) ── */}
+      <section className="relative pt-24 md:pt-28 pb-36 md:pb-48 bg-[#0a9b8e] text-white overflow-hidden border-b-0">
         
-        {/* Subtle Decorative Grid Pattern */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.5" fill="#000" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
+        {/* Subtle decorative elements */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-black/10 rounded-full blur-[80px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
 
-        {/* Beautiful Ambient Colorful Glows */}
-        <div className="absolute top-1/4 left-0 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-blue-400/10 to-indigo-400/5 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-10 right-0 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-violet-400/10 to-pink-400/5 blur-[100px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 h-full">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-8">
             
-            {/* Left Side: Elegant Headlines & Premium CTA */}
+            {/* Left Side: Founder Model */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center lg:text-left space-y-7"
+              className="w-full lg:w-[45%] flex justify-center lg:justify-end"
             >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-xs font-black text-[#5a4bda] uppercase tracking-wider">
-                ⚡ India&apos;s Premium JEE/NEET Hub
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight leading-[1.12] text-slate-900">
-                Map your learning <br />
-                journey with{" "}
-                <span className="bg-gradient-to-r from-[#5a4bda] to-[#8b5cf6] bg-clip-text text-transparent">
-                  Healix Experts!
-                </span>
-              </h1>
-              
-              <p className="text-base md:text-lg text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0 font-medium">
-                Experience India&apos;s most advanced interactive learning environment. Get live mentorship from top IITians and medical specialists tailored perfectly to your speed.
-              </p>
-              
-              <div className="pt-4 flex justify-center lg:justify-start gap-4 flex-wrap items-center">
-                <Button size="lg" className="px-8 h-13 text-base font-semibold bg-gradient-to-r from-[#5a4bda] to-[#7c3aed] hover:from-[#4b3cc0] hover:to-[#6d28d9] hover:scale-[1.03] transition-all text-white rounded-xl shadow-xl shadow-[#5a4bda]/20 border-0">
-                  Start Free Trial
-                </Button>
-                <Link href="#courses">
-                  <Button variant="outline" size="lg" className="px-8 h-13 text-base font-semibold border-slate-200 text-slate-700 bg-white hover:border-[#5a4bda] hover:text-[#5a4bda] hover:bg-slate-50 rounded-xl transition-all shadow-sm">
-                    Explore Courses
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Premium trust badges */}
-              <div className="pt-6 flex items-center justify-center lg:justify-start gap-4 text-slate-500 text-sm font-semibold border-t border-slate-100 max-w-md">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
-                    <Image src="https://i.pravatar.cc/100?img=12" alt="" fill className="object-cover" />
-                  </div>
-                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
-                    <Image src="https://i.pravatar.cc/100?img=32" alt="" fill className="object-cover" />
-                  </div>
-                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
-                    <Image src="https://i.pravatar.cc/100?img=47" alt="" fill className="object-cover" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-slate-800 font-extrabold leading-none">4.9/5 Rating</p>
-                  <p className="text-xs text-slate-400 mt-1">from 15,000+ top rankers nationwide</p>
-                </div>
+              <div className="relative w-[380px] h-[460px] md:w-[480px] md:h-[580px]">
+                <Image 
+                  src="/academy-founder-transparent.png" 
+                  alt="Healix Academy Founder" 
+                  fill 
+                  priority
+                  className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.2)]" 
+                />
               </div>
             </motion.div>
 
-            {/* Right Side: Gigantic Real Model Cut-out & Minimalist Geometry */}
-            <div className="relative h-[560px] hidden lg:flex items-center justify-center">
+            {/* Right Side: Inspirational Quote */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="w-full lg:w-[55%] text-center space-y-6 lg:pl-10"
+            >
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-wider text-white/95 uppercase drop-shadow-sm">
+                On Redefining JEE & NEET <br className="hidden md:block"/> Preparation:
+              </h2>
               
-              {/* Sleek soft glowing geometry behind the model */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[460px] h-[460px] rounded-full bg-gradient-to-tr from-[#5a4bda]/10 via-[#8b5cf6]/5 to-transparent blur-[80px]" />
-                <div className="w-[380px] h-[380px] rounded-full border border-slate-200/50 bg-white/40 backdrop-blur-3xl shadow-inner" />
-                <div className="w-[300px] h-[300px] rounded-full border border-dashed border-slate-200/60 animate-[spin_120s_linear_infinite]" />
+              <div className="text-xl md:text-2xl lg:text-[1.65rem] font-bold leading-[1.6] text-white tracking-wide">
+                &ldquo;We are proud to build the ultimate learning platform for Indian students. Medical and engineering dreams are the heartbeat of our youth, and we are thrilled to be an integral part of this journey. As an education platform, Healix has always recognized the critical role that expert mentorship plays in a student&apos;s success. Just as cracking JEE or NEET inspires a billion budding dreams across India, we too hope to inspire the love of learning in every student&apos;s heart.&rdquo;
               </div>
-
-              {/* ── Main Spokesperson Model: Real Scholar holding Tablet in Healix T-shirt ── */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-                className="relative w-[480px] h-[520px] z-20"
-              >
-                <Image 
-                  src="/academy-real-model-final.png" 
-                  alt="Healix Academy Education Model" 
-                  fill 
-                  priority
-                  className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(90,75,218,0.15)]" 
-                />
-              </motion.div>
-
-              {/* Floating Rank Badge 1 */}
-              <motion.div
-                animate={{ y: [-6, 6, -6] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 left-[-5%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
-              >
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
-                  🏆
-                </div>
-                <div className="text-left">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">JEE MAIN 2026</h4>
-                  <p className="text-xs font-black text-slate-800 mt-1 leading-tight">AIR 124 Secured</p>
-                </div>
-              </motion.div>
-
-              {/* Floating Rank Badge 2 */}
-              <motion.div
-                animate={{ y: [6, -6, 6] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute bottom-12 right-[-5%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
-                  ⚡
-                </div>
-                <div className="text-left">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">NEET SCORE</h4>
-                  <p className="text-xs font-black text-slate-800 mt-1 leading-tight">710 / 720 Marks</p>
-                </div>
-              </motion.div>
-            </div>
+              
+              <div className="pt-4">
+                <h3 className="text-xl md:text-2xl font-black uppercase tracking-widest text-white drop-shadow-md">
+                  Ananya Sharma
+                </h3>
+                <p className="text-sm md:text-base font-bold text-white/80 tracking-wide mt-1">
+                  Founder & CEO, Healix
+                </p>
+              </div>
+            </motion.div>
 
           </div>
         </div>
-
       </section>
 
       {/* Bottom overlapping Banner (Positioned relatively outside overflow-hidden section to prevent clipping) */}
