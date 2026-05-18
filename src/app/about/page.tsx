@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
@@ -75,6 +75,193 @@ const SectionHeader = ({ badge, title, subtitle, align = "center" }: { badge: st
     )}
   </div>
 );
+
+// ─── Leadership Founder Card ───
+
+const FOUNDER_PHOTOS = [
+  { src: "/founder-photo-1.jpg", caption: "At HQ — Building the future" },
+  { src: "/founder-photo-2.jpg", caption: "On stage — Vision & Impact" },
+  { src: "/founder-photo-3.jpg", caption: "Rooftop — Leading by example" },
+];
+
+const FOUNDER_STATS = [
+  { label: "Founded", value: "2024" },
+  { label: "Products", value: "5+" },
+  { label: "Team Size", value: "12+" },
+  { label: "Users", value: "10K+" },
+];
+
+const FOUNDER_SOCIALS = [
+  { label: "LinkedIn", href: "https://linkedin.com", icon: "in" },
+  { label: "X / Twitter", href: "https://x.com", icon: "𝕏" },
+  { label: "GitHub", href: "https://github.com", icon: "gh" },
+];
+
+function LeadershipFounderCard() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const next = useCallback(() => {
+    setActiveIdx((i) => (i + 1) % FOUNDER_PHOTOS.length);
+  }, []);
+
+  useEffect(() => {
+    if (!isHovered) {
+      intervalRef.current = setInterval(next, 3500);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [isHovered, next]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="max-w-5xl mx-auto"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+        {/* ── Left: Animated Photo Carousel ── */}
+        <div className="lg:col-span-5 relative">
+          <div
+            className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a] cursor-pointer group"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {FOUNDER_PHOTOS.map((photo, i) => (
+              <motion.div
+                key={photo.src}
+                className="absolute inset-0"
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{
+                  opacity: i === activeIdx ? 1 : 0,
+                  scale: i === activeIdx ? 1 : 1.04,
+                }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.caption}
+                  fill
+                  className="object-cover object-top"
+                />
+              </motion.div>
+            ))}
+
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none z-10" />
+
+            {/* Caption */}
+            <div className="absolute bottom-5 left-5 right-5 z-20">
+              <motion.p
+                key={activeIdx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-xs font-mono text-white/50 uppercase tracking-widest"
+              >
+                {FOUNDER_PHOTOS[activeIdx].caption}
+              </motion.p>
+            </div>
+
+            {/* Dot indicators */}
+            <div className="absolute top-4 right-4 z-20 flex gap-1.5">
+              {FOUNDER_PHOTOS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    i === activeIdx ? "bg-[#eab308] scale-125" : "bg-white/20 hover:bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Hover: Next arrow */}
+            <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={next}
+                className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-[#eab308]/20 transition-colors"
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mt-4 h-0.5 bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              key={activeIdx}
+              className="h-full bg-[#eab308] rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 3.5, ease: "linear" }}
+            />
+          </div>
+        </div>
+
+        {/* ── Right: Founder Details ── */}
+        <div className="lg:col-span-7 space-y-8 pt-2">
+
+          {/* Name & Role */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#eab308] animate-pulse" />
+              <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Founder & CEO</span>
+            </div>
+            <h3 className="text-5xl md:text-6xl font-bold tracking-tighter mb-2">Avnish</h3>
+            <p className="text-white/40 font-mono text-sm uppercase tracking-wider">IIT Madras · IITM BS Data Science · 2024</p>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-4 gap-4 py-6 border-y border-white/5">
+            {FOUNDER_STATS.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-2xl font-bold text-[#eab308]">{s.value}</p>
+                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-1">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-4 text-white/60 leading-relaxed">
+            <p>
+              Avnish is a 20-year-old builder and engineer from IIT Madras with a deep conviction that healthcare infrastructure in India is fundamentally broken. He started Healix to fix it — not with a single product, but with a unified operating layer for health data.
+            </p>
+            <p>
+              Before Healix, he built IoT telemetry systems, genomic inference engines, and safety alert platforms — all of which are now live products within the Healix ecosystem. He believes the best companies are built at the intersection of engineering rigor and human empathy.
+            </p>
+          </div>
+
+          {/* Quote */}
+          <blockquote className="border-l-2 border-[#eab308] pl-6 py-2">
+            <p className="text-xl font-light text-white italic leading-relaxed">
+              &ldquo;Healthcare data doesn&apos;t need to be a black box. It needs to be a shared language.&rdquo;
+            </p>
+          </blockquote>
+
+          {/* Social Links */}
+          <div className="flex items-center gap-4 pt-2">
+            {FOUNDER_SOCIALS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:border-[#eab308]/40 hover:bg-[#eab308]/5 transition-all text-sm font-semibold text-white/50 hover:text-white"
+              >
+                <span className="text-base leading-none">{s.icon}</span>
+                <span>{s.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 // ─── Main Page ───
 
@@ -251,6 +438,18 @@ export default function AboutPage() {
               </motion.div>
             </div>
           </div>
+        </section>
+
+        {/* ── 2.7 LEADERSHIP TEAM ── */}
+        <section id="leadership" className="py-40 border-t border-white/5">
+          <SectionHeader
+            badge="Our People"
+            title="Leadership Team."
+            subtitle="The minds behind Healix — builders, researchers, and healthcare innovators united by a single mission."
+          />
+
+          {/* Founder Card */}
+          <LeadershipFounderCard />
         </section>
 
         {/* ── 2.5 THE SYSTEMIC ADVANTAGE ── */}
