@@ -235,10 +235,14 @@ export default function AdminPage() {
           })}
         </nav>
 
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-2">
           <Link href="/admin/academy" className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-white/50 hover:bg-[#eab308]/10 hover:text-[#eab308] border border-transparent hover:border-[#eab308]/20 transition-all">
             <GraduationCap className="h-4 w-4" />
             <span className="font-mono text-xs uppercase tracking-wider">Academy CRM</span>
+          </Link>
+          <Link href="/admin/mentors" className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-white/50 hover:bg-[#eab308]/10 hover:text-[#eab308] border border-transparent hover:border-[#eab308]/20 transition-all">
+            <Users className="h-4 w-4" />
+            <span className="font-mono text-xs uppercase tracking-wider">Mentors</span>
           </Link>
         </div>
         

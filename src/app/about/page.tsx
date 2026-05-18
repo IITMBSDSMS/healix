@@ -76,42 +76,67 @@ const SectionHeader = ({ badge, title, subtitle, align = "center" }: { badge: st
   </div>
 );
 
-// ─── Leadership Founder Card ───
+// ─── Dynamic Leadership Section ───
 
-const FOUNDER_PHOTOS = [
-  { src: "/founder-photo-1.jpg", caption: "At HQ — Building the future" },
-  { src: "/founder-photo-2.jpg", caption: "On stage — Vision & Impact" },
-  { src: "/founder-photo-3.jpg", caption: "Rooftop — Leading by example" },
-];
-
-const FOUNDER_STATS = [
-  { label: "Founded", value: "2024" },
-  { label: "Products", value: "5+" },
-  { label: "Team Size", value: "12+" },
-  { label: "Users", value: "10K+" },
-];
-
-const FOUNDER_SOCIALS = [
-  { label: "LinkedIn", href: "https://linkedin.com", icon: "in" },
-  { label: "X / Twitter", href: "https://x.com", icon: "𝕏" },
-  { label: "GitHub", href: "https://github.com", icon: "gh" },
-];
+type Mentor = {
+  id: string;
+  name: string;
+  role: string;
+  organization?: string;
+  bio?: string;
+  quote?: string;
+  photo_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  github_url?: string;
+};
 
 function LeadershipFounderCard() {
+  const [mentors, setMentors] = useState<Mentor[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const next = useCallback(() => {
-    setActiveIdx((i) => (i + 1) % FOUNDER_PHOTOS.length);
+  useEffect(() => {
+    fetch("/api/mentors")
+      .then((r) => r.json())
+      .then((data) => { setMentors(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
+  const next = useCallback(() => {
+    setActiveIdx((i) => (i + 1) % Math.max(mentors.length, 1));
+  }, [mentors.length]);
+
+  const prev = useCallback(() => {
+    setActiveIdx((i) => (i - 1 + mentors.length) % Math.max(mentors.length, 1));
+  }, [mentors.length]);
+
   useEffect(() => {
-    if (!isHovered) {
-      intervalRef.current = setInterval(next, 3500);
+    if (!isHovered && mentors.length > 1) {
+      intervalRef.current = setInterval(next, 4000);
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isHovered, next]);
+  }, [isHovered, next, mentors.length]);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto py-20 text-center text-white/20 font-mono text-sm animate-pulse">
+        Loading leadership team...
+      </div>
+    );
+  }
+
+  if (mentors.length === 0) {
+    return (
+      <div className="max-w-5xl mx-auto py-20 text-center text-white/20 font-mono text-sm">
+        No mentors added yet.
+      </div>
+    );
+  }
+
+  const mentor = mentors[activeIdx];
 
   return (
     <motion.div
@@ -120,74 +145,57 @@ function LeadershipFounderCard() {
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
       className="max-w-5xl mx-auto"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
-        {/* ── Left: Animated Photo Carousel ── */}
+        {/* ── Left: Animated Photo ── */}
         <div className="lg:col-span-5 relative">
-          <div
-            className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a] cursor-pointer group"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            {FOUNDER_PHOTOS.map((photo, i) => (
+          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a] group">
+            {mentors.map((m, i) => (
               <motion.div
-                key={photo.src}
+                key={m.id}
                 className="absolute inset-0"
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{
-                  opacity: i === activeIdx ? 1 : 0,
-                  scale: i === activeIdx ? 1 : 1.04,
-                }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
+                initial={false}
+                animate={{ opacity: i === activeIdx ? 1 : 0, scale: i === activeIdx ? 1 : 1.04 }}
+                transition={{ duration: 0.7, ease: "easeInOut" }}
               >
-                <Image
-                  src={photo.src}
-                  alt={photo.caption}
-                  fill
-                  className="object-cover object-top"
-                />
+                {m.photo_url ? (
+                  <Image src={m.photo_url} alt={m.name} fill className="object-cover object-top" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[#eab308] text-[120px] font-bold">
+                    {m.name[0]}
+                  </div>
+                )}
               </motion.div>
             ))}
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none z-10" />
 
-            {/* Caption */}
+            {/* Mentor name badge at bottom */}
             <div className="absolute bottom-5 left-5 right-5 z-20">
-              <motion.p
-                key={activeIdx}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-xs font-mono text-white/50 uppercase tracking-widest"
-              >
-                {FOUNDER_PHOTOS[activeIdx].caption}
-              </motion.p>
+              <motion.div key={mentor.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                <p className="text-base font-bold text-white">{mentor.name}</p>
+                <p className="text-xs font-semibold text-[#eab308]">{mentor.role}</p>
+              </motion.div>
             </div>
 
             {/* Dot indicators */}
-            <div className="absolute top-4 right-4 z-20 flex gap-1.5">
-              {FOUNDER_PHOTOS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveIdx(i)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    i === activeIdx ? "bg-[#eab308] scale-125" : "bg-white/20 hover:bg-white/40"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Hover: Next arrow */}
-            <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={next}
-                className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-[#eab308]/20 transition-colors"
-              >
-                →
-              </button>
-            </div>
+            {mentors.length > 1 && (
+              <div className="absolute top-4 right-4 z-20 flex gap-1.5">
+                {mentors.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      i === activeIdx ? "bg-[#eab308] scale-125" : "bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Progress bar */}
@@ -197,66 +205,85 @@ function LeadershipFounderCard() {
               className="h-full bg-[#eab308] rounded-full"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 3.5, ease: "linear" }}
+              transition={{ duration: 4, ease: "linear" }}
             />
           </div>
+
+          {/* Prev / Next + Counter */}
+          {mentors.length > 1 && (
+            <div className="flex items-center justify-between mt-5">
+              <div className="flex gap-2">
+                <button onClick={prev} className="w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-[#eab308]/10 hover:border-[#eab308]/40 flex items-center justify-center text-white/60 hover:text-white transition-all">
+                  ‹
+                </button>
+                <button onClick={next} className="w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-[#eab308]/10 hover:border-[#eab308]/40 flex items-center justify-center text-white/60 hover:text-white transition-all">
+                  ›
+                </button>
+              </div>
+              <p className="text-xs font-mono text-white/30">
+                {String(activeIdx + 1).padStart(2, "0")} / {String(mentors.length).padStart(2, "0")}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* ── Right: Founder Details ── */}
+        {/* ── Right: Mentor Details ── */}
         <div className="lg:col-span-7 space-y-8 pt-2">
+          <motion.div key={mentor.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
 
-          {/* Name & Role */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#eab308] animate-pulse" />
-              <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Founder & CEO</span>
-            </div>
-            <h3 className="text-5xl md:text-6xl font-bold tracking-tighter mb-2">Avnish</h3>
-            <p className="text-white/40 font-mono text-sm uppercase tracking-wider">IIT Madras · IITM BS Data Science · 2024</p>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4 py-6 border-y border-white/5">
-            {FOUNDER_STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-2xl font-bold text-[#eab308]">{s.value}</p>
-                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-1">{s.label}</p>
+            {/* Name & Role */}
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#eab308] animate-pulse" />
+                <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">{mentor.role}</span>
               </div>
-            ))}
-          </div>
+              <h3 className="text-5xl md:text-6xl font-bold tracking-tighter mb-2">{mentor.name}</h3>
+              {mentor.organization && (
+                <p className="text-white/40 font-mono text-sm uppercase tracking-wider">{mentor.organization}</p>
+              )}
+            </div>
 
-          {/* Bio */}
-          <div className="space-y-4 text-white/60 leading-relaxed">
-            <p>
-              Avnish is a 20-year-old builder and engineer from IIT Madras with a deep conviction that healthcare infrastructure in India is fundamentally broken. He started Healix to fix it — not with a single product, but with a unified operating layer for health data.
-            </p>
-            <p>
-              Before Healix, he built IoT telemetry systems, genomic inference engines, and safety alert platforms — all of which are now live products within the Healix ecosystem. He believes the best companies are built at the intersection of engineering rigor and human empathy.
-            </p>
-          </div>
+            {/* Bio */}
+            {mentor.bio && (
+              <div className="space-y-3 text-white/60 leading-relaxed mb-6">
+                <p>{mentor.bio}</p>
+              </div>
+            )}
 
-          {/* Quote */}
-          <blockquote className="border-l-2 border-[#eab308] pl-6 py-2">
-            <p className="text-xl font-light text-white italic leading-relaxed">
-              &ldquo;Healthcare data doesn&apos;t need to be a black box. It needs to be a shared language.&rdquo;
-            </p>
-          </blockquote>
+            {/* Quote */}
+            {mentor.quote && (
+              <blockquote className="border-l-2 border-[#eab308] pl-6 py-2 mb-6">
+                <p className="text-xl font-light text-white italic leading-relaxed">
+                  &ldquo;{mentor.quote}&rdquo;
+                </p>
+              </blockquote>
+            )}
 
-          {/* Social Links */}
-          <div className="flex items-center gap-4 pt-2">
-            {FOUNDER_SOCIALS.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:border-[#eab308]/40 hover:bg-[#eab308]/5 transition-all text-sm font-semibold text-white/50 hover:text-white"
-              >
-                <span className="text-base leading-none">{s.icon}</span>
-                <span>{s.label}</span>
-              </a>
-            ))}
-          </div>
+            {/* Social Links */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {mentor.linkedin_url && mentor.linkedin_url !== "#" && (
+                <a href={mentor.linkedin_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:border-[#eab308]/40 hover:bg-[#eab308]/5 transition-all text-sm font-semibold text-white/50 hover:text-white">
+                  <span className="text-base leading-none">in</span>
+                  <span>LinkedIn</span>
+                </a>
+              )}
+              {mentor.twitter_url && mentor.twitter_url !== "#" && (
+                <a href={mentor.twitter_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:border-[#eab308]/40 hover:bg-[#eab308]/5 transition-all text-sm font-semibold text-white/50 hover:text-white">
+                  <span className="text-base leading-none">𝕏</span>
+                  <span>Twitter</span>
+                </a>
+              )}
+              {mentor.github_url && mentor.github_url !== "#" && (
+                <a href={mentor.github_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:border-[#eab308]/40 hover:bg-[#eab308]/5 transition-all text-sm font-semibold text-white/50 hover:text-white">
+                  <span className="text-base leading-none">gh</span>
+                  <span>GitHub</span>
+                </a>
+              )}
+            </div>
+          </motion.div>
         </div>
       </div>
     </motion.div>
