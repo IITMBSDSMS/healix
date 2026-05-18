@@ -29,66 +29,89 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
-      {/* ── 1. HERO SECTION (Premium Founder Quote Layout) ── */}
-      <section className="relative pt-24 md:pt-28 pb-36 md:pb-48 bg-gradient-to-br from-[#0a9b8e] via-[#0c8577] to-[#046e63] text-white overflow-hidden border-b-0 shadow-inner">
+      {/* ── 1. HERO SECTION (Diagonal Split Template Style) ── */}
+      <section className="relative w-full min-h-[600px] md:min-h-[750px] bg-[#5a2b81] overflow-hidden flex flex-col md:flex-row border-b-0">
         
-        {/* Advanced Subtle Ambient Lighting & Geometry */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-b from-white/10 to-transparent rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-900/40 rounded-full blur-[90px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
-        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-teal-300/10 rounded-full blur-[60px] pointer-events-none animate-pulse" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10 h-full">
-          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-8">
-            
-            {/* Left Side: Founder Model (Hyper-Realistic) */}
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="w-full lg:w-[45%] flex justify-center lg:justify-end relative"
-            >
-              {/* Subtle back-glow behind the model */}
-              <div className="absolute bottom-0 w-[300px] h-[400px] bg-white/5 rounded-[100px] blur-[60px]" />
-              
-              <div className="relative w-[380px] h-[460px] md:w-[480px] md:h-[580px] z-10">
-                <Image 
-                  src="/academy-founder-realistic.png" 
-                  alt="Healix Academy Founder" 
-                  fill 
-                  priority
-                  quality={100}
-                  className="object-contain object-bottom drop-shadow-[0_25px_50px_rgba(0,0,0,0.35)]" 
-                />
-              </div>
-            </motion.div>
-
-            {/* Right Side: Inspirational Quote & Elegant Typography */}
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="w-full lg:w-[55%] text-center lg:text-left space-y-7 lg:pl-12"
-            >
-              <h2 className="text-xl md:text-2xl font-extrabold tracking-[0.2em] text-teal-100 uppercase drop-shadow-sm flex items-center justify-center lg:justify-start gap-3">
-                <span className="w-12 h-[2px] bg-teal-200/60 hidden md:block" />
-                On Redefining JEE & NEET Preparation
-              </h2>
-              
-              <div className="text-2xl md:text-3xl lg:text-[1.85rem] font-bold leading-[1.55] text-white tracking-wide drop-shadow-md">
-                &ldquo;We are proud to build the ultimate learning platform for Indian students. Medical and engineering dreams are the heartbeat of our youth, and we are thrilled to be an integral part of this journey. As an education platform, Healix has always recognized the critical role that expert mentorship plays in a student&apos;s success. Just as cracking JEE or NEET inspires a billion budding dreams across India, we too hope to inspire the love of learning in every student&apos;s heart.&rdquo;
-              </div>
-              
-              <div className="pt-6 border-t border-white/10 max-w-md mx-auto lg:mx-0">
-                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white drop-shadow-lg">
-                  Ananya Sharma
-                </h3>
-                <p className="text-base md:text-lg font-semibold text-teal-100 tracking-wider mt-1.5 flex items-center justify-center lg:justify-start gap-2">
-                  Founder & CEO, Healix
-                </p>
-              </div>
-            </motion.div>
-
+        {/* Left Side Content (Purple) */}
+        <div className="relative w-full md:w-[55%] pt-32 pb-24 md:pb-36 px-6 md:pl-16 lg:pl-24 flex flex-col justify-center z-20">
+          
+          {/* Floating Yellow Elements */}
+          <div className="absolute top-24 right-10 lg:right-20 w-6 h-20 bg-gradient-to-b from-yellow-300 to-amber-500 rounded-full rotate-45 shadow-lg drop-shadow-md hidden md:block" />
+          <div className="absolute bottom-32 left-10 w-16 h-16 border-[6px] border-amber-400 rotate-12 shadow-sm drop-shadow-sm hidden md:block" />
+          <div className="absolute top-32 left-20 w-8 h-8 bg-gradient-to-br from-amber-300 to-amber-500 rounded-md rotate-[-15deg] shadow-lg hidden md:block" />
+          
+          {/* Dot Grid Background */}
+          <div className="absolute top-1/4 right-1/4 opacity-20 pointer-events-none hidden md:block">
+            <svg width="80" height="80" className="text-white fill-current" xmlns="http://www.w3.org/2000/svg">
+              <pattern id="dots-hero" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="2" />
+              </pattern>
+              <rect width="80" height="80" fill="url(#dots-hero)" />
+            </svg>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative z-10"
+          >
+            <h3 className="text-white text-2xl md:text-3xl font-extrabold tracking-[0.2em] uppercase drop-shadow-md">
+              HEALIX
+            </h3>
+            
+            <div className="text-white text-[100px] md:text-[180px] font-black leading-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.3)] my-2 md:my-0" style={{ WebkitTextStroke: '4px white', color: 'transparent', transform: 'rotate(-4deg)', display: 'inline-block' }}>
+              H
+            </div>
+
+            <h1 className="text-white text-5xl md:text-[5.5rem] font-extrabold leading-[1.05] mb-8 drop-shadow-lg">
+              Education <br /> for All
+            </h1>
+
+            <div className="bg-[#1cb14b] text-white font-black text-sm md:text-base px-5 py-2 rounded-md inline-block shadow-lg drop-shadow-md tracking-wider">
+              NEET & JEE MASTERCLASS
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Side (Grey Background with Diagonal Cut) */}
+        <div className="relative w-full md:w-[45%] h-[450px] md:h-auto z-10 overflow-hidden">
+          
+          {/* The White Border Layer */}
+          <div className="absolute inset-0 bg-white" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, -15% 100%)' }}></div>
+          
+          {/* The Grey Background Layer (shifted slightly right to show white border) */}
+          <div className="absolute inset-0 bg-[#eef2f6] ml-2 md:ml-3" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, -15% 100%)' }}>
+            
+            {/* Dot Grid Top Right on Grey */}
+            <div className="absolute top-24 right-12 opacity-30 hidden md:block">
+              <svg width="60" height="60" className="text-slate-400 fill-current" xmlns="http://www.w3.org/2000/svg">
+                <pattern id="dots-grey" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="2" />
+                </pattern>
+                <rect width="60" height="60" fill="url(#dots-grey)" />
+              </svg>
+            </div>
+            
+          </div>
+
+          {/* The Model Cutout */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 md:translate-x-[-40%] w-[350px] h-[450px] md:w-[500px] md:h-[650px] z-30"
+          >
+            <Image 
+              src="/academy-founder-realistic.png" 
+              alt="Healix Academy Model" 
+              fill 
+              priority
+              quality={100}
+              className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)]" 
+            />
+          </motion.div>
+
         </div>
       </section>
 
