@@ -29,119 +29,136 @@ export default function AcademyLanding() {
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#ff5500]/30">
       
-      {/* ── 1. HERO SECTION (BYJU'S Inspired Premium Style) ── */}
-      <section className="relative pt-32 md:pt-48 pb-20 md:pb-44 bg-gradient-to-br from-[#2e1a82] via-[#1c0f5c] to-[#0d0735] text-white overflow-hidden border-b-0">
+      {/* ── 1. HERO SECTION (Ultra-Premium Tech Academy Style) ── */}
+      <section className="relative pt-32 md:pt-48 pb-24 md:pb-44 bg-gradient-to-b from-[#f8fafc] via-[#f0f4ff] to-[#f8fafc] text-slate-900 overflow-hidden border-b-0">
         
-        {/* Subtle Decorative Wave & Dot Background Grids */}
-        <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
+        {/* Subtle Decorative Grid Pattern */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1" fill="#fff" />
+                <circle cx="2" cy="2" r="1.5" fill="#000" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
 
-        {/* Ambient background light shapes */}
-        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full bg-[#5a4bda]/20 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#ff5500]/10 blur-[100px] pointer-events-none" />
+        {/* Beautiful Ambient Colorful Glows */}
+        <div className="absolute top-1/4 left-0 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-blue-400/10 to-indigo-400/5 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-10 right-0 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-violet-400/10 to-pink-400/5 blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             
-            {/* Left Side: Text & Custom Features */}
+            {/* Left Side: Elegant Headlines & Premium CTA */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center lg:text-left space-y-7"
             >
-              {/* Minimalist Branded Badge Header */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-xs font-black uppercase tracking-wider text-amber-300">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" /> India&apos;s Elite JEE/NEET Hub
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-xs font-black text-[#5a4bda] uppercase tracking-wider">
+                ⚡ India&apos;s Premium JEE/NEET Hub
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.85rem] font-black tracking-tight leading-[1.2] text-white">
-                Map your learning journey <br/>
-                <span className="text-[#ffdd00] drop-shadow-md">with Healix&apos;s Education Experts!</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight leading-[1.12] text-slate-900">
+                Map your learning <br />
+                journey with{" "}
+                <span className="bg-gradient-to-r from-[#5a4bda] to-[#8b5cf6] bg-clip-text text-transparent">
+                  Healix Experts!
+                </span>
               </h1>
               
-              <p className="text-sm md:text-base text-slate-200 max-w-lg leading-relaxed mx-auto lg:mx-0 font-medium">
-                Unlock your absolute potential with highly customized, diagnostic-driven learning programs designed by the nation&apos;s top IITian and clinical minds.
+              <p className="text-base md:text-lg text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0 font-medium">
+                Experience India&apos;s most advanced interactive learning environment. Get live mentorship from top IITians and medical specialists tailored perfectly to your speed.
               </p>
               
-              {/* BYJU'S Signature Double Feature Capsules */}
-              <div className="grid sm:grid-cols-2 gap-4 pt-2 max-w-2xl text-left">
-                {/* Diagnostic Style Badge */}
-                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center gap-3.5 group hover:bg-white/10 transition-all duration-300">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-lg shrink-0 shadow-lg shadow-orange-500/20">
-                    📊
-                  </div>
-                  <div>
-                    <h4 className="text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none">Diagnostic Tools</h4>
-                    <p className="text-xs font-bold text-white/90 leading-snug mt-1">Assess your unique learning style with custom diagnostics</p>
-                  </div>
-                </div>
-
-                {/* Personalised Program Badge */}
-                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center gap-3.5 group hover:bg-white/10 transition-all duration-300">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center text-lg shrink-0 shadow-lg shadow-red-500/20">
-                    🎯
-                  </div>
-                  <div>
-                    <h4 className="text-[9px] font-black text-pink-400 uppercase tracking-widest leading-none">Personalised Plan</h4>
-                    <p className="text-xs font-bold text-white/90 leading-snug mt-1">Get a custom study program to learn effectively</p>
-                  </div>
-                </div>
+              <div className="pt-4 flex justify-center lg:justify-start gap-4 flex-wrap items-center">
+                <Button size="lg" className="px-8 h-13 text-base font-semibold bg-gradient-to-r from-[#5a4bda] to-[#7c3aed] hover:from-[#4b3cc0] hover:to-[#6d28d9] hover:scale-[1.03] transition-all text-white rounded-xl shadow-xl shadow-[#5a4bda]/20 border-0">
+                  Start Free Trial
+                </Button>
+                <Link href="#courses">
+                  <Button variant="outline" size="lg" className="px-8 h-13 text-base font-semibold border-slate-200 text-slate-700 bg-white hover:border-[#5a4bda] hover:text-[#5a4bda] hover:bg-slate-50 rounded-xl transition-all shadow-sm">
+                    Explore Courses
+                  </Button>
+                </Link>
               </div>
 
-              {/* counseling Booking Input Session Block */}
-              <div className="pt-2 space-y-3.5 text-left border-t border-white/10 max-w-lg">
-                <p className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" /> Book a free, 1-on-1 counseling session
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <input 
-                      type="tel" 
-                      placeholder="Enter your Mobile Number" 
-                      className="w-full h-12 pl-4 pr-3 rounded-xl bg-white text-slate-900 placeholder-slate-400 text-sm font-semibold border-2 border-transparent focus:border-[#ffdd00] focus:ring-0 outline-none transition-all shadow-md"
-                    />
+              {/* Premium trust badges */}
+              <div className="pt-6 flex items-center justify-center lg:justify-start gap-4 text-slate-500 text-sm font-semibold border-t border-slate-100 max-w-md">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
+                    <Image src="https://i.pravatar.cc/100?img=12" alt="" fill className="object-cover" />
                   </div>
-                  <Button className="h-12 px-6 bg-[#ffdd00] hover:bg-[#e6c700] hover:scale-[1.02] active:scale-[0.98] transition-all text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-400/25 border-0 shrink-0">
-                    Book Free Session
-                  </Button>
+                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
+                    <Image src="https://i.pravatar.cc/100?img=32" alt="" fill className="object-cover" />
+                  </div>
+                  <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden relative">
+                    <Image src="https://i.pravatar.cc/100?img=47" alt="" fill className="object-cover" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-slate-800 font-extrabold leading-none">4.9/5 Rating</p>
+                  <p className="text-xs text-slate-400 mt-1">from 15,000+ top rankers nationwide</p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Right Side: Gigantic Model Cut-out & Waves */}
-            <div className="relative h-[560px] hidden lg:flex items-end justify-center">
+            {/* Right Side: Gigantic Model Cut-out & Minimalist Geometry */}
+            <div className="relative h-[560px] hidden lg:flex items-center justify-center">
               
-              {/* Sleek Orbiting/Fanning Brand Waves behind the Model */}
+              {/* Sleek soft glowing geometry behind the model */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[450px] h-[450px] rounded-full border border-white/10 animate-[spin_100s_linear_infinite] absolute" />
-                <div className="w-[350px] h-[350px] rounded-full border border-dashed border-white/5 animate-[spin_60s_linear_infinite_reverse] absolute" />
-                <div className="w-[550px] h-[550px] rounded-full bg-[#5a4bda]/20 blur-[120px] absolute" />
+                <div className="w-[440px] h-[440px] rounded-full bg-gradient-to-tr from-[#5a4bda]/5 via-[#8b5cf6]/5 to-transparent blur-[60px]" />
+                <div className="w-[360px] h-[360px] rounded-full border border-slate-200/50 bg-white/40 backdrop-blur-3xl shadow-inner" />
+                <div className="w-[280px] h-[280px] rounded-full border border-dashed border-slate-200/60 animate-[spin_100s_linear_infinite]" />
               </div>
 
-              {/* ── Main Spokesperson Model holding Tablet ── */}
+              {/* ── Main Spokesperson Model holding Tablet (Transparent Cut-out) ── */}
               <motion.div 
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="relative w-[480px] h-[540px] z-20"
+                className="relative w-[480px] h-[520px] z-20"
               >
                 <Image 
-                  src="/academy-byjus-model.png" 
+                  src="/academy-model-transparent.png" 
                   alt="Healix Academy Education Model" 
                   fill 
                   priority
-                  className="object-contain object-bottom" 
+                  className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(90,75,218,0.15)]" 
                 />
+              </motion.div>
+
+              {/* Floating Rank Badge 1 */}
+              <motion.div
+                animate={{ y: [-6, 6, -6] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-12 left-[2%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
+              >
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
+                  🏆
+                </div>
+                <div className="text-left">
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">JEE MAIN 2026</h4>
+                  <p className="text-xs font-black text-slate-800 mt-1 leading-tight">AIR 124 Secured</p>
+                </div>
+              </motion.div>
+
+              {/* Floating Rank Badge 2 */}
+              <motion.div
+                animate={{ y: [6, -6, 6] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute bottom-16 right-[2%] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_12px_24px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 z-30 select-none max-w-[190px]"
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-extrabold shadow-sm">
+                  ⚡
+                </div>
+                <div className="text-left">
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">NEET SCORE</h4>
+                  <p className="text-xs font-black text-slate-800 mt-1 leading-tight">710 / 720 Marks</p>
+                </div>
               </motion.div>
             </div>
 
