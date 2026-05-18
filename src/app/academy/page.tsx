@@ -165,72 +165,70 @@ export default function AcademyLanding() {
           </div>
         </div>
 
-        {/* Bottom overlapping Banner */}
-        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-4 md:px-6">
-          <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-6 md:py-8 px-3 md:px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 md:divide-x md:divide-gray-100">
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="text-center px-4 flex flex-col items-center group cursor-pointer"
-              >
-                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
-                  <div className="bg-red-500 text-white font-bold text-[10px] inline-flex px-2 py-1 rounded mb-3 items-center justify-center gap-1 w-max shadow-sm shadow-red-500/20 group-hover:shadow-md group-hover:shadow-red-500/40 transition-shadow">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
-                  </div>
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-red-500 transition-colors">Daily Live</h4>
-                  <p className="text-[11px] text-slate-500 mt-1">Interactive classes</p>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-center px-4 group cursor-pointer"
-              >
-                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
-                  <div className="text-2xl mb-2 flex justify-center text-blue-500 group-hover:scale-110 transition-transform">📝</div>
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors">10 Million +</h4>
-                  <p className="text-[11px] text-slate-500 mt-1">Tests, sample papers & notes</p>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="text-center px-4 group cursor-pointer"
-              >
-                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
-                  <div className="text-2xl mb-2 flex justify-center text-purple-500 group-hover:scale-110 transition-transform">🧠</div>
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-purple-600 transition-colors">24 x 7</h4>
-                  <p className="text-[11px] text-slate-500 mt-1">Doubt solving sessions</p>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="text-center px-4 group cursor-pointer"
-              >
-                <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
-                  <div className="text-2xl mb-2 flex justify-center text-yellow-500 group-hover:scale-110 transition-transform">🏆</div>
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-yellow-600 transition-colors">100 +</h4>
-                  <p className="text-[11px] text-slate-500 mt-1">Offline centres</p>
-                </div>
-              </motion.div>
-
-            </div>
-          </div>
-        </div>
       </section>
 
-      {/* Spacer to account for the overlapping banner */}
-      <div className="h-20 md:h-24 bg-transparent"></div>
+      {/* Bottom overlapping Banner (Positioned relatively outside overflow-hidden section to prevent clipping) */}
+      <div className="relative -mt-16 md:-mt-20 z-30 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-6 md:py-8 px-3 md:px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 md:divide-x md:divide-gray-100">
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-center px-4 flex flex-col items-center group cursor-pointer"
+            >
+              <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                <div className="bg-red-500 text-white font-bold text-[10px] inline-flex px-2 py-1 rounded mb-3 items-center justify-center gap-1 w-max shadow-sm shadow-red-500/20 group-hover:shadow-md group-hover:shadow-red-500/40 transition-shadow">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+                </div>
+                <h4 className="font-bold text-slate-900 text-base group-hover:text-red-500 transition-colors">Daily Live</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Interactive classes</p>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-center px-4 group cursor-pointer"
+            >
+              <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                <div className="text-2xl mb-2 flex justify-center text-blue-500 group-hover:scale-110 transition-transform">📝</div>
+                <h4 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors">10 Million +</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Tests, sample papers & notes</p>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-center px-4 group cursor-pointer"
+            >
+              <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                <div className="text-2xl mb-2 flex justify-center text-purple-500 group-hover:scale-110 transition-transform">🧠</div>
+                <h4 className="font-bold text-slate-900 text-base group-hover:text-purple-600 transition-colors">24 x 7</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Doubt solving sessions</p>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-center px-4 group cursor-pointer"
+            >
+              <div className="group-hover:-translate-y-1 transition-transform duration-300 w-full flex flex-col items-center">
+                <div className="text-2xl mb-2 flex justify-center text-yellow-500 group-hover:scale-110 transition-transform">🏆</div>
+                <h4 className="font-bold text-slate-900 text-base group-hover:text-yellow-600 transition-colors">100 +</h4>
+                <p className="text-[11px] text-slate-500 mt-1">Offline centres</p>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </div>
       
       {/* ── 2. MARQUEE SECTION ── */}
       <MentorMarquee mentors={mentors} />
