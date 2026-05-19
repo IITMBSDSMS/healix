@@ -88,30 +88,46 @@ export default function AcademyAdmin() {
   const handleAddMentor = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    await addMentor(formData);
-    setShowMentorModal(false);
-    loadData();
+    const res = await addMentor(formData);
+    if (res && 'error' in res && res.error) {
+      alert(res.error);
+    } else {
+      setShowMentorModal(false);
+      loadData();
+    }
   };
 
   const handleDeleteMentor = async (id: string) => {
-    if(confirm("Are you sure?")) {
-      await deleteMentor(id);
-      loadData();
+    if(confirm("Are you sure you want to delete this instructor?")) {
+      const res = await deleteMentor(id);
+      if (res && 'error' in res && res.error) {
+        alert(res.error);
+      } else {
+        loadData();
+      }
     }
   };
 
   const handleAddCourse = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    await addCourse(formData);
-    setShowCourseModal(false);
-    loadData();
+    const res = await addCourse(formData);
+    if (res && 'error' in res && res.error) {
+      alert(res.error);
+    } else {
+      setShowCourseModal(false);
+      loadData();
+    }
   };
 
   const handleDeleteCourse = async (id: string) => {
-    if(confirm("Are you sure?")) {
-      await deleteCourse(id);
-      loadData();
+    if(confirm("Are you sure you want to delete this course?")) {
+      const res = await deleteCourse(id);
+      if (res && 'error' in res && res.error) {
+        alert(res.error);
+      } else {
+        loadData();
+      }
     }
   };
 
