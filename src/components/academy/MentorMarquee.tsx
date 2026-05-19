@@ -10,6 +10,7 @@ interface Mentor {
   role: string;
   institution: string;
   photoUrl: string;
+  bio?: string;
 }
 
 interface MentorMarqueeProps {
@@ -38,7 +39,7 @@ export const MentorMarquee = ({ mentors = [] }: MentorMarqueeProps) => {
         image: m.photoUrl || `https://i.pravatar.cc/600?img=${i + 1}`,
         role: m.role || m.institution,
         institution: m.institution,
-        message: DEFAULT_MESSAGES[i % DEFAULT_MESSAGES.length],
+        message: m.bio || DEFAULT_MESSAGES[i % DEFAULT_MESSAGES.length],
       }))
     : FALLBACK_MENTORS;
 

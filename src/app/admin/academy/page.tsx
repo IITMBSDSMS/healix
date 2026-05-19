@@ -7,7 +7,7 @@ import {
   Users, DollarSign, BookOpen, Search, 
   Filter, MoreVertical, CheckCircle, Clock,
   ArrowUpRight, Download, Plus, Star, Book, 
-  UserPlus, Image as ImageIcon, Trash2
+  UserPlus, Image as ImageIcon, Trash2, Upload, Loader2
 } from "lucide-react";
 import Image from "next/image";
 import { getCourses, getMentors } from "@/lib/academy/db";
@@ -24,6 +24,10 @@ export default function AcademyAdmin() {
   const [showCourseModal, setShowCourseModal] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Dynamic Photo Upload States
+  const [isUploading, setIsUploading] = useState<string | null>(null); // tracks 'new' or mentor.id
+  const [newMentorPhotoUrl, setNewMentorPhotoUrl] = useState("");
 
   const loadData = async () => {
     setIsLoading(true);
@@ -38,6 +42,42 @@ export default function AcademyAdmin() {
       console.error("Failed to load academy data");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, mentorId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const targetId = mentorId || 'new';
+    setIsUploading(targetId);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    if (mentorId) {
+      formData.append("mentorId", mentorId);
+    }
+
+    try {
+      const res = await fetch("/api/admin/academy/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        if (mentorId) {
+          // If we successfully updated in DB, reload the data to sync view!
+          await loadData();
+        } else {
+          setNewMentorPhotoUrl(data.url);
+        }
+      } else {
+        alert("Upload error: " + (data.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      alert("Failed to upload image: " + err.message);
+    } finally {
+      setIsUploading(null);
     }
   };
 
@@ -100,7 +140,7 @@ export default function AcademyAdmin() {
         </div>
         <div className="flex gap-4">
           {activeTab === "mentors" && (
-            <Button onClick={() => setShowMentorModal(true)} className="flex items-center gap-2">
+            <Button onClick={() => { setNewMentorPhotoUrl(""); setShowMentorModal(true); }} className="flex items-center gap-2">
               <UserPlus className="w-4 h-4" /> Add Mentor
             </Button>
           )}
@@ -243,8 +283,26 @@ export default function AcademyAdmin() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {mentors.map(mentor => (
             <GlassCard key={mentor.id} className="p-6 border-white/5 text-center relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-white/10">
-                <Image src={mentor.photoUrl || "https://i.pravatar.cc/150"} alt={mentor.name} width={96} height={96} className="object-cover w-full h-full" />
+              <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-white/10 relative group/avatar cursor-pointer">
+                {isUploading === mentor.id ? (
+                  <div className="absolute inset-0 bg-black/75 flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 text-[#eab308] animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <Image src={mentor.photoUrl || "https://i.pravatar.cc/150"} alt={mentor.name} width={96} height={96} className="object-cover w-full h-full group-hover/avatar:scale-110 transition-transform duration-300" />
+                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity duration-200 text-[9px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                      <Upload className="w-4 h-4 mb-1 text-[#eab308]" />
+                      Update
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handlePhotoUpload(e, mentor.id)} 
+                      />
+                    </label>
+                  </>
+                )}
               </div>
               <h3 className="font-bold text-lg">{mentor.name}</h3>
               <p className="text-sm text-[#eab308] font-mono mt-1">{mentor.role}</p>
@@ -288,9 +346,41 @@ export default function AcademyAdmin() {
 
               <div>
                 <label className="block text-xs font-mono text-white/50 uppercase mb-2 flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" /> Photo URL
+                  <ImageIcon className="w-4 h-4" /> Instructor Portrait Photo
                 </label>
-                <input name="photoUrl" placeholder="https://..." required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-[#eab308]" />
+                <div className="grid grid-cols-[112px_1fr] gap-4 items-center">
+                  <div className="w-28 h-28 rounded-2xl border border-white/10 bg-white/5 relative overflow-hidden flex items-center justify-center">
+                    {isUploading === 'new' ? (
+                      <Loader2 className="w-6 h-6 text-[#eab308] animate-spin" />
+                    ) : newMentorPhotoUrl ? (
+                      <Image src={newMentorPhotoUrl} alt="Preview" fill className="object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-mono text-white/30 text-center px-2">No Photo</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input 
+                        name="photoUrl" 
+                        value={newMentorPhotoUrl} 
+                        onChange={(e) => setNewMentorPhotoUrl(e.target.value)} 
+                        placeholder="Or paste direct image URL..." 
+                        required 
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-[#eab308] text-white/80" 
+                      />
+                      <label className="px-4 py-3 bg-[#eab308] text-black rounded-lg font-bold text-[10px] flex items-center gap-1.5 cursor-pointer hover:bg-[#eab308]/90 transition-colors uppercase tracking-wider shrink-0">
+                        <Upload className="w-3.5 h-3.5" /> Upload File
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => handlePhotoUpload(e)} 
+                        />
+                      </label>
+                    </div>
+                    <p className="text-[10px] font-mono text-white/30">Drag-and-drop, browse files, or link directly to a CDN image.</p>
+                  </div>
+                </div>
               </div>
 
               <div>
