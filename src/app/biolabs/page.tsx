@@ -98,9 +98,97 @@ export default function BioLabsPage() {
         
         {/* 2. Formal Header */}
         <div className="flex flex-col items-center justify-center text-center mb-16">
-          <div className="inline-flex items-center justify-center rounded-2xl mb-6 border border-zinc-200 bg-zinc-50 p-3 h-20 w-20 shadow-sm">
-            <Image src="/biolabs-logo.png" alt="Healix BioLabs" width={64} height={64} className="object-contain" />
+          {/* 3D Spinning Logo */}
+          <div className="relative flex items-center justify-center mb-8" style={{ width: 180, height: 180 }}>
+            {/* Outer orbit ring — rotates on Y axis in 3D */}
+            <div
+              className="absolute inset-0 rounded-full border-2 border-dashed border-[#ea580c]/25"
+              style={{
+                animation: "orbitY 6s linear infinite",
+                transformStyle: "preserve-3d",
+              }}
+            />
+            {/* Inner orbit ring — counter-rotate */}
+            <div
+              className="absolute rounded-full border border-[#ea580c]/15"
+              style={{
+                width: 140,
+                height: 140,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                animation: "orbitY 4s linear infinite reverse",
+                transformStyle: "preserve-3d",
+              }}
+            />
+            {/* Glow pulse */}
+            <div
+              className="absolute rounded-full bg-[#ea580c]/8"
+              style={{
+                width: 160,
+                height: 160,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                animation: "glowPulse 3s ease-in-out infinite",
+              }}
+            />
+            {/* Logo circle — spins on Y axis */}
+            <div
+              className="relative z-10 rounded-full bg-white border-2 border-zinc-200 shadow-xl flex items-center justify-center overflow-hidden"
+              style={{
+                width: 130,
+                height: 130,
+                animation: "spin3D 8s linear infinite",
+                transformStyle: "preserve-3d",
+                perspective: "600px",
+                boxShadow: "0 0 40px rgba(234,88,12,0.15), 0 8px 32px rgba(0,0,0,0.12)",
+              }}
+            >
+              <Image
+                src="/biolabs-logo.png"
+                alt="Healix BioLabs"
+                width={100}
+                height={100}
+                className="object-contain p-2"
+                style={{ animation: "spin3DCounter 8s linear infinite" }}
+              />
+            </div>
+            {/* Orbiting dot */}
+            <div
+              className="absolute w-3 h-3 rounded-full bg-[#ea580c] shadow-lg"
+              style={{
+                top: "50%",
+                left: "50%",
+                transformOrigin: "0 0",
+                animation: "orbitDot 3s linear infinite",
+              }}
+            />
           </div>
+
+          <style>{`
+            @keyframes spin3D {
+              0%   { transform: perspective(600px) rotateY(0deg); }
+              100% { transform: perspective(600px) rotateY(360deg); }
+            }
+            @keyframes spin3DCounter {
+              0%   { transform: perspective(600px) rotateY(0deg); }
+              100% { transform: perspective(600px) rotateY(-360deg); }
+            }
+            @keyframes orbitY {
+              0%   { transform: perspective(400px) rotateY(0deg) rotateX(70deg); }
+              100% { transform: perspective(400px) rotateY(360deg) rotateX(70deg); }
+            }
+            @keyframes glowPulse {
+              0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+              50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.08); }
+            }
+            @keyframes orbitDot {
+              0%   { transform: translate(-50%, -50%) rotate(0deg)   translateX(88px) rotate(0deg); }
+              100% { transform: translate(-50%, -50%) rotate(360deg) translateX(88px) rotate(-360deg); }
+            }
+          `}</style>
+
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea580c]/10 border border-[#ea580c]/20 rounded-full text-[#ea580c] text-[10px] font-mono tracking-wider uppercase mb-3">
             Research Accelerator
           </div>
