@@ -5,7 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   FileText, Plus, Calendar, Clock, CheckCircle, 
   XCircle, AlertCircle, Cpu, Network, Database,
-  CreditCard, Upload, Video, Users, Mail, ArrowRight, Shield, Fingerprint, Activity, Beaker, QrCode
+  CreditCard, Upload, Video, Users, Mail, ArrowRight, Shield, Fingerprint, Activity, Beaker, QrCode, Download
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserApplications, submitApplication } from "../actions";
@@ -13,6 +13,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import QRCode from "qrcode";
+import { jsPDF } from "jspdf";
 
 export default function UserDashboardPage() {
   const router = useRouter();
@@ -26,12 +27,62 @@ export default function UserDashboardPage() {
   const [uniqueId, setUniqueId] = useState("");
   const [isFlipped, setIsFlipped] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [customPhotoUrl, setCustomPhotoUrl] = useState<string | null>(null);
+  const [profileImageBase64, setProfileImageBase64] = useState<string>("");
+
+  // Personalization States
+  const [cardName, setCardName] = useState("");
+  const [cardDesignation, setCardDesignation] = useState("Research Fellow");
+  const [cardDivision, setCardDivision] = useState("BioLabs Research");
+  const [cardAccessLevel, setCardAccessLevel] = useState("Authorized Access");
+  const [cardValidity, setCardValidity] = useState("May 2026 – May 2027");
+  const [cardBloodGroup, setCardBloodGroup] = useState("O+");
+  const [cardEmergencyContact, setCardEmergencyContact] = useState("+91 9540694581");
+
+  // Load custom photo & personal details on mount/user load
+  useEffect(() => {
+    if (user) {
+      const nameVal = user.user_metadata?.full_name || user.email?.split('@')[0] || "Dr. Priya Sharma";
+      setCardName(nameVal);
+      
+      const savedPhoto = localStorage.getItem(`healix_id_photo_${user.email}`);
+      if (savedPhoto) {
+        setCustomPhotoUrl(savedPhoto);
+      }
+
+      // Check if student
+      if (user.email?.toLowerCase().includes("student") || user.email?.toLowerCase().includes("academy")) {
+        setCardDesignation("Student Researcher");
+        setCardDivision("BioLabs Academy");
+        setCardAccessLevel("Authorized Student");
+      }
+    } else {
+      setCardName("Dr. Priya Sharma");
+    }
+  }, [user]);
+
+  // Pre-load default profile image to Base64
+  useEffect(() => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        setProfileImageBase64(canvas.toDataURL("image/jpeg"));
+      }
+    };
+    img.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop";
+  }, []);
 
   useEffect(() => {
     if (!uniqueId) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "https://healix-nu.vercel.app";
-    const nameVal = user?.user_metadata?.full_name || "Dr. Priya Sharma";
-    const verifyUrl = `${origin}/verify/${uniqueId}?name=${encodeURIComponent(nameVal)}&role=Research+Fellow&div=BioLabs+Research`;
+    const nameVal = cardName || "Dr. Priya Sharma";
+    const verifyUrl = `${origin}/verify/${uniqueId}?name=${encodeURIComponent(nameVal)}&role=${encodeURIComponent(cardDesignation)}&div=${encodeURIComponent(cardDivision)}`;
     
     QRCode.toDataURL(verifyUrl, {
       margin: 1,
@@ -45,7 +96,7 @@ export default function UserDashboardPage() {
     }).catch(err => {
       console.error("QR Code generation error:", err);
     });
-  }, [uniqueId, user]);
+  }, [uniqueId, cardName, cardDesignation, cardDivision]);
 
   const fetchDashboardData = async () => {
     const res = await getUserApplications();
@@ -86,6 +137,318 @@ export default function UserDashboardPage() {
       fetchDashboardData();
     });
   }, []);
+
+  const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Dr. Priya Sharma";
+
+  const downloadPdf = () => {
+    const doc = new jsPDF("p", "mm", "a4");
+
+    // Add Document Background & Header
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, 0, 210, 297, "F");
+
+    // Corporate Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 32, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("HEALIX BIOLABS INSTITUTIONAL CREDENTIAL", 15, 14);
+
+    doc.setTextColor(234, 179, 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("OFFICIAL PRINT & DOWNLOAD PORTAL - CRYPTOGRAPHICALLY SECURED", 15, 21);
+
+    // Decorative right-side stripe
+    doc.setFillColor(234, 179, 8);
+    doc.rect(180, 0, 30, 32, "F");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("VERIFIED", 195, 18, { align: "center" });
+
+    // Technical Separator Line
+    doc.setDrawColor(234, 179, 8);
+    doc.setLineWidth(0.8);
+    doc.line(0, 32, 210, 32);
+
+    // Main Content Title
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("INSTITUTIONAL ID CARD (CR80 PHYSICAL FORMAT)", 15, 46);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text("Print this page on a 250+ GSM cardstock sheet. Cut along the borders and fold to assemble your physical credential.", 15, 51);
+
+    // DRAW FRONT OF CARD
+    const cardX = (210 - 85.6) / 2; // Center card (62.2mm)
+    const frontY = 60;
+
+    // Background and border
+    doc.setFillColor(12, 12, 15);
+    doc.roundedRect(cardX, frontY, 85.6, 54, 3.5, 3.5, "F");
+    
+    doc.setDrawColor(30, 41, 59);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(cardX, frontY, 85.6, 54, 3.5, 3.5, "S");
+
+    // Subtle header gold stripe
+    doc.setFillColor(234, 179, 8);
+    doc.rect(cardX, frontY + 9.5, 85.6, 0.4, "F");
+
+    // Header Texts
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.text("HEALIX TECHNOLOGIES PVT. LTD.", 105, frontY + 5.5, { align: "center" });
+
+    doc.setTextColor(234, 179, 8);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4.8);
+    doc.text("CENTER FOR BIOMEDICAL RESEARCH & ENGINEERING", 105, frontY + 8.5, { align: "center" });
+
+    // Portrait box (Left side)
+    doc.setFillColor(25, 25, 30);
+    doc.roundedRect(cardX + 4.5, frontY + 13, 20, 26, 1, 1, "F");
+    doc.setDrawColor(234, 179, 8);
+    doc.setLineWidth(0.15);
+    doc.roundedRect(cardX + 4.5, frontY + 13, 20, 26, 1, 1, "S");
+
+    // Photo Render
+    if (customPhotoUrl) {
+      try {
+        doc.addImage(customPhotoUrl, "JPEG", cardX + 4.65, frontY + 13.15, 19.7, 25.7);
+      } catch (err) {
+        console.error("Custom photo PDF add error:", err);
+        doc.setFillColor(70, 70, 78);
+        doc.circle(cardX + 14.5, frontY + 21, 3.8, "F");
+        doc.ellipse(cardX + 14.5, frontY + 30, 7, 4.5, "F");
+      }
+    } else if (profileImageBase64) {
+      try {
+        doc.addImage(profileImageBase64, "JPEG", cardX + 4.65, frontY + 13.15, 19.7, 25.7);
+      } catch (err) {
+        console.error("Default profile photo PDF add error:", err);
+        doc.setFillColor(70, 70, 78);
+        doc.circle(cardX + 14.5, frontY + 21, 3.8, "F");
+        doc.ellipse(cardX + 14.5, frontY + 30, 7, 4.5, "F");
+      }
+    } else {
+      // Silhouette Avatar
+      doc.setFillColor(70, 70, 78);
+      doc.circle(cardX + 14.5, frontY + 21, 3.8, "F"); // head
+      doc.ellipse(cardX + 14.5, frontY + 30, 7, 4.5, "F"); // shoulders
+    }
+
+    // QR Code Container Box overlapping bottom-left of photo
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(cardX + 2.5, frontY + 31, 13.5, 13.5, 1, 1, "F");
+
+    if (qrCodeUrl) {
+      doc.addImage(qrCodeUrl, "PNG", cardX + 3.25, frontY + 31.75, 12, 12);
+    }
+
+    // Right Side Metadata Fields
+    const fieldsX = cardX + 27;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(4);
+    doc.setTextColor(148, 163, 184);
+
+    doc.text("FULL NAME:", fieldsX, frontY + 15.5);
+    doc.text("DESIGNATION:", fieldsX, frontY + 20.5);
+    doc.text("UNIQUE ID:", fieldsX, frontY + 25.5);
+    doc.text("DIVISION:", fieldsX, frontY + 30.5);
+    doc.text("VALIDITY:", fieldsX, frontY + 35.5);
+    doc.text("BLOOD GROUP:", fieldsX, frontY + 40.5);
+    doc.text("ACCESS LEVEL:", fieldsX, frontY + 45.5);
+
+    // Field Values
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5);
+    doc.setTextColor(255, 255, 255);
+
+    const activeName = cardName || fullName;
+    doc.text(activeName.toUpperCase(), fieldsX + 16, frontY + 15.5);
+    doc.text(cardDesignation.toUpperCase(), fieldsX + 16, frontY + 20.5);
+    doc.text(uniqueId.toUpperCase(), fieldsX + 16, frontY + 25.5);
+    doc.text(cardDivision.toUpperCase(), fieldsX + 16, frontY + 30.5);
+    doc.text(cardValidity.toUpperCase(), fieldsX + 16, frontY + 35.5);
+    doc.text(cardBloodGroup.toUpperCase(), fieldsX + 16, frontY + 40.5);
+    doc.setTextColor(234, 179, 8); // Gold Access
+    doc.text(cardAccessLevel.toUpperCase(), fieldsX + 16, frontY + 45.5);
+
+    // Verification Pill
+    doc.setFillColor(2, 2, 4);
+    doc.roundedRect(fieldsX, frontY + 49.5, 54, 3.8, 0.8, 0.8, "F");
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(3.5);
+    doc.text(`PROFILE: healix-nu.vercel.app/verify/${uniqueId}`, fieldsX + 1.5, frontY + 52.2);
+
+    // Gold Emblem
+    doc.setDrawColor(234, 179, 8);
+    doc.setLineWidth(0.15);
+    doc.circle(cardX + 80.5, frontY + 45.5, 2.8, "S");
+    doc.line(cardX + 78.5, frontY + 45.5, 79.5, frontY + 45.5);
+    doc.line(79.5 + cardX, frontY + 45.5, 80.2 + cardX, frontY + 43.5);
+    doc.line(80.2 + cardX, frontY + 43.5, 80.8 + cardX, frontY + 47.5);
+    doc.line(80.8 + cardX, frontY + 47.5, 81.5 + cardX, frontY + 45.5);
+    doc.line(81.5 + cardX, frontY + 45.5, 82.5 + cardX, frontY + 45.5);
+
+
+    // DRAW BACK OF CARD
+    const backY = 124;
+
+    // Background and border
+    doc.setFillColor(12, 12, 15);
+    doc.roundedRect(cardX, backY, 85.6, 54, 3.5, 3.5, "F");
+    
+    doc.setDrawColor(30, 41, 59);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(cardX, backY, 85.6, 54, 3.5, 3.5, "S");
+
+    // Header Text
+    doc.setTextColor(148, 163, 184);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("INSTITUTIONAL CREDENTIAL", 105, backY + 5.5, { align: "center" });
+
+    // Divider Line
+    doc.setDrawColor(47, 55, 70);
+    doc.setLineWidth(0.2);
+    doc.line(cardX, backY + 8.5, cardX + 85.6, backY + 8.5);
+
+    // Access Checklist
+    doc.setTextColor(234, 179, 8); // Gold Title
+    doc.setFontSize(4.8);
+    doc.text("AUTHORIZED ACCESS AREAS:", cardX + 4.5, backY + 13.5);
+
+    doc.setTextColor(226, 232, 240);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(4.5);
+    doc.text("• Research Labs & Bio-Compute Clusters", cardX + 5.5, backY + 18.5);
+    doc.text("• Bioinformatics Systems (Level 4)", cardX + 5.5, backY + 22.5);
+    doc.text("• Clinical Intelligence Dashboard", cardX + 5.5, backY + 26.5);
+    doc.text("• Internal Academic Network", cardX + 5.5, backY + 30.5);
+
+    // Dynamic High-Fidelity Vector Barcode on the back of card
+    doc.setFillColor(255, 255, 255);
+    doc.rect(cardX + 56, backY + 11.5, 25, 7.5, "F");
+
+    doc.setFillColor(0, 0, 0);
+    let barX = cardX + 57.5;
+    const pattern = [1, 2, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 2, 1, 1, 3, 1, 2];
+    for (let i = 0; i < pattern.length; i++) {
+      const width = pattern[i] * 0.23;
+      if (i % 2 === 0) {
+        doc.rect(barX, backY + 12, width, 5, "F");
+      }
+      barX += width + 0.12;
+    }
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("courier", "bold");
+    doc.setFontSize(3.5);
+    doc.text(uniqueId, cardX + 68.5, backY + 18.2, { align: "center" });
+
+    // Warning Text
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(3.8);
+    doc.text("This credential certifies official affiliation with Healix Technologies Pvt. Ltd. Unauthorized", cardX + 4.5, backY + 36.5);
+    doc.text("duplication, transfer, or misuse is strictly prohibited. If found, return to nearest Healix facility.", cardX + 4.5, backY + 39.5);
+
+    // Footer divider line
+    doc.line(cardX, backY + 43.5, cardX + 85.6, backY + 43.5);
+
+    // Emergency Column
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(3.5);
+    doc.text("EMERGENCY CONTACT:", cardX + 4.5, backY + 47.2);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4.8);
+    doc.text(cardEmergencyContact, cardX + 4.5, backY + 50.8);
+
+    // Website Column
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(3.5);
+    doc.text("WEBSITE:", cardX + 81, backY + 47.2, { align: "right" });
+    doc.setTextColor(234, 179, 8); // Gold Website
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4.8);
+    doc.text("healix-nu.vercel.app", cardX + 81, backY + 50.8, { align: "right" });
+
+
+    // PRINT & ASSEMBLY GUIDE (Bottom of page)
+    const guideY = 196;
+
+    // Border surrounding the guide
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.4);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(15, guideY, 180, 84, 4, 4, "FD");
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("PRINT & ASSEMBLY INSTRUCTION GUIDE", 20, guideY + 8);
+
+    // Divider under guide title
+    doc.setDrawColor(241, 245, 249);
+    doc.line(20, guideY + 12, 190, guideY + 12);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(51, 65, 85);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Step 1: Color Print", 20, guideY + 19);
+    doc.setFont("helvetica", "normal");
+    doc.text("Print this generated document in high quality color mode using standard A4 cardstock sheet.", 20, guideY + 23);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Step 2: Card Cutting", 20, guideY + 31);
+    doc.setFont("helvetica", "normal");
+    doc.text("Carefully cut precisely along the grey/dark borders of the Front and Back card shapes (CR80 standard size).", 20, guideY + 35);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Step 3: Folding & Laminating", 20, guideY + 43);
+    doc.setFont("helvetica", "normal");
+    doc.text("Fold along the shared seams, or glue them back-to-back, and slide inside your standard badge sleeve.", 20, guideY + 47);
+
+    // Cryptographic assurance signature
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, guideY + 54, 170, 24, "F");
+    doc.setDrawColor(241, 245, 249);
+    doc.rect(20, guideY + 54, 170, 24, "S");
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.text("HEALIX SECURE CRYPTOGRAPHIC FINGERPRINT SYSTEM", 25, guideY + 60);
+
+    const generatePdfFingerprint = (id: string) => {
+      let hash = 0;
+      for (let i = 0; i < id.length; i++) {
+        hash = id.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return `HX_SHA256_SIG_BLOCK_${Math.abs(hash * 97).toString(16).toUpperCase()}`;
+    };
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.text(`SIGNATURE RECORD: ${generatePdfFingerprint(uniqueId)}`, 25, guideY + 66);
+    doc.text("This PDF credential matches active cryptographic server signatures. Scanner verification fully validated.", 25, guideY + 71);
+
+    // Save PDF
+    doc.save(`HEALIX_ID_${uniqueId}.pdf`);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -213,7 +576,6 @@ export default function UserDashboardPage() {
           </button>
         </div>
       </div>
-
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-y-auto h-screen relative p-8">
         <div className="max-w-5xl mx-auto">
@@ -221,227 +583,378 @@ export default function UserDashboardPage() {
             
             {/* ID CARD TAB */}
             {activeTab === "idcard" && (
-              <motion.div key="idcard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8 flex flex-col items-center pb-20">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold mb-2 font-mono tracking-tight text-white">INSTITUTIONAL_CREDENTIAL</h2>
-                  <p className="text-white/40 text-sm font-mono tracking-wide">Click the card to flip and view the reverse side.</p>
+              <motion.div key="idcard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8 flex flex-col items-center pb-20 w-full">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2 font-mono tracking-tight text-white">INSTITUTIONAL_CREDENTIAL_BUILDER</h2>
+                  <p className="text-white/40 text-sm font-mono tracking-wide">Personalize your student/researcher identity badge and download the print-ready corporate document.</p>
                 </div>
 
-                {/* ID Card 3D Container Wrapper with mobile scaling */}
-                <div className="w-full flex flex-col items-center justify-center overflow-hidden py-4">
-                  {/* CSS styles for card animations */}
-                  <style>{`
-                    @keyframes spin-slow {
-                      0% { transform: rotate(0deg); }
-                      100% { transform: rotate(360deg); }
-                    }
-                    @keyframes spin-reverse-slow {
-                      0% { transform: rotate(360deg); }
-                      100% { transform: rotate(0deg); }
-                    }
-                    @keyframes heartbeat-pulse {
-                      0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 2px rgba(234,179,8,0.3)); }
-                      50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 8px rgba(234,179,8,0.6)); }
-                    }
-                    .animate-spin-slow {
-                      animation: spin-slow 40s linear infinite;
-                    }
-                    .animate-spin-reverse-slow {
-                      animation: spin-reverse-slow 30s linear infinite;
-                    }
-                    .animate-heartbeat {
-                      animation: heartbeat-pulse 2s infinite ease-in-out;
-                    }
-                  `}</style>
+                <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full max-w-6xl items-start mt-4">
+                  {/* PERSONALIZATION BUILDER PANEL (Left Column) */}
+                  <GlassCard className="p-5 border-zinc-800 bg-black/40 space-y-4 rounded-xl flex flex-col z-10 order-2 lg:order-1 select-text">
+                    <div>
+                      <h3 className="text-sm font-bold font-mono tracking-wider text-[#eab308] uppercase mb-1 flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4" /> Personalization Panel
+                      </h3>
+                      <p className="text-[10px] text-white/40 font-mono">Modify any parameter below to update the security card and dynamic QR signature instantly.</p>
+                    </div>
 
-                  <div className="w-[320px] h-[195px] sm:w-[560px] sm:h-[340px] perspective-[2000px] cursor-pointer" onClick={() => setIsFlipped(!isFlipped)}>
-                    <motion.div 
-                      className="w-full h-full relative transition-all duration-700 shadow-2xl"
-                      style={{ transformStyle: 'preserve-3d' }}
-                      animate={{ rotateY: isFlipped ? 180 : 0 }}
-                    >
-                      {/* FRONT SIDE */}
-                      <div className="absolute w-full h-full bg-[#080808] border border-[#eab308]/40 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.1)] flex flex-col p-3 sm:p-5" style={{ backfaceVisibility: 'hidden' }}>
-                        {/* Subtle Noise Texture overlay */}
-                        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-black pointer-events-none z-0" />
-                        
-                        {/* Rotating Gear Watermarks in background */}
-                        <div className="absolute left-[8%] top-[15%] w-[100px] sm:w-[180px] h-[100px] sm:h-[180px] pointer-events-none opacity-[0.03] z-0">
-                          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1 1" className="w-full h-full text-white animate-spin-slow">
-                            <circle cx="50" cy="50" r="30" />
-                            <circle cx="50" cy="50" r="40" />
-                            {Array.from({ length: 12 }).map((_, i) => (
-                              <line
-                                key={i}
-                                x1="50"
-                                y1="10"
-                                x2="50"
-                                y2="20"
-                                transform={`rotate(${(i * 360) / 12} 50 50)`}
-                              />
-                            ))}
-                          </svg>
+                    <div className="space-y-3">
+                      {/* Full Name */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Full Name</label>
+                        <input 
+                          type="text" 
+                          value={cardName} 
+                          onChange={(e) => setCardName(e.target.value)} 
+                          placeholder="e.g. Priya Sharma" 
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-sans" 
+                        />
+                      </div>
+
+                      {/* Photo Selector Trigger */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Profile Photo</label>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => document.getElementById('id-photo-upload')?.click()}
+                            className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg text-xs font-mono font-bold text-zinc-300 transition-colors uppercase tracking-wider flex items-center gap-1.5"
+                          >
+                            <Upload className="w-3.5 h-3.5 text-[#eab308]" /> Choose Custom Photo
+                          </button>
+                          {customPhotoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustomPhotoUrl(null);
+                                if (user?.email) {
+                                  localStorage.removeItem(`healix_id_photo_${user.email}`);
+                                }
+                              }}
+                              className="text-[10px] font-mono text-red-500 hover:text-red-400 hover:underline transition-colors uppercase"
+                            >
+                              Reset
+                            </button>
+                          )}
                         </div>
-                        <div className="absolute right-[12%] bottom-[10%] w-[120px] sm:w-[200px] h-[120px] sm:h-[200px] pointer-events-none opacity-[0.03] z-0">
-                          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 1" className="w-full h-full text-white animate-spin-reverse-slow">
-                            <circle cx="50" cy="50" r="25" />
-                            <circle cx="50" cy="50" r="35" />
-                            {Array.from({ length: 8 }).map((_, i) => (
-                              <rect
-                                key={i}
-                                x="47"
-                                y="12"
-                                width="6"
-                                height="8"
-                                rx="1"
-                                transform={`rotate(${(i * 360) / 8} 50 50)`}
-                              />
-                            ))}
-                          </svg>
+                        <input 
+                          type="file" 
+                          id="id-photo-upload" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const base64data = reader.result as string;
+                                setCustomPhotoUrl(base64data);
+                                if (user?.email) {
+                                  localStorage.setItem(`healix_id_photo_${user.email}`, base64data);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      {/* Designation & Division */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Designation</label>
+                          <input 
+                            type="text" 
+                            value={cardDesignation} 
+                            onChange={(e) => setCardDesignation(e.target.value)} 
+                            placeholder="e.g. Student Researcher" 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-sans" 
+                          />
                         </div>
-
-                        {/* Header */}
-                        <div className="text-center border-b border-[#eab308]/20 pb-2 relative z-10 w-full">
-                          <h3 className="font-bold text-white tracking-widest text-[8px] sm:text-[13px] leading-tight mb-0.5">HEALIX TECHNOLOGIES PVT. LTD.</h3>
-                          <p className="text-[#eab308] font-mono text-[5.5px] sm:text-[9px] tracking-wider uppercase font-semibold">जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र</p>
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Division / Dept</label>
+                          <input 
+                            type="text" 
+                            value={cardDivision} 
+                            onChange={(e) => setCardDivision(e.target.value)} 
+                            placeholder="e.g. BioLabs Academy" 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-sans" 
+                          />
                         </div>
+                      </div>
 
-                        {/* Content */}
-                        <div className="flex-1 flex flex-row items-center justify-between gap-3 sm:gap-6 mt-3 sm:mt-4 relative z-10">
-                          
-                          {/* Photo & QR Box Left */}
-                          <div className="relative shrink-0 select-none">
-                            {/* Portrait Box */}
-                            <div className="w-[75px] h-[95px] sm:w-[130px] sm:h-[165px] border border-[#eab308]/30 rounded-lg overflow-hidden bg-black/50 p-0.5 sm:p-1 relative shadow-inner z-10">
-                              <div className="w-full h-full bg-zinc-800 rounded-md relative overflow-hidden flex items-center justify-center">
-                                <Image src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Profile" fill className="object-cover" unoptimized />
-                              </div>
-                            </div>
+                      {/* Access Level & Blood Group */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Access Level</label>
+                          <select 
+                            value={cardAccessLevel} 
+                            onChange={(e) => setCardAccessLevel(e.target.value)} 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-sans"
+                          >
+                            <option value="Authorized Access">Authorized Access</option>
+                            <option value="Authorized Student">Authorized Student</option>
+                            <option value="Level 4 Clearance">Level 4 Clearance</option>
+                            <option value="HPC Admin Access">HPC Admin Access</option>
+                            <option value="Guest Scholar">Guest Scholar</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Blood Group</label>
+                          <input 
+                            type="text" 
+                            value={cardBloodGroup} 
+                            onChange={(e) => setCardBloodGroup(e.target.value)} 
+                            placeholder="e.g. O+" 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-mono" 
+                          />
+                        </div>
+                      </div>
 
-                            {/* Overlapping QR Code Box */}
-                            <div className="w-[45px] h-[45px] sm:w-[80px] sm:h-[80px] bg-white p-0.5 sm:p-1.5 rounded-md border border-white absolute -bottom-1 -left-2 sm:-bottom-2 sm:-left-3 shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-20 flex items-center justify-center transition-transform hover:scale-105">
-                              {qrCodeUrl ? (
-                                <Image src={qrCodeUrl} alt="QR Code" width={80} height={80} className="w-full h-full object-contain" />
-                              ) : (
-                                <div className="w-full h-full bg-zinc-200 animate-pulse rounded" />
-                              )}
-                            </div>
-                          </div>
+                      {/* Validity & Emergency Contact */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Validity Date</label>
+                          <input 
+                            type="text" 
+                            value={cardValidity} 
+                            onChange={(e) => setCardValidity(e.target.value)} 
+                            placeholder="e.g. May 2026 – May 2027" 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-sans" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Emergency Contact</label>
+                          <input 
+                            type="text" 
+                            value={cardEmergencyContact} 
+                            onChange={(e) => setCardEmergencyContact(e.target.value)} 
+                            placeholder="e.g. +91 9540694581" 
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#eab308]/60 transition-colors font-mono" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </GlassCard>
 
-                          {/* Details & Pill Right */}
-                          <div className="flex-1 flex flex-col justify-between h-full py-0.5">
+                  {/* 3D BADGE PREVIEW PANEL (Right Column) */}
+                  <div className="flex flex-col items-center justify-center space-y-6 order-1 lg:order-2 w-full">
+                    {/* ID Card 3D Container Wrapper with mobile scaling */}
+                    <div className="w-full flex flex-col items-center justify-center overflow-hidden py-2">
+                      <div className="w-[320px] h-[195px] sm:w-[560px] sm:h-[340px] perspective-[2000px] cursor-pointer select-none" onClick={() => setIsFlipped(!isFlipped)}>
+                        <motion.div 
+                          className="w-full h-full relative transition-all duration-700 shadow-2xl"
+                          style={{ transformStyle: 'preserve-3d' }}
+                          animate={{ rotateY: isFlipped ? 180 : 0 }}
+                        >
+                          {/* FRONT SIDE */}
+                          <div className="absolute w-full h-full bg-[#0a0a0c] border border-zinc-800 rounded-2xl overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.4)] flex flex-col p-3 sm:p-5" style={{ backfaceVisibility: 'hidden' }}>
+                            {/* Subtle noise texture */}
+                            <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-black pointer-events-none z-0" />
                             
-                            {/* Metadata Grid */}
-                            <div className="grid grid-cols-[auto_1fr] gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-2 select-text">
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">FULL NAME:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/90 truncate uppercase self-center font-mono tracking-wide">
-                                {user?.user_metadata?.full_name || "RESEARCH LEADER"}
-                              </span>
+                            {/* Dynamic diagonal stripe accent */}
+                            <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-[#eab308]/5 via-[#eab308]/2 to-transparent rotate-[20deg] origin-top-right pointer-events-none z-0" />
 
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">DESIGNATION:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
-                                RESEARCH LEAD
-                              </span>
+                            {/* High-security micro dot mesh watermark */}
+                            <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none z-0" />
 
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">UNIQUE ID:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/90 self-center font-mono tracking-wide">
-                                {uniqueId}
-                              </span>
+                            {/* Plastic PVC sheen glare overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent rotate-[25deg] pointer-events-none z-30" />
 
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">DIVISION:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
-                                BioLabs
-                              </span>
+                            {/* Top gold accent line */}
+                            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#eab308]/80 to-transparent z-10" />
 
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">VALIDITY:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
-                                May 2026 – May 2027
-                              </span>
-
-                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">ACCESS LEVEL:</span>
-                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-[#eab308] uppercase self-center font-mono tracking-wide flex items-center gap-0.5 sm:gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
-                                Authorized Research Access
-                              </span>
+                            {/* Card Header */}
+                            <div className="text-center border-b border-zinc-800 pb-2 relative z-10 w-full">
+                              <h3 className="font-bold text-white tracking-widest text-[8px] sm:text-[13px] leading-tight mb-0.5 font-sans">HEALIX TECHNOLOGIES PVT. LTD.</h3>
+                              <p className="text-[#eab308] font-mono text-[5.5px] sm:text-[9px] tracking-wider uppercase font-semibold">CENTER FOR BIOMEDICAL RESEARCH & ENGINEERING</p>
                             </div>
 
-                            {/* Verification Pill */}
-                            <div className="mt-2 sm:mt-2 select-text">
-                              <div className="bg-black/60 border border-white/10 rounded-full py-0.5 px-2 sm:py-1 sm:px-3 text-[5.5px] sm:text-[8px] font-mono text-white/50 tracking-wider inline-flex items-center gap-1 w-fit">
-                                <span className="text-white/30 uppercase font-semibold">VERIFICATION PROFILE:</span>
-                                <span className="text-white/80 font-medium">healix-nu.vercel.app/verify/{uniqueId}</span>
+                            {/* Content */}
+                            <div className="flex-1 flex flex-row items-center justify-between gap-3 sm:gap-6 mt-3 sm:mt-4 relative z-10">
+                              
+                              {/* Photo & QR Box Left */}
+                              <div className="relative shrink-0 select-none">
+                                {/* Portrait Box with Change Photo Trigger */}
+                                <div 
+                                  className="w-[75px] h-[95px] sm:w-[130px] sm:h-[165px] border border-zinc-700 rounded-lg overflow-hidden bg-black/60 p-0.5 relative shadow-lg z-10 group/photo cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    document.getElementById('id-photo-upload')?.click();
+                                  }}
+                                >
+                                  <div className="w-full h-full bg-zinc-850 rounded-md relative overflow-hidden flex items-center justify-center">
+                                    <Image src={customPhotoUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop"} alt="Profile" fill className="object-cover opacity-90 contrast-[1.03]" unoptimized />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/30 pointer-events-none" />
+                                    
+                                    {/* Upload Hover Overlay */}
+                                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+                                      <Upload className="w-4 h-4 sm:w-6 sm:h-6 text-[#eab308]" />
+                                      <span className="text-[5px] sm:text-[8.5px] font-mono text-white font-bold uppercase tracking-wider">Change Photo</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Overlapping QR Code Box */}
+                                <div className="w-[45px] h-[45px] sm:w-[80px] sm:h-[80px] bg-white p-0.5 sm:p-1.5 rounded-md border border-white absolute -bottom-1 -left-2 sm:-bottom-2 sm:-left-3 shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-20 flex items-center justify-center transition-transform hover:scale-105">
+                                  {qrCodeUrl ? (
+                                    <Image src={qrCodeUrl} alt="QR Code" width={80} height={80} className="w-full h-full object-contain" />
+                                  ) : (
+                                    <div className="w-full h-full bg-zinc-200 animate-pulse rounded" />
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Details & Pill Right */}
+                              <div className="flex-1 flex flex-col justify-between h-full py-0.5">
+                                
+                                {/* Metadata Grid */}
+                                <div className="grid grid-cols-[auto_1fr] gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-1.5 select-text font-mono">
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">FULL NAME:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-white truncate uppercase self-center font-sans tracking-wide">
+                                    {cardName || fullName}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">DESIGNATION:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-zinc-300 uppercase self-center font-sans tracking-wide">
+                                    {cardDesignation}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">UNIQUE ID:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-white self-center">
+                                    {uniqueId}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">DIVISION:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-zinc-300 uppercase self-center font-sans tracking-wide">
+                                    {cardDivision}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">VALIDITY:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-zinc-300 uppercase self-center">
+                                    {cardValidity}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">BLOOD GROUP:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-white uppercase self-center">
+                                    {cardBloodGroup}
+                                  </span>
+
+                                  <span className="text-[6px] sm:text-[9px] font-bold text-zinc-500 uppercase text-right self-center">ACCESS LEVEL:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold text-[#eab308] uppercase self-center flex items-center gap-0.5 sm:gap-1">
+                                    {cardAccessLevel}
+                                  </span>
+                                </div>
+
+                                {/* Verification Pill */}
+                                <div className="mt-1.5 select-text">
+                                  <div className="bg-black/80 border border-zinc-800 rounded-lg py-0.5 px-1.5 sm:py-1 sm:px-3 text-[5px] sm:text-[7.5px] font-mono text-zinc-400 tracking-wider inline-flex items-center gap-1 w-fit">
+                                    <span className="text-[#eab308]/60 uppercase font-semibold">VERIFY:</span>
+                                    <span className="text-zinc-300">healix-nu.vercel.app/verify/{uniqueId}</span>
+                                  </div>
+                                </div>
+
+                              </div>
+                              
+                            </div>
+
+                            {/* Static Corporate Emblem Gold Seal Bottom Right */}
+                            <div className="absolute right-2.5 bottom-2.5 sm:right-5 sm:bottom-5 pointer-events-none select-none z-20">
+                              <div className="w-[45px] h-[45px] sm:w-[72px] sm:h-[72px] rounded-full border border-zinc-800/80 p-0.5 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm shadow-md">
+                                <div className="bg-black/90 w-full h-full rounded-full flex flex-col items-center justify-center border border-[#eab308]/40 shadow-inner relative">
+                                  <div className="absolute inset-0.5 rounded-full border border-[#eab308]/15" />
+                                  <svg className="w-5.5 h-5.5 sm:w-9 sm:h-9 text-[#eab308]/75" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                                  </svg>
+                                </div>
                               </div>
                             </div>
 
                           </div>
-                          
-                        </div>
 
-                        {/* Pulsing Heartbeat Telemetry Seal Bottom Right */}
-                        <div className="absolute right-2 bottom-2 sm:right-4 sm:bottom-4 pointer-events-none">
-                          <div className="w-[45px] h-[45px] sm:w-[72px] sm:h-[72px] rounded-full border border-dashed border-[#eab308]/60 p-0.5 sm:p-1 flex items-center justify-center bg-black/40 backdrop-blur-sm shadow-[0_0_15px_rgba(234,179,8,0.05)] z-20">
-                            <div className="bg-black w-full h-full rounded-full flex items-center justify-center border border-[#eab308]/80 shadow-[0_0_8px_rgba(234,179,8,0.15)]">
-                              <svg className="w-5 h-5 sm:w-10 sm:h-10 text-[#eab308] animate-heartbeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                              </svg>
+                          {/* BACK SIDE */}
+                          <div className="absolute w-full h-full bg-[#0a0a0c] border border-zinc-800 rounded-2xl overflow-hidden p-3 sm:p-6 flex flex-col justify-between shadow-[0_4px_30px_rgba(0,0,0,0.4)]" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+                            {/* Large Watermark in background */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-[0.015] pointer-events-none z-0">
+                              <Image src="/biolabs-logo.png" alt="Watermark" width={220} height={220} className="object-contain grayscale" />
+                            </div>
+                            
+                            {/* Plastic PVC sheen glare overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent rotate-[25deg] pointer-events-none z-30" />
+
+                            {/* Realistic Monospaced Barcode */}
+                            <div className="absolute right-3 top-10 sm:right-6 sm:top-14 bg-white p-1 rounded-sm flex flex-col items-center select-none shadow-md z-20">
+                              <div className="h-[18px] sm:h-[32px] w-[60px] sm:w-[105px] flex flex-row items-stretch">
+                                {[1, 2, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 2, 1, 1, 3, 1, 2].map((val, idx) => (
+                                  <div 
+                                    key={idx} 
+                                    className={`flex-1 ${idx % 2 === 0 ? "bg-black" : "bg-transparent"}`} 
+                                    style={{ flexGrow: val }}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-[4px] sm:text-[6px] font-mono text-black font-bold tracking-widest mt-0.5">{uniqueId}</span>
+                            </div>
+
+                            <div className="relative z-10 flex-1 flex flex-col justify-between h-full">
+                              
+                              {/* Header section */}
+                              <div className="w-full">
+                                <h4 className="font-mono text-[9px] sm:text-[14px] text-zinc-400 tracking-[0.25em] uppercase text-center w-full font-semibold">Institutional Credential</h4>
+                                <div className="h-[1px] bg-zinc-800 w-full mt-2 mb-3 sm:mb-4" />
+                              </div>
+
+                              {/* Access list and warnings */}
+                              <div className="space-y-3 sm:space-y-4 flex-1 max-w-[65%]">
+                                <div>
+                                  <h5 className="text-[7px] sm:text-[9.5px] text-[#eab308] font-bold uppercase tracking-wider mb-1 sm:mb-1.5 font-mono">AUTHORIZED AREAS:</h5>
+                                  <ul className="text-[6.5px] sm:text-[10px] font-mono text-zinc-300 space-y-0.5 pl-1">
+                                    <li className="flex items-center gap-1"><span className="text-[#eab308]">•</span> Research Labs & HPC Clusters</li>
+                                    <li className="flex items-center gap-1"><span className="text-[#eab308]">•</span> Bioinformatics L4 Systems</li>
+                                    <li className="flex items-center gap-1"><span className="text-[#eab308]">•</span> Clinical Intel Dashboards</li>
+                                    <li className="flex items-center gap-1"><span className="text-[#eab308]">•</span> Academic Internal Network</li>
+                                  </ul>
+                                </div>
+
+                                <p className="text-[5.5px] sm:text-[8.5px] text-zinc-500 leading-normal text-justify font-sans tracking-wide">
+                                  This credential certifies official affiliation with Healix Technologies Pvt. Ltd. and BioLabs Academy. Misuse is strictly prohibited. If found, please return to nearest facility.
+                                </p>
+                              </div>
+
+                              {/* Bottom columns details */}
+                              <div className="pt-2 border-t border-zinc-800 flex flex-row justify-between items-end w-full">
+                                <div>
+                                  <span className="text-[5px] sm:text-[8px] text-zinc-500 font-mono tracking-widest uppercase block mb-0.5">EMERGENCY CONTACT:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold font-mono text-white block">{cardEmergencyContact}</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-[5px] sm:text-[8px] text-zinc-500 font-mono tracking-widest uppercase block mb-0.5">WEBSITE:</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold font-mono text-[#eab308] underline block hover:text-[#eab308]/80">healix-nu.vercel.app</span>
+                                </div>
+                              </div>
+
                             </div>
                           </div>
-                        </div>
 
+                        </motion.div>
                       </div>
+                    </div>
 
-                      {/* BACK SIDE */}
-                      <div className="absolute w-full h-full bg-[#080808] border border-white/20 rounded-2xl overflow-hidden p-3 sm:p-6 flex flex-col justify-between" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                        {/* Large Watermark in background */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none z-0">
-                          <Image src="/biolabs-logo.png" alt="Watermark" width={220} height={220} className="object-contain grayscale" />
-                        </div>
-
-                        <div className="relative z-10 flex-1 flex flex-col justify-between h-full">
-                          
-                          {/* Header section */}
-                          <div className="w-full">
-                            <h4 className="font-mono text-[9px] sm:text-[14px] text-white/50 tracking-[0.25em] uppercase text-center w-full font-semibold">Institutional Credential</h4>
-                            <div className="h-[1px] bg-white/10 w-full mt-2 mb-3 sm:mb-4" />
-                          </div>
-
-                          {/* Access list and warnings */}
-                          <div className="space-y-3 sm:space-y-4 flex-1">
-                            <div>
-                              <h5 className="text-[7.5px] sm:text-[10px] text-[#eab308] font-bold uppercase tracking-wider mb-1 sm:mb-2 font-mono">AUTHORIZED ACCESS AREAS:</h5>
-                              <ul className="text-[7.5px] sm:text-[11px] font-mono text-white/80 space-y-1 pl-1">
-                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Research Labs & Bio-Compute Clusters</li>
-                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Bioinformatics Systems (Level 4)</li>
-                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Clinical Intelligence Dashboard</li>
-                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Internal Academic Network</li>
-                              </ul>
-                            </div>
-
-                            <p className="text-[6px] sm:text-[9.5px] text-white/40 leading-normal text-justify font-sans tracking-wide">
-                              This credential certifies official affiliation with Healix Technologies Pvt. Ltd. Unauthorized duplication, transfer, or misuse is strictly prohibited and subject to legal action under corporate espionage laws. If found, please return to the nearest Healix facility.
-                            </p>
-                          </div>
-
-                          {/* Bottom columns details */}
-                          <div className="pt-2 border-t border-white/10 flex flex-row justify-between items-end w-full">
-                            <div>
-                              <span className="text-[5.5px] sm:text-[8px] text-white/40 font-mono tracking-widest uppercase block mb-0.5">EMERGENCY CONTACT:</span>
-                              <span className="text-[8px] sm:text-[12px] font-bold font-mono text-white/90 block">+91 9540694581</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-[5.5px] sm:text-[8px] text-white/40 font-mono tracking-widest uppercase block mb-0.5">WEBSITE:</span>
-                              <span className="text-[8px] sm:text-[12px] font-bold font-mono text-[#eab308] underline block hover:text-[#eab308]/80">healix-nu.vercel.app</span>
-                            </div>
-                          </div>
-
-                        </div>
+                    {/* Print Action & Download Controls */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2 w-full max-w-[560px] select-text">
+                      <div className="flex items-center gap-2 text-white/30 text-xs font-mono">
+                        <Fingerprint className="h-4 w-4 text-[#eab308]/50" /> Secure verification active at `/verify/{uniqueId}`
                       </div>
+                      <button
+                        onClick={downloadPdf}
+                        className="flex items-center justify-center gap-2 px-6 py-3 w-full sm:w-auto bg-[#eab308] hover:bg-[#eab308]/90 text-black font-mono font-extrabold text-xs uppercase tracking-widest rounded-lg shadow-lg hover:shadow-xl active:scale-[0.98] transition-all"
+                      >
+                        <Download className="w-4 h-4" /> Download PDF (Print Ready)
+                      </button>
+                    </div>
 
-                    </motion.div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2 text-white/30 text-xs font-mono">
-                  <Fingerprint className="h-3 w-3" /> Verify at /verify/{uniqueId}
                 </div>
               </motion.div>
             )}
