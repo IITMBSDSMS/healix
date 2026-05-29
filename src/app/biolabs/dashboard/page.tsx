@@ -382,7 +382,7 @@ export default function UserDashboardPage() {
     doc.setTextColor(234, 179, 8); // Gold Website
     doc.setFont("helvetica", "bold");
     doc.setFontSize(4.8);
-    doc.text("healix-nu.vercel.app", cardX + 81, backY + 50.8, { align: "right" });
+    doc.text("healix-technologies.com", cardX + 81, backY + 50.8, { align: "right" });
 
 
     // PRINT & ASSEMBLY GUIDE (Bottom of page)
@@ -930,7 +930,7 @@ export default function UserDashboardPage() {
                                 </div>
                                 <div className="text-right">
                                   <span className="text-[5px] sm:text-[8px] text-zinc-500 font-mono tracking-widest uppercase block mb-0.5">WEBSITE:</span>
-                                  <span className="text-[7.5px] sm:text-[11px] font-bold font-mono text-[#eab308] underline block hover:text-[#eab308]/80">healix-nu.vercel.app</span>
+                                  <span className="text-[7.5px] sm:text-[11px] font-bold font-mono text-[#eab308] underline block hover:text-[#eab308]/80">healix-technologies.com</span>
                                 </div>
                               </div>
 
