@@ -29,7 +29,7 @@ const STATIC_BRANDS = [
     color: "#3b82f6",
     accent: "text-blue-500 bg-blue-500/10 border-blue-500/20",
     icon_name: "Shield",
-    logo_url: "/care-logo-new.png"
+    logo_url: "/avennix-official-logo.png"
   },
   {
     id: "shesecure",
@@ -280,7 +280,7 @@ export default function Home() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "Avennix Pharma", subtitle: "Clinical Research & Care", logo: "/care-logo-new.png", href: "/care" },
+              { title: "Avennix Pharma", subtitle: "Clinical Research & Care", logo: "/avennix-official-logo.png", href: "/care" },
               { title: "HSF Safety", subtitle: "Community Support Portal", logo: "/hsf-official-logo.png", href: "/shesecure" },
               { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo.png", href: "/biolabs" },
               { title: "Healix AI Check", subtitle: "Symptom Triaging Portal", logo: "/ai-logo.jpg", href: "/ai-check" }
