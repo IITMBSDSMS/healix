@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       ? `https://maps.google.com/?q=${location.lat},${location.lng}` 
       : 'Location unavailable';
 
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
     const data = await resend.emails.send({
       from: 'Healix SOS <onboarding@resend.dev>',
       to: [ADMIN_EMAIL],
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #ef4444; color: white; padding: 40px; border-radius: 12px;">
           <h1 style="margin-top: 0;">🚨 EMERGENCY SOS ALERT</h1>
           <p style="font-size: 18px; font-weight: bold;">
-            ${name || 'A user'} has triggered an emergency alert via Healix SheSecure.
+            ${name || 'A user'} has triggered an emergency alert via HSF.
           </p>
           <div style="background-color: white; color: black; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p><strong>Time:</strong> ${new Date(timestamp).toLocaleString()}</p>

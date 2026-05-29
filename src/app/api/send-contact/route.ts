@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, mocked: true });
     }
 
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
     const data = await resend.emails.send({
       from: 'Healix Contact <onboarding@resend.dev>',
       to: [ADMIN_EMAIL],

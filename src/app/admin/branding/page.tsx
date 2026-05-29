@@ -1,102 +1,55 @@
 "use client";
 
-import React, { useState } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import BrandedQRCard from "@/components/ui/BrandedQRCard";
-import { Shield, Download, Copy, Smartphone } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Image as ImageIcon } from "lucide-react";
 
-export default function BrandingPage() {
-  const [copied, setCopied] = useState(false);
-  const rideUrl = "https://healix-nu.vercel.app/ride/DEMO-SAFE-001";
+export default function BrandingAdminRedirect() {
+  const router = useRouter();
 
-  const copyUrl = () => {
-    navigator.clipboard.writeText(rideUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    router.replace("/admin?tab=branding");
+  }, [router]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen bg-gradient-to-br from-black via-zinc-950 to-blue-950 text-white">
-      <div className="mb-12">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Identity & Branding
-        </h1>
-        <p className="text-white/60 max-w-2xl text-lg">
-          Manage your scannable branded assets. These QR cards are engineered for Project Suraksha safety tracking and vehicle verification.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* Preview Section */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <BrandedQRCard 
-            deviceId="DEMO-SAFE-001"
-            vehicleReg="DL-1-SAFE-2026"
-            driverName="Healix Safety Driver"
-            rideUrl={rideUrl}
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center gap-6 text-center"
+      >
+        <div className="relative w-20 h-20">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 border-r-purple-500/40"
           />
-        </motion.div>
+          <div className="absolute inset-3 rounded-full bg-[#0a0a0a] flex items-center justify-center">
+            <ImageIcon className="w-6 h-6 text-indigo-400" />
+          </div>
+        </div>
 
-        {/* Configuration / Details */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-8"
-        >
-          <GlassCard className="p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Shield className="text-blue-400" /> Infrastructure Logo
-            </h2>
-            <p className="text-white/60 mb-8 leading-relaxed">
-              This high-fidelity scannable logo combines the Healix Shield with a high-error-correction QR code. Even if 30% of the card is damaged, the safety logic remains operational.
-            </p>
+        <div>
+          <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em] mb-2">
+            Routing to Master Console
+          </p>
+          <h2 className="text-xl font-black font-mono text-white uppercase tracking-widest">
+            Branding Manager
+          </h2>
+        </div>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Target Endpoint</p>
-                <div className="flex items-center justify-between">
-                  <code className="text-sm text-blue-400">{rideUrl}</code>
-                  <button onClick={copyUrl} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60">
-                    {copied ? <span className="text-green-500 text-[10px] font-bold">COPIED</span> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Print Density</p>
-                  <p className="text-lg font-bold">300 DPI</p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Safe Zone</p>
-                  <p className="text-lg font-bold">14.2%</p>
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-8 border-purple-500/10">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Smartphone className="text-purple-400" /> Deployment Guide
-            </h3>
-            <ol className="space-y-4 text-sm text-white/60 list-decimal pl-4">
-              <li>Download the high-resolution PNG using the button on the left.</li>
-              <li>Print on a durable vinyl sticker or 300gsm matte card.</li>
-              <li>Place on the left-rear passenger window or vehicle dashboard.</li>
-              <li>Passengers scan this to initialize a Suraksha Secure Ride.</li>
-            </ol>
-            <button className="w-full mt-8 py-3 bg-purple-600 hover:bg-purple-500 hover:scale-105 shadow-lg shadow-purple-500/30 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-              <Download className="w-4 h-4" /> Download All Branded Assets
-            </button>
-          </GlassCard>
-        </motion.div>
-      </div>
+        <div className="flex gap-1.5 mt-2">
+          {[0, 0.2, 0.4].map((delay, i) => (
+            <motion.div
+              key={i}
+              animate={{ opacity: [0.2, 1, 0.2] }}
+              transition={{ duration: 1, repeat: Infinity, delay }}
+              className="w-1.5 h-1.5 rounded-full bg-indigo-500"
+            />
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

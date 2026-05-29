@@ -9,9 +9,9 @@ import { createClient } from "@/utils/supabase/client";
 
 const quickLinks = [
   { title: "RESEARCH", icon: FlaskConical, href: "/biolabs", bg: "bg-[#f5f5f5] text-black hover:bg-white" },
-  { title: "STARTUPS", icon: Rocket, href: "/startups", bg: "bg-[#eab308] text-black hover:bg-[#ca8a04]" },
+  { title: "STARTUPS", icon: Rocket, href: "/startups", bg: "bg-[#ea580c] text-white hover:bg-[#c2410c]" },
   { title: "NEWS", icon: Newspaper, href: "/news", bg: "bg-[#f5f5f5] text-black hover:bg-white" },
-  { title: "GLOBAL NETWORK", icon: Building2, href: "/global-network", bg: "bg-[#eab308] text-black hover:bg-[#ca8a04]" },
+  { title: "GLOBAL NETWORK", icon: Building2, href: "/global-network", bg: "bg-[#ea580c] text-white hover:bg-[#c2410c]" },
 ];
 
 const fallbackItems = [
@@ -55,15 +55,16 @@ export function HeroCarousel() {
           .eq("is_active", true)
           .order("order_index", { ascending: true });
 
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
+        if (error) {
+          console.warn("Banners table not found or query error, using fallback:", error.message);
+          setCarouselItems(fallbackItems);
+        } else if (data && data.length > 0) {
           setCarouselItems(data);
         } else {
           setCarouselItems(fallbackItems);
         }
-      } catch (error) {
-        console.error("Error fetching banners:", error);
+      } catch (error: any) {
+        console.warn("Error fetching banners:", error?.message || error);
         setCarouselItems(fallbackItems); // Use fallback if DB is not set up yet
       } finally {
         setLoading(false);

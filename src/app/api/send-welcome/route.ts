@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, mocked: true });
     }
 
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
     // In test mode, Resend only allows sending to the account owner email
     const recipient = process.env.RESEND_DOMAIN_VERIFIED === 'true' ? email : ADMIN_EMAIL;
     const data = await resend.emails.send({

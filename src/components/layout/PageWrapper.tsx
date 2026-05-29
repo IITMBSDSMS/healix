@@ -20,7 +20,7 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
         animate={{ opacity: 1, filter: "blur(0px)" }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="min-h-screen pt-24 pb-12 flex flex-col"
+        className="min-h-screen pt-4 pb-12 flex flex-col"
       >
         {children}
       </motion.div>

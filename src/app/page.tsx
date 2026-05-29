@@ -2,18 +2,79 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/Button";
-import { HealixLogo } from "@/components/ui/HealixLogo";
-import { ArrowRight, Shield, Activity, Server, Database, MessageSquareQuote, X, Smartphone, Bell, Building2, Rocket, Newspaper, HelpCircle, Camera, ChevronDown, Settings } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
+
+const IconMap: Record<string, any> = {
+  Shield,
+  Activity,
+  Server,
+  GraduationCap,
+  Smartphone,
+  Sparkles,
+  Building2,
+  Heart,
+  Play
+};
+
+const STATIC_BRANDS = [
+  {
+    id: "avennix",
+    name: "Avennix Pharma",
+    role: "Clinical Research & Digital Care",
+    desc: "Developing indigenous digital twin software pipelines and therapeutics networks to standardize clinical trial metrics across leading institutional networks.",
+    logoText: "AVENNIX",
+    color: "#3b82f6",
+    accent: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    icon_name: "Shield",
+    logo_url: "/care-logo-new.png"
+  },
+  {
+    id: "shesecure",
+    name: "SheSecure System",
+    role: "Women Travel & Community Safety",
+    desc: "Low-latency telemetry tracking, encrypted hardware beacons, and one-tap emergency SOS broadcasts connected to localized responder networks.",
+    logoText: "SHE-SECURE",
+    color: "#ef4444",
+    accent: "text-red-500 bg-red-500/10 border-red-500/20",
+    icon_name: "Heart",
+    logo_url: "/hsf-official-logo.png"
+  },
+  {
+    id: "biolabs",
+    name: "BioLabs Genomics",
+    role: "High-Performance Sequence Modeling",
+    desc: "Running distributed high-performance computing pools to execute molecular alignment diagnostics, mapping CRISPR outcomes with precision.",
+    logoText: "BIOLABS",
+    color: "#06b6d4",
+    accent: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
+    icon_name: "Activity",
+    logo_url: "/biolabs-logo.png"
+  },
+  {
+    id: "academy",
+    name: "Healix Academy",
+    role: "Systems Architecture Training",
+    desc: "Educating developers and clinical researchers on high-reliability distributed databases, secure cryptographic APIs, and responsive edge apps.",
+    logoText: "ACADEMY",
+    color: "#ea580c",
+    accent: "text-[#ea580c] bg-[#ea580c]/10 border-[#ea580c]/20",
+    icon_name: "GraduationCap",
+    logo_url: "/official-logo.png"
+  }
+];
 
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<{ url: string, title: string } | null>(null);
+
+  // Podcasts and Brands states
+  const [podcasts, setPodcasts] = useState<any[]>([]);
+  const [activePodcast, setActivePodcast] = useState<{ youtube_url: string, title: string } | null>(null);
+  const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const [brands, setBrands] = useState<any[]>(STATIC_BRANDS);
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -22,682 +83,577 @@ export default function Home() {
       if (data && data.length > 0) {
         setReels(data);
       } else {
-        // Fallback dummy data if no DB rows
         setReels([
           { id: 1, title: "Emergency SOS Response Test", user_handle: "@sarah_j", thumbnail_url: "/reel-1-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
           { id: 2, title: "Healix AI Symptom Checker Review", user_handle: "@marcus_tech", thumbnail_url: "/reel-2-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-          { id: 3, title: "Night Travel with SheSecure", user_handle: "@priya_travels", thumbnail_url: "/reel-3-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+          { id: 3, title: "Night Travel with HSF System", user_handle: "@priya_travels", thumbnail_url: "/reel-3-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
           { id: 4, title: "BioLabs Student Tour", user_handle: "@uni_science", thumbnail_url: "/reel-4-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
         ]);
       }
     };
+
+    const fetchPodcasts = async () => {
+      try {
+        const res = await fetch("/api/podcasts");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setPodcasts(data);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching podcasts:", err);
+      }
+      // Fallback seed data
+      setPodcasts([
+        {
+          id: "1",
+          title: "BioLabs Sequence Modeling & Genetic Compute Failsafes",
+          description: "Deep dive with our research fellows on leveraging high-performance compute clusters to map CRISPR off-target genetic mutation metrics safely.",
+          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          thumbnail_url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
+          duration: "18:45"
+        },
+        {
+          id: "2",
+          title: "SheSecure IoT Protocols & GPS Failsafe Telemetry Systems",
+          description: "Explaining the low-latency socket streams, emergency SOS overrides, and client-side web dashboards that secure community tracking networks.",
+          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          thumbnail_url: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=600&auto=format&fit=crop",
+          duration: "24:12"
+        },
+        {
+          id: "3",
+          title: "Building Indigenous Clinical Data Infrastructure at IIT Madras",
+          description: "Discussion with our board advisors on bridging the gap between clinical systems and emergency response models inside the indian healthcare stack.",
+          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          thumbnail_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop",
+          duration: "15:30"
+        }
+      ]);
+    };
+
+    const fetchBrands = async () => {
+      try {
+        const res = await fetch("/api/brands");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setBrands(data);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching brands:", err);
+      }
+    };
+
     fetchReels();
+    fetchPodcasts();
+    fetchBrands();
   }, []);
-  const testimonials = [
-    {
-      name: "Sarah Jenkins",
-      role: "Student",
-      quote: "The SheSecure SOS feature makes me feel so much safer when walking home late from campus. The response system is incredibly fast."
-    },
-    {
-      name: "Marcus T.",
-      role: "Early User",
-      quote: "I wasn't sure if I needed to see a doctor for my symptoms. The Healix smart guidance helped me understand my next steps clearly and securely."
-    },
-    {
-      name: "Dr. A. Patel",
-      role: "Consultant Physician",
-      quote: "A responsible platform that correctly emphasizes guidance over diagnosis, pointing patients in the right direction when they need professional care."
+
+  useEffect(() => {
+    if (brands.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveBrandIndex((prev) => (prev + 1) % brands.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [brands.length]);
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return "";
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 12 || match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
     }
+    return url;
+  };
+
+  const announcements = [
+    "Important: Proposal submission for the 2026 BioLabs Research Incubator starts June 15th.",
+    "Notification No. 08/2026: HSF invites applications for field safety coordinators (Delhi NCR).",
+    "High-Performance Computing (HPC) Genomic modeling workshop scheduled for July 10th-12th.",
+    "Registration Open: Summer training sessions in Bio-Medical Diagnostics and IoT failsafes.",
+    "Corrigendum to Advt. No. HSF/Apprentice (1) / 2026 for engagement of apprentices under the Apprentices Act.",
+    "Call for Applications: Transformative Leadership in STEMM (TLS) Workshop by Healix Academy."
   ];
 
-
-
   return (
-    <div className="relative isolate min-h-screen flex flex-col w-full">
-      {/* Cinematic Background */}
-      <div className="absolute inset-0 bg-[#050505]" />
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.05]" />
+    <div className="relative min-h-screen flex flex-col w-full bg-[#fafafa] text-black pb-20 overflow-x-hidden">
+      
+      {/* Background patterns */}
+      <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.03] pointer-events-none" />
 
-      {/* Animated Glow Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#eab308]/5 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#ca8a04]/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-transparent via-[#eab308]/[0.01] to-transparent pointer-events-none" />
-
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
-
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
-
-      {/* High-Class Media Display (Full Width Hero) */}
+      {/* Hero Carousel Banner (IITD Style) */}
       <div className="w-full">
         <HeroCarousel />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        {/* Premium Dark Bento Grid Modules */}
-        <div className="mt-16 mb-32">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={{
-              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-              hidden: { opacity: 0 }
-            }}
-            className="grid grid-cols-1 md:grid-cols-12 grid-rows-2 gap-4 h-auto md:h-[600px]"
-          >
-            {/* AI Check - Large Bento Card */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-              }}
-              whileHover={{ y: -5, scale: 1.01 }}
-              className="md:col-span-8 md:row-span-1"
-            >
-              <Link href="/ai-check" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col justify-between group overflow-hidden relative border-[#eab308]/10 hover:border-[#eab308]/30">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#eab308]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform group-hover:scale-110 group-hover:rotate-3">
-                    <Activity className="w-48 h-48 text-[#eab308]" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20">
-                        <Activity className="w-5 h-5 text-[#eab308]" />
-                      </div>
-                      <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">Medical Intelligence</span>
-                    </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">Healix AI Diagnostic Engine</h3>
-                    <p className="text-white/50 max-w-md text-sm leading-relaxed">
-                      Analyze complex symptoms through our high-performance neural pipeline. Get instant, infrastructure-backed medical guidance with zero-knowledge privacy.
-                    </p>
-                  </div>
-                  <div className="relative z-10 flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#eab308] transition-colors mt-8">
-                    Access Engine <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </GlassCard>
-              </Link>
-            </motion.div>
+      <div className="relative mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 w-full mt-6 space-y-16">
+        
+        {/* --- SECTION 1: IMPORTANT ANNOUNCEMENTS (IITD Style) --- */}
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-none p-6 md:p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-xl md:text-3xl font-extrabold tracking-tight text-[#ea580c] uppercase flex items-center justify-center gap-3">
+              <Newspaper className="w-6 h-6 text-[#ea580c]" /> Important Announcements
+            </h2>
+            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
+          </div>
 
-            {/* BioLabs - Vertical Bento Card */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-              }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="md:col-span-4 md:row-span-2"
-            >
-              <Link href="/biolabs" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col group relative overflow-hidden bg-gradient-to-b from-transparent to-[#eab308]/5 border-[#eab308]/10 hover:border-[#eab308]/30">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                      <Database className="w-5 h-5 text-white/80" />
-                    </div>
-                    <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">Research Lab</span>
-                  </div>
-                  <h3 className="text-3xl font-bold text-white mb-4">Healix <br />BioLabs</h3>
-                  <p className="text-white/50 text-sm leading-relaxed mb-8">
-                    World-class laboratory facilities for advanced genomic sequencing, AI diagnostic modeling, and high-performance computing research.
-                  </p>
-                  <div className="flex-1 border-y border-white/5 py-6 my-6 flex flex-col justify-center space-y-4">
-                    {["Next-Gen Sequencing", "HPC Clusters", "AI Diagnostics"].map((item, idx) => (
-                      <motion.div
-                        key={item}
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 + (idx * 0.1) }}
-                        className="flex items-center gap-2 text-[10px] font-mono text-white/40 uppercase group-hover:text-white/70 transition-colors"
-                      >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#eab308] shadow-[0_0_10px_rgba(234,179,8,0.5)]" /> {item}
-                      </motion.div>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#eab308] transition-colors">
-                    View Lab <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </GlassCard>
-              </Link>
-            </motion.div>
-
-            {/* SheSecure - Horizontal Bento Card */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-              }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="md:col-span-4 md:row-span-1"
-            >
-              <Link href="/shesecure" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col justify-between group border-orange-500/10 hover:border-orange-500/30">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                          <Shield className="w-5 h-5 text-orange-400" />
-                        </div>
-                        <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">IoT Safety</span>
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">SheSecure SOS</h3>
-                      <p className="text-xs text-white/50 leading-relaxed mb-4">
-                        Real-time travel safety with Project Suraksha QR tracking and uncompromised telemetry.
-                      </p>
-                      <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:text-orange-400 transition-colors">
-                        Learn More <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </div>
-
-                    {/* Scannable Logo Tech Demo - Connected */}
-                    <motion.div
-                      whileHover={{ scale: 1.05, rotate: 2 }}
-                      className="shrink-0 p-3 bg-black/60 rounded-xl border border-white/5 flex items-center gap-3 group/qr transition-all hover:border-orange-500/30 relative backdrop-blur-md"
-                    >
-                      <div className="absolute -top-1 -right-1 flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
-                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                        <span className="text-[8px] font-mono text-orange-400 font-bold uppercase tracking-widest">Live</span>
-                      </div>
-
-                      <div className="w-12 h-12 bg-white rounded-md p-1.5 flex items-center justify-center">
-                        <div className="w-full h-full bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://healix-nu.vercel.app/ride/HEALIX-SAFE-DEMO')] bg-contain" />
-                      </div>
-                      <div className="hidden sm:block">
-                        <p className="text-[10px] font-mono text-orange-400 font-bold uppercase tracking-tighter">Verified Identity</p>
-                        <p className="text-[9px] text-white/40">ID: HEALIX-SAFE-DEMO</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                </GlassCard>
-              </Link>
-            </motion.div>
-
-            {/* Care - Horizontal Bento Card */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-              }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="md:col-span-4 md:row-span-1"
-            >
-              <Link href="/care" className="h-full block">
-                <GlassCard className="h-full p-8 flex flex-col justify-between group border-[#eab308]/10 hover:border-[#eab308]/40 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#eab308]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  <div className="relative">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20">
-                        <Building2 className="w-5 h-5 text-[#eab308]" />
-                      </div>
-                      <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest drop-shadow-sm">Healthcare</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Healix Care Network</h3>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      High-fidelity medical booking and provider orchestration across our global facilities.
-                    </p>
-                  </div>
-                  <div className="relative flex items-center gap-2 text-xs font-bold text-white group-hover:text-[#eab308] transition-colors mt-4">
-                    Find Care <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </GlassCard>
-              </Link>
-            </motion.div>
-          </motion.div>
+          <div className="grid grid-cols-1 gap-4 max-w-5xl mx-auto">
+            {announcements.map((ann, idx) => (
+              <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-[#fafafa] hover:bg-orange-50/20 transition-colors flex items-center justify-between">
+                <Link href="/news" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1">
+                  {ann}
+                </Link>
+                <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-600 text-white font-mono text-[9px] font-bold rounded uppercase">
+                  New
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Healix Academy Premium Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mt-20 border border-[#eab308]/20 rounded-3xl overflow-hidden relative group cursor-pointer bg-gradient-to-r from-black via-[#111111] to-black"
-        >
-          <Link href="/academy" className="block relative">
-            <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03] pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#eab308]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-            <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-[#eab308]/5 to-transparent pointer-events-none" />
+        {/* --- SECTION 2: ABOUT HEALIX & LEADER'S CORNER (IITD Style) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Left: About */}
+          <div className="lg:col-span-7 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-black tracking-tight mb-2 uppercase border-b-2 border-zinc-100 pb-3 flex items-center gap-2">
+                About <span className="text-[#ea580c]">Healix</span>
+              </h2>
+              <p className="text-sm text-zinc-900 leading-relaxed mb-6 mt-4">
+                Healix Technologies Pvt. Ltd. is India's premier biomedical research and engineering institution. Combining advanced digital twin telemetry, state-of-the-art BioLabs genomics sequence modeling, and emergency safety coordination platforms, we develop indigenous solutions addressing national clinical and community infrastructure safety metrics.
+              </p>
+              <p className="text-sm text-zinc-900 leading-relaxed mb-6">
+                Established under the guidance of leading clinical advisors and tech councils, the organization bridges the gap between hardware computing arrays and emergency response systems to build a secure, tech-driven tomorrow.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link href="/about" className="h-10 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
+                Read More
+              </Link>
+              <Link href="/news" className="h-10 px-6 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
+                Newsletter
+              </Link>
+            </div>
+          </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between p-10 md:p-16 relative z-10">
-              <div className="flex-1 mb-8 md:mb-0">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-[#eab308]/10 rounded-lg border border-[#eab308]/20 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                    <Rocket className="w-6 h-6 text-[#eab308]" />
+          {/* Right: Leader's Corner */}
+          <div className="lg:col-span-5 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-black tracking-tight mb-2 uppercase border-b-2 border-zinc-100 pb-3">
+                Founder's <span className="text-[#ea580c]">Corner</span>
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-4 items-start mt-6">
+                <div className="w-28 h-28 bg-zinc-100 border border-zinc-200 shrink-0 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-xs uppercase">
+                    Healix Team
                   </div>
-                  <span className="text-sm font-mono text-[#eab308] font-bold uppercase tracking-widest drop-shadow-sm">Healix Academy</span>
                 </div>
-
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
-                  Learn Real Engineering. <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
-                    Build Real Systems.
-                  </span>
-                </h2>
-
-                <p className="text-lg text-white/60 max-w-xl mb-8 leading-relaxed">
-                  1:1 mentorship from elite engineers building production-grade systems. Elite engineering institution authority.
-                </p>
-
-                <button className="px-8 py-4 bg-white text-black font-bold rounded-xl flex items-center gap-3 hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                  Explore Programs <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Academy Mockup / Graphic */}
-              <div className="flex-1 flex justify-center md:justify-end relative">
-                {/* Abstract animated elements */}
-                <div className="relative w-64 h-64 md:w-80 md:h-80">
-                  <div className="absolute inset-0 border border-[#eab308]/30 rounded-full animate-[spin_10s_linear_infinite]" />
-                  <div className="absolute inset-4 border border-dashed border-[#eab308]/20 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 bg-gradient-to-br from-[#eab308]/20 to-transparent rounded-2xl border border-[#eab308]/30 transform rotate-12 backdrop-blur-sm shadow-2xl flex items-center justify-center group-hover:rotate-0 transition-transform duration-700">
-                      <Rocket className="w-12 h-12 text-[#eab308]/80" />
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 bg-black rounded-2xl border border-white/10 transform -rotate-12 backdrop-blur-md shadow-2xl flex items-center justify-center group-hover:rotate-0 transition-transform duration-700">
-                      <span className="font-mono text-[#eab308] text-xl font-bold">&lt;/&gt;</span>
-                    </div>
-                  </div>
+                <div>
+                  <p className="font-extrabold text-base text-zinc-950">Healix Board of Directors</p>
+                  <p className="text-xs text-[#ea580c] font-bold uppercase mt-1">Research & Technical Council</p>
+                  <p className="text-xs text-zinc-700 leading-relaxed mt-3 italic">
+                    "Our mission is to establish indigenous, failsafe computing parameters that bridge the gap between AI clinical sequence analysis and real-time community safety infrastructure."
+                  </p>
                 </div>
               </div>
             </div>
-          </Link>
-        </motion.div>
+            <Link href="/academy/mentors" className="h-10 px-6 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors w-fit mt-6">
+              Read Message
+            </Link>
+          </div>
+        </div>
 
-        {/* Infrastructure Architecture Flow */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="mt-32 border-t border-white/10 pt-20"
-        >
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4 font-mono tracking-tight">System Architecture</h2>
-            <p className="text-white/50 max-w-2xl mx-auto text-sm">
-              Operational transparency. Our distributed infrastructure operates within strictly defined failsafe parameters to ensure 99.9% uptime and uncompromised privacy.
-            </p>
+        {/* --- SECTION 3: ACADEMIC UNITS / MODULES (IITD Style) --- */}
+        <div>
+          <div className="text-center mb-8">
+            <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
+              Healix <span className="text-[#ea580c]">Academic & Research Units</span>
+            </h2>
+            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative max-w-5xl mx-auto">
-            {/* Connecting Line */}
-            <div className="hidden md:block absolute top-[44px] left-[16%] right-[16%] h-px bg-gradient-to-r from-purple-500/20 via-blue-500/50 to-green-500/20 z-0" />
-
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
-                <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Activity className="h-8 w-8 text-[#eab308]" />
-              </div>
-              <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 01: Telemetry Input</h3>
-              <p className="text-white/40 text-xs">User devices securely transmit encrypted health or GPS telemetry to our edge nodes. Payload is validated against strict schema parameters.</p>
-            </div>
-
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
-                <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Server className="h-8 w-8 text-[#ca8a04]" />
-              </div>
-              <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 02: AI Analysis Engine</h3>
-              <p className="text-white/40 text-xs">Data is processed through our high-performance computing clusters. <strong>Zero-knowledge proofs</strong> ensure raw data is never exposed to external models.</p>
-            </div>
-
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center mb-6 shadow-xl relative overflow-hidden group">
-                <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Shield className="h-8 w-8 text-[#eab308]" />
-              </div>
-              <h3 className="text-lg font-bold mb-2 font-mono text-white/90">Node 03: Secure Routing</h3>
-              <p className="text-white/40 text-xs">Based on deterministic rule engines, packets are routed to appropriate emergency response APIs or medical scheduling interoperability layers.</p>
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Avennix Pharma", subtitle: "Clinical Research & Care", logo: "/care-logo-new.png", href: "/care" },
+              { title: "HSF Safety", subtitle: "Community Support Portal", logo: "/hsf-official-logo.png", href: "/shesecure" },
+              { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo.png", href: "/biolabs" },
+              { title: "Healix AI Check", subtitle: "Symptom Triaging Portal", logo: "/ai-logo.jpg", href: "/ai-check" }
+            ].map((unit, i) => (
+              <Link 
+                key={i} 
+                href={unit.href}
+                className="bg-white border border-zinc-200 p-6 flex flex-col justify-between min-h-[160px] hover:border-[#ea580c] transition-all group cursor-pointer"
+              >
+                <div className="w-10 h-10 border border-zinc-200/60 bg-white flex items-center justify-center mb-4 overflow-hidden rounded-lg shadow-sm">
+                  <img src={unit.logo} alt={unit.title} className="w-full h-full object-contain p-1" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-zinc-950 group-hover:text-[#ea580c] transition-colors">{unit.title}</h3>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 font-mono mt-1 uppercase tracking-wider">{unit.subtitle}</p>
+                </div>
+              </Link>
+            ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Testimonials */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="mt-32 border-t border-white/10 pt-20"
-        >
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Trusted by Our Community</h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
-              Hear from people who use Healix to manage their health and stay secure.
-            </p>
+        {/* --- SECTION 4: STARTUPS@HEALIX (IITD Style) --- */}
+        <div>
+          <div className="flex justify-between items-center mb-8 border-b-2 border-zinc-150 pb-3">
+            <h2 className="text-2xl font-black tracking-tight text-black uppercase">
+              Startups<span className="text-[#ea580c]">@Healix</span>
+            </h2>
+            <Link href="/startups" className="h-8 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
+              View All
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((test, index) => (
-              <GlassCard key={index} className="flex flex-col justify-between" glowOnHover={false}>
-                <MessageSquareQuote className="h-8 w-8 text-white/20 mb-4" />
-                <p className="text-white/80 italic mb-6">"{test.quote}"</p>
-                <div>
-                  <p className="font-semibold">{test.name}</p>
-                  <p className="text-sm text-primary">{test.role}</p>
+            {[
+              {
+                title: "CRISPR Target Diagnostics",
+                desc: "Advanced sequencing models predicting off-target genetic mutation metrics using high-performance computing pools.",
+                src: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=600&auto=format&fit=crop",
+                href: "/biolabs"
+              },
+              {
+                title: "Live GPS Telemetry Sync",
+                desc: "Low-latency socket streams transmitting secure coordinates to verified local authorities during emergency SOS checks.",
+                src: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop",
+                href: "/shesecure"
+              },
+              {
+                title: "AI Symptom Checker Pipeline",
+                desc: "Structured data pipelines matching user-reported symptoms to medical databases with transparent verification metrics.",
+                src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop",
+                href: "/ai-check"
+              }
+            ].map((start, idx) => (
+              <div key={idx} className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group">
+                <div className="h-44 bg-zinc-150 relative overflow-hidden">
+                  <img src={start.src} alt={start.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" />
                 </div>
-              </GlassCard>
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-base text-zinc-950 mb-2">{start.title}</h4>
+                    <p className="text-xs text-zinc-700 leading-relaxed mb-4">{start.desc}</p>
+                  </div>
+                  <Link href={start.href} className="h-8 px-4 border border-zinc-300 hover:border-[#ea580c] hover:bg-orange-50/20 text-zinc-800 hover:text-[#ea580c] text-[10px] font-bold uppercase tracking-wider w-fit flex items-center justify-center transition-all">
+                    Read More
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Community Reels / Video Section */}
-        <div className="mt-32 border-t border-white/10 pt-20 overflow-hidden">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Community Stories</h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
-              Real-world experiences from people who use Healix every day.
-            </p>
-          </div>
-
-          <div className="relative w-full overflow-hidden">
-            <div className="flex gap-6 animate-marquee" style={{ animationDirection: 'reverse', width: 'max-content' }}>
-              {[...reels, ...reels, ...reels].map((reel, idx) => (
-                <div
-                  key={`${reel.id}-${idx}`}
-                  onClick={() => setActiveVideo({ url: reel.video_url, title: reel.title })}
-                  className="group relative rounded-xl overflow-hidden bg-black border border-white/10 w-64 aspect-[9/16] shrink-0 cursor-pointer shadow-xl"
-                >
-                  {/* Thumbnail */}
-                  <img src={reel.thumbnail_url} alt={reel.title} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-black/50 group-hover:bg-black/20 transition-colors duration-500" />
-
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/90 group-hover:bg-white group-hover:text-black group-hover:scale-110 transition-all">
-                      <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                    </div>
+        {/* --- SECTION 5: LATEST NEWS & EVENTS --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-zinc-200 pt-12 items-start">
+          {/* Left Column: News */}
+          <div className="lg:col-span-8">
+            <h2 className="text-2xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
+              Latest <span className="text-[#ea580c]">News</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                {
+                  title: "In-Silico Breast Cancer Mutation Analysis",
+                  desc: "Predictive BRCA1 genetic sequencing parameters mapped with 98.4% confidence rating.",
+                  src: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400"
+                },
+                {
+                  title: "Distributed Edge Telemetry Failsafes",
+                  desc: "Establishing decentralized failsafe socket buffers to capture SOS emergency coordinates.",
+                  src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400"
+                }
+              ].map((res, idx) => (
+                <div key={idx} className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group">
+                  <div className="h-36 bg-zinc-150 relative">
+                    <img src={res.src} alt={res.title} className="w-full h-full object-cover" />
                   </div>
-
-                  {/* Info Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/80 to-transparent">
-                    <p className="text-sm text-white/70 mb-1">{reel.user_handle}</p>
-                    <p className="font-semibold text-white leading-tight">{reel.title}</p>
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-sm text-zinc-950 mb-2 leading-snug">{res.title}</h4>
+                      <p className="text-xs text-zinc-700 leading-relaxed mb-4">{res.desc}</p>
+                    </div>
+                    <Link href="/news" className="h-7 px-3 border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-[10px] font-bold uppercase tracking-wider w-fit flex items-center transition-colors">
+                      Details
+                    </Link>
                   </div>
                 </div>
               ))}
             </div>
-            {/* Fade Edges */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#050505] to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#050505] to-transparent" />
           </div>
-        </div>
-        {/* ── Global Impact Statistics ── */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-32 mb-20"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { label: "Users Protected", value: "50,000+", sub: "SheSecure Active Network", icon: Shield, color: "text-orange-400" },
-              { label: "Research Points", value: "5M+", sub: "BioLabs Genomic Data", icon: Database, color: "text-blue-400" },
-              { label: "Elite Mentors", value: "120+", sub: "Healix Academy Faculty", icon: Rocket, color: "text-[#eab308]" },
-            ].map((stat, i) => (
-              <GlassCard key={i} className="text-center p-10 group hover:border-[#eab308]/30 transition-all duration-500">
-                <div className={`mx-auto w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${stat.color}`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-4xl font-bold text-white mb-2 tracking-tight">{stat.value}</h3>
-                <p className="text-sm font-mono uppercase tracking-[0.2em] text-white/40 mb-1">{stat.label}</p>
-                <p className="text-[10px] text-white/20">{stat.sub}</p>
-              </GlassCard>
-            ))}
-          </div>
-        </motion.div>
 
-
-        {/* ── FAQ & Tech Showcase ── */}
-        <div className="mt-32 grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Left: FAQ */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                <HelpCircle className="w-5 h-5 text-white/60" />
-              </div>
-              <h2 className="text-3xl font-bold text-white tracking-tight">Frequently Asked Questions</h2>
-            </div>
-            
+          {/* Right Column: Events */}
+          <div className="lg:col-span-4 bg-white border border-zinc-200 p-6">
+            <h2 className="text-xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
+              Upcoming <span className="text-[#ea580c]">Events</span>
+            </h2>
             <div className="space-y-4">
               {[
-                { q: "How secure is the SheSecure SOS system?", a: "SheSecure uses zero-knowledge telemetry. Your live location is only decrypted and transmitted to emergency contacts or authorities when you trigger an active SOS or fail to check-in at a verified destination." },
-                { q: "What makes Healix BioLabs different?", a: "Unlike standard labs, BioLabs integrates high-performance compute clusters directly with genomic sequencing, allowing for real-time AI-powered diagnostic modeling that would traditionally take weeks." },
-                { q: "Can I apply to the Academy without prior experience?", a: "Healix Academy is designed for engineers seeking to reach the elite level. While we have foundational tracks, our core programs are built for those who have a base understanding of engineering and want to master production-grade systems." },
-                { q: "Is my medical data sold to third parties?", a: "Never. Our infrastructure is built on the principle of data sovereignty. Your medical intelligence is processed on our isolated nodes and encrypted with keys that only you control." }
-              ].map((faq, i) => (
-                <GlassCard key={i} className="p-0 overflow-hidden border-white/5 hover:border-white/10">
-                  <details className="group">
-                    <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{faq.q}</span>
-                      <ChevronDown className="w-4 h-4 text-white/30 group-open:rotate-180 transition-transform" />
-                    </summary>
-                    <div className="px-6 pb-6 text-sm text-white/50 leading-relaxed border-t border-white/5 pt-4">
-                      {faq.a}
-                    </div>
-                  </details>
-                </GlassCard>
-              ))}
-            </div>
-            
-            <Link href="/contact" className="inline-flex items-center gap-2 mt-8 text-xs font-mono text-[#eab308] hover:gap-3 transition-all">
-              Still have questions? Contact our team <ArrowRight className="w-3 h-3" />
-            </Link>
-          </motion.div>
-
-          {/* Right: Gallery / Showcase */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <Camera className="w-5 h-5 text-white/60" />
-                </div>
-                <h2 className="text-3xl font-bold text-white tracking-tight">Tech Showcase</h2>
-              </div>
-              <Link href="/biolabs" className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-mono hover:bg-white/10 transition-colors">
-                View All
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400", label: "IoT Infrastructure" },
-                { url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400", label: "Genomic Analytics" },
-                { url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=400", label: "Engineering Hub" },
-                { url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400", label: "Neural Network" },
-              ].map((img, i) => (
-                <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-white/10">
-                  <img src={img.url} alt={img.label} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 duration-500">
-                    <p className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">{img.label}</p>
+                { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
+                { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
+                { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
+              ].map((sem, idx) => (
+                <div key={idx} className="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
+                  <Link href="/academy" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block">
+                    {sem.title}
+                  </Link>
+                  <div className="flex justify-between items-center mt-2 text-xs text-zinc-650 font-mono">
+                    <span>{sem.speaker}</span>
+                    <span>{sem.date}</span>
                   </div>
                 </div>
               ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* ── Mobile App Launching Soon ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="mt-32 border-t border-white/10 pt-20 pb-12"
-        >
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#0a0a0a] via-[#0d0a1a] to-[#050505] p-10 md:p-16 flex flex-col lg:flex-row items-center gap-12">
-            {/* Ambient glow */}
-            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
-            <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-teal-600/10 blur-[120px] pointer-events-none" />
-
-            {/* Left: Text + CTAs */}
-            <div className="relative z-10 flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#eab308]/30 bg-[#eab308]/10 mb-6">
-                <Smartphone className="h-3 w-3 text-[#eab308]" />
-                <span className="text-[10px] font-mono text-[#eab308] uppercase tracking-widest">iOS &amp; Android</span>
-              </div>
-
-              <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-                The Healix App
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] via-[#fde047] to-[#ca8a04]">
-                  Launching Soon
-                </span>
-              </h2>
-              <p className="text-white/50 text-base max-w-md mb-8 mx-auto lg:mx-0">
-                Your entire health &amp; safety ecosystem — AI diagnostics, BioLab reports, SheSecure SOS, and more — distilled into a single native experience.
-              </p>
-
-              {/* Store Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-                <button id="app-store-btn" className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-white text-black font-semibold hover:bg-white/90 active:scale-95 transition-all shadow-lg shadow-white/10">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" /></svg>
-                  <div className="text-left">
-                    <div className="text-[10px] opacity-70 leading-none mb-0.5">Download on the</div>
-                    <div className="text-sm font-bold leading-none">App Store</div>
-                  </div>
-                </button>
-                <button id="play-store-btn" className="flex items-center gap-3 px-6 py-3.5 rounded-xl border border-white/20 bg-white/5 text-white font-semibold hover:bg-white/10 active:scale-95 transition-all backdrop-blur-sm">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83 1-.97 1.45-.42l11 8.5c.39.3.39.86 0 1.16l-11 8.5C3.97 21.47 3 21.33 3 20.5z" opacity=".3" /><path d="M3.23 20.93 13.36 12 3.23 3.07A.99.99 0 003 3.7v16.6c0 .32.16.62.23.63zM4.16 3.27l9.08 5.24-1.96 1.96L4.16 3.27zm0 17.46 7.12-7.12 1.96 1.96-9.08 5.16zM20.84 12l-3.86 2.23-2.17-2.17 2.17-2.17L20.84 12z" /></svg>
-                  <div className="text-left">
-                    <div className="text-[10px] opacity-70 leading-none mb-0.5">Get it on</div>
-                    <div className="text-sm font-bold leading-none">Google Play</div>
-                  </div>
-                </button>
-              </div>
-
-              {/* Notify Form */}
-              <div className="flex items-center gap-2 max-w-sm mx-auto lg:mx-0">
-                <div className="relative flex-1">
-                  <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                  <input
-                    id="mobile-notify-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/60 focus:bg-white/8 transition-all"
-                  />
-                </div>
-                <button id="mobile-notify-btn" className="px-4 py-2.5 rounded-lg bg-[#eab308] hover:bg-[#ca8a04] text-black text-sm font-semibold transition-colors shrink-0">
-                  Notify Me
-                </button>
-              </div>
-
-              {/* Trust badges */}
-              <div className="flex flex-wrap gap-4 mt-8 justify-center lg:justify-start">
-                {[
-                  { label: "Zero-Knowledge Encryption", color: "text-green-400" },
-                  { label: "HIPAA Aligned", color: "text-blue-400" },
-                  { label: "Offline-First", color: "text-purple-400" },
-                ].map((badge) => (
-                  <span key={badge.label} className={`flex items-center gap-1.5 text-xs font-mono ${badge.color} opacity-80`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    {badge.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Right: Mockup Image */}
-            <div className="relative z-10 flex-1 flex items-center justify-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-                className="relative"
-              >
-                {/* Glow behind mockup */}
-                <div className="absolute inset-0 scale-75 rounded-full bg-gradient-to-tr from-purple-500/30 via-teal-500/20 to-blue-500/20 blur-3xl" />
-                <Image
-                  src="/mobile-mockup.png"
-                  alt="Healix mobile app mockup showing health dashboard and SheSecure safety map"
-                  width={520}
-                  height={520}
-                  className="relative drop-shadow-2xl w-full h-auto max-w-[520px]"
-                  priority
-                />
-              </motion.div>
             </div>
           </div>
-        </motion.div>
-      </div>
-
-      {/* ── End-to-End Animated Black Gear Strip ── */}
-      <div className="relative h-12 w-full bg-[#eab308] overflow-hidden border-y border-[#eab308] flex items-center z-[5]">
-        <motion.div 
-          animate={{ x: ["-20%", "120%"] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute top-0 left-0 h-full w-96 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-        />
-        <motion.div
-          animate={{ 
-            x: ["-10%", "110%"],
-            rotate: [0, 360 * 8]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute left-0 text-black z-10"
-        >
-          <Settings className="w-12 h-12 fill-black/10" />
-        </motion.div>
-        {/* Subtle repeating pattern background */}
-        <div className="absolute inset-0 opacity-[0.15] flex items-center gap-8 px-8 overflow-hidden pointer-events-none">
-          {Array.from({ length: 40 }).map((_, i) => (
-            <Settings key={i} className="w-6 h-6 shrink-0 text-black" />
-          ))}
         </div>
-      </div>
 
+        {/* --- SECTION 6: OUR BRANDS (Cinematic Slideshow) --- */}
+        <div className="border-t border-zinc-200 pt-16">
+          <div className="text-center mb-10">
+            <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
+              Our <span className="text-[#ea580c]">Brands</span>
+            </h2>
+            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
+          </div>
 
-      {/* Video Player Modal */}
-      <AnimatePresence>
-        {activeVideo && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4"
-            onClick={() => setActiveVideo(null)}
-          >
-            <button
-              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-              onClick={(e) => { e.stopPropagation(); setActiveVideo(null); }}
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm aspect-[9/16] bg-black border border-white/20 rounded-2xl overflow-hidden shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <video
-                src={activeVideo.url}
-                autoPlay
-                controls
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-0 inset-x-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                <p className="text-white font-mono text-sm shadow-black drop-shadow-md">{activeVideo.title}</p>
+          <div className="bg-white border border-zinc-200 rounded-none p-6 md:p-12 relative overflow-hidden shadow-sm min-h-[300px] flex items-center">
+            {/* Grid Backdrop Mesh */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full z-10">
+              {/* Brand Navigation Indicators (Left) */}
+              <div className="lg:col-span-4 flex flex-col gap-3">
+                {brands.map((brand, idx) => {
+                  const IconComponent = brand.icon || (IconMap[brand.icon_name] || Shield);
+                  const isActive = idx === activeBrandIndex;
+                  return (
+                    <button
+                      key={brand.id || idx}
+                      onClick={() => setActiveBrandIndex(idx)}
+                      className={`flex items-center gap-3 px-5 py-4 border text-left transition-all duration-300 ${
+                        isActive 
+                          ? "bg-[#ea580c]/5 border-[#ea580c] translate-x-2" 
+                          : "bg-[#fafafa] border-zinc-200 hover:border-zinc-400"
+                      }`}
+                    >
+                      <div className={`p-1.5 rounded border flex items-center justify-center ${isActive ? "text-[#ea580c] border-[#ea580c]/30 bg-[#ea580c]/10" : "text-zinc-400 border-zinc-250 bg-white"}`}>
+                        {brand.logo_url ? (
+                          <img src={brand.logo_url} alt="" className="w-4 h-4 object-contain" />
+                        ) : (
+                          <IconComponent className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div>
+                        <p className={`font-bold text-sm ${isActive ? "text-zinc-950 font-black" : "text-zinc-700"}`}>{brand.name}</p>
+                        <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">{brand.logoText || brand.logo_text}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Brand Details Card (Right) */}
+              <div className="lg:col-span-8 flex justify-center items-center">
+                <AnimatePresence mode="wait">
+                  {brands[activeBrandIndex] && (
+                    <motion.div
+                      key={activeBrandIndex}
+                      initial={{ opacity: 0, x: 20, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
+                      transition={{ duration: 0.4 }}
+                      className="w-full flex flex-col md:flex-row gap-8 items-center bg-zinc-50 border border-zinc-200 p-8 rounded-none"
+                    >
+                      {/* Big stylized logo frame */}
+                      <div className="w-36 h-36 border border-zinc-200 bg-white flex flex-col items-center justify-center shrink-0 shadow-sm relative group overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
+                        {brands[activeBrandIndex].logo_url ? (
+                          <img 
+                            src={brands[activeBrandIndex].logo_url} 
+                            alt={brands[activeBrandIndex].name} 
+                            className="w-20 h-20 object-contain mb-2" 
+                          />
+                        ) : (
+                          <div className="p-4 rounded-full border border-zinc-150 bg-zinc-50 text-zinc-600 mb-2">
+                            {React.createElement(brands[activeBrandIndex].icon || (IconMap[brands[activeBrandIndex].icon_name] || Shield), { className: "w-8 h-8 text-[#ea580c]" })}
+                          </div>
+                        )}
+                        <p className="font-mono font-black text-xs text-zinc-900 tracking-wider uppercase">{brands[activeBrandIndex].logoText || brands[activeBrandIndex].logo_text}</p>
+                      </div>
+
+                      {/* Brand descriptions */}
+                      <div className="space-y-4 text-left">
+                        <div className="inline-flex px-2 py-0.5 border border-zinc-200 text-zinc-500 font-mono text-[9px] font-bold uppercase tracking-widest bg-white">
+                          Official Entity / Brand
+                        </div>
+                        <h3 className="text-2xl font-black font-mono text-zinc-950 uppercase">{brands[activeBrandIndex].name}</h3>
+                        <p className="text-xs font-mono text-[#ea580c] uppercase font-bold tracking-wider">{brands[activeBrandIndex].role}</p>
+                        <p className="text-sm text-zinc-650 leading-relaxed font-sans">{brands[activeBrandIndex].desc || brands[activeBrandIndex].description}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION 7: PODCASTS (Animated dynamic list) --- */}
+        <div className="border-t border-zinc-200 pt-16">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-10 border-b border-zinc-200 pb-4 w-full">
+            <div className="flex items-center gap-3">
+              {/* Dancing soundwave animation */}
+              <div className="flex items-end gap-0.5 h-6 w-8 pb-1">
+                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-1 h-3" />
+                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-2 h-5" />
+                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-3 h-2" />
+                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-4 h-6" />
+                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-5 h-4" />
+              </div>
+              <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
+                Healix <span className="text-[#ea580c]">Podcasts</span>
+              </h2>
+            </div>
+            
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#ea580c]/30 bg-[#ea580c]/10 text-[#ea580c] font-mono text-[9px] font-bold uppercase tracking-wider mt-3 sm:mt-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" /> Broadcast Active
+            </span>
+          </div>
+
+          {/* Embedded internal CSS for soundwave dancing */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes soundwave-dancing {
+              0%, 100% { height: 8px; }
+              50% { height: 24px; }
+            }
+            .audio-bar-1 { animation: soundwave-dancing 0.8s ease-in-out infinite; }
+            .audio-bar-2 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.15s; }
+            .audio-bar-3 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.3s; }
+            .audio-bar-4 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.45s; }
+            .audio-bar-5 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.6s; }
+          ` }} />
+
+          {/* Grid list of podcasts */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {podcasts.map((pod) => (
+              <div 
+                key={pod.id} 
+                className="bg-white border border-zinc-200 rounded-none overflow-hidden hover:border-black transition-all group flex flex-col justify-between"
+              >
+                {/* Thumbnail with overlay play trigger */}
+                <div 
+                  className="aspect-video bg-zinc-150 relative overflow-hidden cursor-pointer"
+                  onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                >
+                  {pod.thumbnail_url ? (
+                    <img 
+                      src={pod.thumbnail_url} 
+                      alt={pod.title} 
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-white/30 text-xs font-mono">
+                      No Thumbnail
+                    </div>
+                  )}
+
+                  {/* Play badge overlays */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full border-2 border-white bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:scale-110 transition-transform duration-300 shadow-md">
+                      <Play className="w-5 h-5 text-white fill-white translate-x-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Duration label */}
+                  {pod.duration && (
+                    <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-mono font-bold tracking-wider">
+                      {pod.duration}
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-widest">Episode Broadcast</p>
+                    <h4 className="font-extrabold text-base text-zinc-950 mb-2 group-hover:text-[#ea580c] transition-colors leading-snug">
+                      {pod.title}
+                    </h4>
+                    <p className="text-xs text-zinc-650 leading-relaxed font-sans line-clamp-3">
+                      {pod.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-6">
+                    <button 
+                      onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                      className="h-8 px-4 bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 hover:bg-[#ea580c] hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300"
+                    >
+                      Watch Episode
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- CINEMATIC YOUTUBE PLAYER MODAL --- */}
+        <AnimatePresence>
+          {activePodcast && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+              onClick={() => setActivePodcast(null)}
+            >
+              <motion.div 
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-none shadow-2xl relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header title */}
+                <div className="flex items-center justify-between p-4 border-b border-zinc-900 bg-zinc-900/50">
+                  <p className="text-xs font-mono text-[#ea580c] uppercase tracking-wider font-bold">Healix Cinema Broadcast</p>
+                  <button 
+                    onClick={() => setActivePodcast(null)}
+                    className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Aspect video container */}
+                <div className="aspect-video w-full relative bg-black">
+                  <iframe 
+                    src={getEmbedUrl(activePodcast.youtube_url) + "?autoplay=1"}
+                    title={activePodcast.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full border-none"
+                  />
+                </div>
+
+                <div className="p-4 bg-zinc-900/35">
+                  <h3 className="font-extrabold text-sm text-white font-mono uppercase tracking-wide">{activePodcast.title}</h3>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 }

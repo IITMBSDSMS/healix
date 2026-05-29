@@ -51,7 +51,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
+    <div className="max-w-[94%] mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
       <div className="mb-10">
         <h1 className="text-3xl font-bold mb-2">Welcome to Healix</h1>
         <p className="text-white/60">Your central hub for intelligent healthcare and safety.</p>

@@ -1,28 +1,21 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { SplashScreen } from "@/components/layout/SplashScreen";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-  fallback: ["Inter", "system-ui", "sans-serif"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
-  fallback: ["monospace"],
-});
+const geistSans = { variable: "--font-geist-sans" };
+const geistMono = { variable: "--font-geist-mono" };
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://healix-nu.vercel.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1.0,
+  minimumScale: 1.0,
+  maximumScale: 5.0,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -106,13 +99,13 @@ export const metadata: Metadata = {
     // google: "your-google-token",
   },
   other: {
-    "theme-color": "#050505",
-    "color-scheme": "dark",
+    "theme-color": "#ffffff",
+    "color-scheme": "light",
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-status-bar-style": "default",
     "apple-mobile-web-app-title": "Healix",
-    "msapplication-TileColor": "#050505",
+    "msapplication-TileColor": "#ffffff",
   },
 };
 
@@ -131,7 +124,7 @@ const jsonLdOrg = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "Customer Support",
-    email: "healixtechnologies@gmail.com",
+    email: "office@healix-technologies.com",
     availableLanguage: ["English", "Hindi"],
   },
   founder: {
@@ -162,7 +155,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         {/* Preconnect to external origins for speed */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -182,7 +175,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[#050505] text-[#ededed] overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white text-zinc-900 overflow-x-hidden`}
       >
         <SplashScreen />
         <Navbar />

@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const all = searchParams.get("all") === "true";
 
   let query = supabase
-    .from("mentors")
+    .from("team_members")
     .select("*")
     .order("display_order", { ascending: true });
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const { data, error } = await adminSupabase
-    .from("mentors")
+    .from("team_members")
     .insert([body])
     .select()
     .single();

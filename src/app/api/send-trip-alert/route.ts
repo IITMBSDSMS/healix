@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // Instead of a static Maps link, we now send them to our Live Tracking Dashboard
     const trackingLink = `${siteUrl}/track/${vehicleId}`;
 
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'healixtechnologies@gmail.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
     const data = await resend.emails.send({
       from: 'Healix Suraksha <onboarding@resend.dev>',
       to: [ADMIN_EMAIL],

@@ -13,13 +13,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = await params;
-  const body = await req.json();
-
-  // 2. Perform write with admin client (bypasses RLS issues)
+  // 2. Perform update
   const adminSupabase = createAdminClient();
+  const body = await req.json();
+  const { id } = await params;
+
   const { data, error } = await adminSupabase
-    .from("mentors")
+    .from("brands")
     .update(body)
     .eq("id", id)
     .select()
@@ -30,7 +30,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   // 1. Authenticate user
@@ -40,11 +40,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // 2. Perform delete
+  const adminSupabase = createAdminClient();
   const { id } = await params;
 
-  // 2. Perform write with admin client (bypasses RLS issues)
-  const adminSupabase = createAdminClient();
-  const { error } = await adminSupabase.from("mentors").delete().eq("id", id);
+  const { error } = await adminSupabase
+    .from("brands")
+    .delete()
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

@@ -129,14 +129,35 @@ button, a {
   box-shadow: 0 4px 40px rgba(0,0,0,0.4);
 }
 
+.healix-card-light {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+  will-change: transform;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+}
+
 .healix-card-glow {
   --mouse-x: 50%;
   --mouse-y: 50%;
 }
 
 .healix-card-glow:hover {
-  border-color: rgba(234,179,8,0.18);
-  box-shadow: 0 8px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(234,179,8,0.06);
+  border-color: rgba(234,88,12,0.25);
+}
+
+.healix-card.healix-card-glow:hover {
+  box-shadow: 0 8px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(234,88,12,0.10);
+}
+
+.healix-card-light.healix-card-glow:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(234,88,12,0.10);
 }
 
 /* Radial spotlight that follows the cursor */
@@ -148,7 +169,7 @@ button, a {
   transition: opacity 0.4s ease;
   background: radial-gradient(
     600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(234,179,8,0.07) 0%,
+    rgba(234,88,12,0.10) 0%,
     transparent 70%
   );
   pointer-events: none;
@@ -1009,4 +1030,187 @@ button, a {
   .ai-sidebar { display: none; }
   .ai-sidebar-toggle { display: none; }
 }
+
+/* =============================================
+   SCOPED ADMIN CONSOLE STYLING POLISH
+   ============================================= */
+.admin-console {
+  background: #09090b !important;
+}
+
+/* Typography Modernization */
+.admin-console h1,
+.admin-console h2,
+.admin-console h3,
+.admin-console h4 {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-weight: 700 !important;
+}
+
+/* Soft Rounded Components */
+.admin-console button,
+.admin-console a,
+.admin-console input,
+.admin-console textarea,
+.admin-console select,
+.admin-console .healix-card,
+.admin-console .rounded-sm,
+.admin-console .rounded-md,
+.admin-console .rounded-lg {
+  border-radius: 12px !important;
+}
+
+.admin-console .w-64 {
+  background: #09090b !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.admin-console .flex-1 {
+  background: #0c0c0e !important;
+}
+
+.admin-console .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.admin-console .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.admin-console .text-white\/50 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Coral Gradient Accents */
+.admin-console .bg-\[\#ea580c\],
+.admin-console .text-\[\#ea580c\],
+.admin-console .bg-orange-600 {
+  background-color: #f95d39 !important;
+}
+
+.admin-console .text-orange-400 {
+  color: #f97316 !important;
+}
+
+.admin-console .border-orange-500\/20 {
+  border-color: rgba(249, 93, 57, 0.2) !important;
+}
+
+.admin-console .shadow-\[0_0_30px_rgba\(234\,88\,12\,0\.05\)\] {
+  box-shadow: 0 10px 30px rgba(249, 93, 57, 0.04) !important;
+}
+
+.admin-console .bg-orange-500\/10 {
+  background-color: rgba(249, 93, 57, 0.1) !important;
+}
+
+/* Modern Input Controls */
+.admin-console input,
+.admin-console textarea,
+.admin-console select {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-console input:focus,
+.admin-console textarea:focus,
+.admin-console select:focus {
+  border-color: rgba(249, 93, 57, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(249, 93, 57, 0.15) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  outline: none !important;
+}
+
+/* Premium Dashboard Cards */
+.admin-console .healix-card {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.admin-console .healix-card:hover {
+  border-color: rgba(249, 93, 57, 0.2) !important;
+  transform: translateY(-2px);
+}
+
+/* Beautiful Interactive Tables */
+.admin-console table {
+  border-collapse: separate !important;
+  border-spacing: 0 6px !important;
+}
+
+.admin-console th {
+  font-family: var(--font-sans), sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 8px 16px !important;
+}
+
+.admin-console td {
+  padding: 14px 16px !important;
+  background: rgba(255, 255, 255, 0.015) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.03) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+}
+
+.admin-console td:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.03) !important;
+  border-top-left-radius: 10px !important;
+  border-bottom-left-radius: 10px !important;
+}
+
+.admin-console td:last-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.03) !important;
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+}
+
+.admin-console tr:hover td {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Action Button Gradients */
+.admin-console .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.admin-console .bg-white\/5:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-console button[type="submit"],
+.admin-console .bg-orange-600,
+.admin-console .bg-emerald-600,
+.admin-console .bg-purple-600,
+.admin-console .bg-blue-600 {
+  background-image: linear-gradient(135deg, #f95d39 0%, #f97316 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(249, 93, 57, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-console button[type="submit"]:hover,
+.admin-console .bg-orange-600:hover,
+.admin-console .bg-emerald-600:hover,
+.admin-console .bg-purple-600:hover,
+.admin-console .bg-blue-600:hover {
+  opacity: 0.95 !important;
+  box-shadow: 0 6px 16px rgba(249, 93, 57, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
 

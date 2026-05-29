@@ -10,14 +10,16 @@ interface GlassCardProps extends Omit<HTMLMotionProps<"div">, "onAnimationStart"
   glowOnHover?: boolean;
   glowColor?: string;
   delay?: number;
+  variant?: "dark" | "light";
 }
 
 export function GlassCard({
   children,
   className,
   glowOnHover = true,
-  glowColor = "rgba(234,179,8,0.08)",
+  glowColor = "rgba(234,88,12,0.1)",
   delay = 0,
+  variant = "dark",
   ...props
 }: GlassCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -41,7 +43,7 @@ export function GlassCard({
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.7, delay, ease: "easeOut" }}
       className={cn(
-        "healix-card",
+        variant === "light" ? "healix-card-light" : "healix-card",
         glowOnHover && "healix-card-glow",
         className
       )}

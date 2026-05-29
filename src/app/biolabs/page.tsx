@@ -11,30 +11,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { getBiolabsContent } from "./actions";
 
-// Formal Announcements Data
-const announcements = [
-  "Important Announcement: Proposal submission for 2026 BioLabs Incubator will start from 15th June.",
-  "Advertisement No. 04/2026: Healix BioLabs invites applications for Junior Research Fellows (JRF).",
-  "High Performance Computing (HPC) Workshop scheduled for 10th-12th July 2026. Apply Here.",
-  "Online Registration Open for Summer Training Programme - 2026 at Healix BioLabs."
-];
-
-// Slider Images
-const sliderImages = [
-  { id: 1, src: "/biolabs/hero_dna.png", caption: "Next-Gen Genomics & CRISPR Sequencing Facilities" },
-  { id: 2, src: "/biolabs/ai_medical.png", caption: "AI Diagnostics & Predictive Modeling Center" },
-  { id: 3, src: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=1200&auto=format&fit=crop", caption: "Advanced Laboratory Research & Micro-analysis" }
-];
-
 // Research Areas (IUAC style)
 const researchAreas = [
-  { title: "AI in Healthcare", icon: <Cpu className="h-6 w-6 text-[#eab308]" />, desc: "Predictive diagnostics and generative models for oncology and rare diseases." },
-  { title: "Genomics & Sequencing", icon: <Dna className="h-6 w-6 text-[#ca8a04]" />, desc: "High-throughput sequencing and personalized genetic medicine profiling." },
-  { title: "Safety Systems (IoT)", icon: <Shield className="h-6 w-6 text-[#eab308]" />, desc: "IoT and behavioral analysis for real-time personal security monitoring." },
-  { title: "Data Intelligence", icon: <Database className="h-6 w-6 text-[#ca8a04]" />, desc: "Secure interoperability and scalable health data lakes for ML training." },
+  { title: "AI in Healthcare", icon: <Cpu className="h-5 w-5 text-[#ea580c]" />, desc: "Predictive diagnostics and generative models for oncology and rare diseases." },
+  { title: "Genomics & Sequencing", icon: <Dna className="h-5 w-5 text-[#ea580c]" />, desc: "High-throughput sequencing and personalized genetic medicine profiling." },
+  { title: "Safety Systems (IoT)", icon: <Shield className="h-5 w-5 text-[#ea580c]" />, desc: "IoT and behavioral analysis for real-time personal security monitoring." },
+  { title: "Data Intelligence", icon: <Database className="h-5 w-5 text-[#ea580c]" />, desc: "Secure interoperability and scalable health data lakes for ML training." },
 ];
 
-// Facilities (Kept static as it wasn't moved to DB)
+// Facilities
 const facilities = [
   "High Performance Computing Lab", "Advanced AI Modeling Clusters", 
   "Predictive Diagnostics Lab", "IoT Device Fabrication Unit",
@@ -77,7 +62,6 @@ export default function BioLabsPage() {
   }, []);
 
   useEffect(() => {
-    // Only cycle slides if we have photos to show
     if (dynamicPhotos.length === 0) return;
     const slideInterval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % dynamicPhotos.length);
@@ -86,53 +70,48 @@ export default function BioLabsPage() {
   }, [dynamicPhotos]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white/90 font-sans pb-24">
+    <div className="relative min-h-screen bg-white text-zinc-900 font-sans pb-24 selection:bg-yellow-500/20">
       
-      {/* 1. Announcements Ticker (IUAC Style) */}
-      <div className="bg-[#eab308]/10 border-b border-[#eab308]/20 py-2 overflow-hidden flex items-center">
-        <div className="bg-[#eab308] px-4 py-1 text-xs font-bold text-black uppercase tracking-wider shrink-0 z-10 relative shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
-          Announcements
+      {/* Background Grids */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
+      <div className="absolute inset-0 bg-dot-pattern opacity-[0.02] pointer-events-none" />
+
+      {/* 1. Announcements Ticker (Bright Orange/Yellow Style) */}
+      <div className="relative z-20 w-full bg-zinc-50 border-b border-zinc-200 py-2.5 overflow-hidden flex items-center shadow-sm">
+        <div className="flex items-center gap-2 px-5 border-r border-zinc-200 shrink-0 z-10 bg-[#ea580c] text-white py-1 font-mono font-bold text-xs uppercase tracking-wider shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          <span>Announcements</span>
         </div>
-        <div className="flex-1 overflow-hidden relative h-6">
-          <style>{`
-            @keyframes marquee {
-              0% { transform: translateX(100%); }
-              100% { transform: translateX(-100%); }
-            }
-            .animate-marquee {
-              animation: marquee 35s linear infinite;
-              display: inline-block;
-              white-space: nowrap;
-            }
-            .animate-marquee:hover {
-              animation-play-state: paused;
-            }
-          `}</style>
-          <div className="animate-marquee text-sm text-[#eab308]/80 absolute w-full flex">
+        <div className="flex-1 overflow-hidden relative h-5">
+          <div className="animate-marquee flex gap-16 text-xs text-zinc-700 font-mono">
             {dynamicAnnouncements.map((announcement, idx) => (
-              <span key={idx} className="mx-8 whitespace-nowrap">
-                • {announcement.content}
+              <span key={idx} className="whitespace-nowrap flex items-center gap-2">
+                <span className="text-[#ea580c] font-bold">•</span>
+                {announcement.content}
               </span>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+      <div className="max-w-[94%] mx-auto px-4 sm:px-6 lg:px-8 mt-16 relative z-10">
         
         {/* 2. Formal Header */}
-        <div className="flex flex-col items-center justify-center text-center mb-12">
-          <div className="inline-flex items-center justify-center rounded-full mb-6 border border-white/20 bg-[#0a0a0a] overflow-hidden h-20 w-20">
-            <Image src="/biolabs-logo.png" alt="Healix BioLabs" width={80} height={80} className="object-cover" />
+        <div className="flex flex-col items-center justify-center text-center mb-16">
+          <div className="inline-flex items-center justify-center rounded-2xl mb-6 border border-zinc-200 bg-zinc-50 p-3 h-20 w-20 shadow-sm">
+            <Image src="/biolabs-logo.png" alt="Healix BioLabs" width={64} height={64} className="object-contain" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 tracking-tight font-mono">Healix BioLabs Accelerator</h1>
-          <p className="text-white/40 max-w-3xl text-xs md:text-sm uppercase tracking-[0.2em] font-mono">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea580c]/10 border border-[#ea580c]/20 rounded-full text-[#ea580c] text-[10px] font-mono tracking-wider uppercase mb-3">
+            Research Accelerator
+          </div>
+          <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight font-mono text-zinc-950 uppercase">Healix BioLabs Accelerator</h1>
+          <p className="text-zinc-600 max-w-3xl text-xs md:text-sm uppercase tracking-[0.2em] font-mono">
             Inter-Disciplinary Centre for Advanced Healthcare AI & Safety Systems
           </p>
         </div>
 
         {/* 3. Hero Slider */}
-        <div className="relative w-full h-[400px] md:h-[500px] rounded-sm overflow-hidden mb-16 border border-white/10 bg-[#0a0a0a]">
+        <div className="relative w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden mb-20 border border-zinc-200 bg-zinc-50 shadow-lg group/slider">
           {dynamicPhotos.length > 0 && (
             <AnimatePresence mode="wait">
               <motion.div
@@ -140,7 +119,7 @@ export default function BioLabsPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 1 }}
+                transition={{ duration: 0.8 }}
                 className="absolute inset-0"
               >
                 <img 
@@ -148,12 +127,13 @@ export default function BioLabsPage() {
                   alt={dynamicPhotos[currentSlide]?.title || 'Photo'} 
                   className="w-full h-full object-cover opacity-80"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-8 px-8">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-8 md:p-10 flex flex-col justify-end">
                   <motion.h2 
-                    initial={{ y: 20, opacity: 0 }}
+                    initial={{ y: 15, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-white font-bold text-2xl tracking-wide border-l-4 border-[#eab308] pl-4"
+                    transition={{ delay: 0.2 }}
+                    className="text-white font-bold text-xl md:text-2xl tracking-tight border-l-3 border-[#ea580c] pl-4 font-mono uppercase"
                   >
                     {dynamicPhotos[currentSlide]?.title}
                   </motion.h2>
@@ -162,19 +142,29 @@ export default function BioLabsPage() {
             </AnimatePresence>
           )}
           
-          <button onClick={() => setCurrentSlide(prev => {
-            const max = Math.max(0, dynamicPhotos.length - 1);
-            return prev <= 0 ? max : prev - 1;
-          })} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
-            <ChevronLeft className="h-6 w-6" />
+          <button 
+            onClick={() => setCurrentSlide(prev => {
+              const max = Math.max(0, dynamicPhotos.length - 1);
+              return prev <= 0 ? max : prev - 1;
+            })} 
+            className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-[#ea580c] border border-zinc-800 text-white hover:text-white transition-all rounded-lg flex items-center justify-center cursor-pointer z-20"
+          >
+            <ChevronLeft className="h-5 w-5" />
           </button>
-          <button onClick={() => setCurrentSlide(prev => (prev + 1) % Math.max(1, dynamicPhotos.length))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-[#eab308] hover:text-black transition-colors text-white rounded">
-            <ChevronRight className="h-6 w-6" />
+          <button 
+            onClick={() => setCurrentSlide(prev => (prev + 1) % Math.max(1, dynamicPhotos.length))} 
+            className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-[#ea580c] border border-zinc-800 text-white hover:text-white transition-all rounded-lg flex items-center justify-center cursor-pointer z-20"
+          >
+            <ChevronRight className="h-5 w-5" />
           </button>
           
-          <div className="absolute bottom-4 right-8 flex gap-2">
+          <div className="absolute bottom-6 right-8 flex gap-1.5 z-20">
             {dynamicPhotos.map((_, idx) => (
-              <button key={idx} onClick={() => setCurrentSlide(idx)} className={`w-3 h-3 transition-colors ${idx === currentSlide ? 'bg-[#eab308]' : 'bg-white/30 hover:bg-white/60'}`} />
+              <button 
+                key={idx} 
+                onClick={() => setCurrentSlide(idx)} 
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-yellow-500 w-6' : 'bg-white/40 hover:bg-white/70'}`} 
+              />
             ))}
           </div>
         </div>
@@ -182,44 +172,64 @@ export default function BioLabsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-8">
           
           {/* Main Content (Left Column) */}
-          <div className="lg:col-span-8 space-y-12">
+          <div className="lg:col-span-8 space-y-16">
             
             {/* About Section */}
-            <section className="prose prose-invert max-w-none">
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">About Healix BioLabs</h2>
-              <p className="text-white/70 leading-relaxed text-justify mb-4">
+            <section className="prose max-w-none">
+              <div>
+                <h2 className="text-lg font-black tracking-tight text-zinc-950 font-mono uppercase flex items-center gap-2">
+                  <span className="w-1.5 h-4.5 bg-[#ea580c] inline-block" />
+                  About Healix BioLabs
+                </h2>
+                <div className="w-16 h-1 bg-[#ea580c] mt-2 rounded-full" />
+              </div>
+              
+              <p className="text-zinc-700 leading-relaxed text-justify mb-4 text-xs sm:text-sm mt-6">
                 Healix BioLabs was established as a premier inter-disciplinary research centre to provide front-ranking, technology-driven research facilities. Its primary objective is to create possibilities for internationally competitive research in Artificial Intelligence, predictive healthcare, and advanced personal safety systems.
               </p>
-              <p className="text-white/70 leading-relaxed text-justify">
+              <p className="text-zinc-700 leading-relaxed text-justify text-xs sm:text-sm">
                 The Centre has been playing a pivotal role within the innovation ecosystem, where the scientific community and technology visionaries work together in a genuinely multidisciplinary environment. From its founding, Healix BioLabs has been committed to open, rigorous, and intense inquiry.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                <GlassCard className="p-6 border-[#ca8a04]/20 bg-[#ca8a04]/5 rounded-sm">
-                  <h3 className="text-lg font-bold text-[#ca8a04] mb-2">Our Vision</h3>
-                  <p className="text-sm text-white/70">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-xl hover:shadow-sm transition-all duration-300">
+                  <h3 className="text-sm font-bold text-[#ea580c] mb-2 flex items-center gap-2 font-mono uppercase">
+                    <span className="w-1.5 h-3 bg-[#ea580c] rounded-full" />
+                    Our Vision
+                  </h3>
+                  <p className="text-xs leading-relaxed text-zinc-600">
                     We open new windows to young minds and strengthen the pool of scientists by building a brighter future through technological understanding and AI-driven biological research.
                   </p>
-                </GlassCard>
-                <GlassCard className="p-6 border-[#eab308]/20 bg-[#eab308]/5 rounded-sm">
-                  <h3 className="text-lg font-bold text-[#eab308] mb-2">Our Mission</h3>
-                  <p className="text-sm text-white/70">
+                </div>
+                <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-xl hover:shadow-sm transition-all duration-300">
+                  <h3 className="text-sm font-bold text-[#ea580c] mb-2 flex items-center gap-2 font-mono uppercase">
+                    <span className="w-1.5 h-3 bg-[#ea580c] rounded-full" />
+                    Our Mission
+                  </h3>
+                  <p className="text-xs leading-relaxed text-zinc-600">
                     In the quest for innovation and capacity building, our mission is to provide necessary powerful computing tools used by scientists to understand the complexities of modern healthcare data.
                   </p>
-                </GlassCard>
+                </div>
               </div>
             </section>
 
             {/* Research Areas */}
             <section>
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">Core Research Areas</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <h2 className="text-lg font-black tracking-tight text-zinc-950 font-mono uppercase flex items-center gap-2">
+                  <span className="w-1.5 h-4.5 bg-[#ea580c] inline-block" />
+                  Core Research Areas
+                </h2>
+                <div className="w-16 h-1 bg-[#ea580c] mt-2 rounded-full" />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
                 {researchAreas.map((area, idx) => (
-                  <div key={idx} className="flex gap-4 p-4 bg-white/5 border border-white/5 hover:border-purple-500/30 transition-colors rounded-sm group">
-                    <div className="mt-1 p-2 bg-black rounded shrink-0">{area.icon}</div>
+                  <div key={idx} className="flex gap-4 p-5 bg-white border border-zinc-200 rounded-xl hover:border-[#ea580c]/30 hover:shadow-sm transition-all duration-300 group">
+                    <div className="mt-0.5 p-2 bg-zinc-50 rounded-lg border border-zinc-150 shrink-0 flex items-center justify-center h-10 w-10">{area.icon}</div>
                     <div>
-                      <h3 className="font-bold text-base group-hover:text-[#eab308] transition-colors">{area.title}</h3>
-                      <p className="text-sm text-white/60 mt-2 leading-relaxed">{area.desc}</p>
+                      <h3 className="font-bold text-xs text-zinc-900 group-hover:text-[#ea580c] transition-colors font-mono uppercase tracking-wide">{area.title}</h3>
+                      <p className="text-[11px] text-zinc-700 mt-2 leading-relaxed">{area.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -228,15 +238,22 @@ export default function BioLabsPage() {
 
             {/* Outreach & Training */}
             <section>
-              <h2 className="text-2xl font-bold border-b border-white/10 pb-4 mb-6 text-[#eab308]">Outreach Programs</h2>
-              <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-black tracking-tight text-zinc-950 font-mono uppercase flex items-center gap-2">
+                  <span className="w-1.5 h-4.5 bg-[#ea580c] inline-block" />
+                  Outreach Programs
+                </h2>
+                <div className="w-16 h-1 bg-[#ea580c] mt-2 rounded-full" />
+              </div>
+              
+              <div className="space-y-4 mt-8">
                 {dynamicPrograms.map((prog, idx) => (
-                  <div key={idx} className="p-5 border-l-4 border-blue-500 bg-white/5 flex justify-between items-center group hover:bg-white/10 transition-colors">
+                  <div key={idx} className="p-6 border border-zinc-200 bg-zinc-50/50 rounded-xl flex justify-between items-center group hover:bg-zinc-50 hover:border-zinc-300 transition-all duration-300">
                     <div>
-                      <h3 className="font-bold text-lg group-hover:text-blue-400 transition-colors">{prog.title}</h3>
-                      <p className="text-sm text-white/60 mt-1">{prog.description}</p>
+                      <h3 className="font-bold text-xs text-zinc-900 group-hover:text-[#ea580c] transition-colors font-mono uppercase">{prog.title}</h3>
+                      <p className="text-[11px] text-zinc-700 mt-1.5 leading-relaxed">{prog.description}</p>
                     </div>
-                    <Link href="/biolabs/dashboard" className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-[#eab308]/20 text-[#eab308] group-hover:bg-[#eab308] group-hover:text-black transition-colors">
+                    <Link href="/biolabs/dashboard" className="h-9 px-4 text-[10px] font-mono uppercase tracking-wider bg-[#ea580c] text-white hover:bg-[#c2410c] rounded-lg transition-all duration-300 flex items-center">
                       Apply / Details
                     </Link>
                   </div>
@@ -250,47 +267,50 @@ export default function BioLabsPage() {
           <div className="lg:col-span-4 space-y-8">
             
             {/* Director's Message */}
-            <GlassCard className="p-6 border-white/10 rounded-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#eab308] to-[#ca8a04]" />
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5 text-[#eab308]" /> Director's Message
+            <div className="bg-white border border-zinc-200 p-6 rounded-xl relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-[#ea580c]" />
+              <h3 className="font-bold text-xs text-zinc-950 mb-4 flex items-center gap-2 font-mono uppercase tracking-wider">
+                <Users className="h-4.5 w-4.5 text-[#ea580c]" /> Director's Message
               </h3>
-              <div className="flex gap-4 mb-4">
-                <div className="w-16 h-16 bg-white/10 rounded border border-white/20 shrink-0 flex items-center justify-center">
-                  <UserAvatarIcon />
+              <div className="flex gap-4 mb-4 items-center">
+                <div className="w-11 h-11 bg-zinc-100 rounded-lg border border-zinc-200 shrink-0 flex items-center justify-center text-zinc-400">
+                  <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Dr. A. C. Research Director</p>
-                  <p className="text-xs text-[#eab308]">Head of Healix BioLabs</p>
+                  <p className="font-bold text-xs text-zinc-900 font-mono">Dr. A. C. Research Director</p>
+                  <p className="text-[9px] font-mono text-[#ea580c] uppercase">Head of Healix BioLabs</p>
                 </div>
               </div>
-              <p className="text-xs text-white/70 italic leading-relaxed text-justify mb-4">
+              <p className="text-[11px] text-zinc-700 italic leading-relaxed text-justify mb-4">
                 "With experience in the field of AI-driven science, Healix BioLabs has earned its reputation of excellence. Our primary objective is to establish world-class facilities for accelerator-based research, promoting group activities and human research development."
               </p>
-              <Link href="/about" className="text-xs text-[#eab308] hover:text-[#ca8a04] font-bold uppercase tracking-wider">Read Full Message →</Link>
-            </GlassCard>
+              <Link href="/about" className="h-8 text-[10px] text-[#ea580c] hover:text-[#c2410c] font-bold uppercase tracking-wider inline-flex items-center gap-1 font-mono">
+                Read Full Message <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
 
-            {/* Quick Links / Facilities */}
-            <GlassCard className="p-6 border-white/10 rounded-sm">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Network className="h-5 w-5 text-[#ca8a04]" /> Research Facilities
+            {/* Research Facilities */}
+            <div className="bg-white border border-zinc-200 p-6 rounded-xl shadow-sm">
+              <h3 className="font-bold text-xs text-zinc-950 mb-4 flex items-center gap-2 font-mono uppercase tracking-wider">
+                <Network className="h-4.5 w-4.5 text-[#ea580c]" /> Research Facilities
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1.5">
                 {facilities.map((fac, idx) => (
-                  <li key={idx} className="text-sm text-white/70 hover:text-white hover:bg-white/5 p-2 rounded cursor-pointer transition-colors border-b border-white/5 last:border-0 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#eab308] rounded-full inline-block" />
+                  <li key={idx} className="text-xs text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 p-2 rounded-lg cursor-pointer transition-all duration-200 border-b border-zinc-100 last:border-0 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#ea580c] rounded-full inline-block" />
                     {fac}
                   </li>
                 ))}
               </ul>
-            </GlassCard>
+            </div>
 
             {/* Application Portal Link */}
-            <div className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 p-6 rounded-sm border border-purple-500/30 text-center">
-              <GraduationCap className="h-10 w-10 text-white/80 mx-auto mb-3" />
-              <h3 className="font-bold text-lg mb-2">User Application Portal</h3>
-              <p className="text-xs text-white/60 mb-4">Access the user dashboard to submit research proposals and view facility schedules.</p>
-              <Link href="/biolabs/dashboard" className="block w-full py-2 bg-[#eab308] hover:bg-[#ca8a04] text-black font-bold text-sm uppercase tracking-wider transition-colors shadow-lg rounded-sm">
+            <div className="bg-zinc-950 p-6 rounded-xl border border-zinc-900 text-center shadow-md relative overflow-hidden">
+              <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+              <GraduationCap className="h-8 w-8 text-zinc-400 mx-auto mb-3" />
+              <h3 className="font-bold text-xs text-white mb-1 font-mono uppercase tracking-wider">User Application Portal</h3>
+              <p className="text-[11px] text-zinc-400 mb-4 leading-relaxed">Access the user dashboard to submit research proposals and view facility schedules.</p>
+              <Link href="/biolabs/dashboard" className="w-full py-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-xs uppercase tracking-wider transition-all rounded-lg flex items-center justify-center shadow-md">
                 Login to Dashboard
               </Link>
             </div>
@@ -299,71 +319,76 @@ export default function BioLabsPage() {
 
         </div>
 
-        {/* --- CUSTOM 3-COLUMN SECTION (IUAC Inspired) --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 mt-20 shadow-2xl relative">
+        {/* --- CUSTOM 3-COLUMN SECTION (Bright Theme Unification) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 mt-28 rounded-2xl border border-zinc-200 overflow-hidden shadow-md relative bg-white">
           
           {/* Left Column: Photos / Videos */}
-          <div className="lg:col-span-5 bg-[#1a1a1a] p-8 text-white min-h-[450px] flex flex-col justify-between border border-white/5">
-            <div className="flex gap-6 mb-6">
-              <h3 className="text-2xl font-bold border-b-2 border-white pb-1">Photos</h3>
-              <h3 className="text-2xl font-bold text-white/50 hover:text-white/80 cursor-pointer pb-1 transition-colors">Videos</h3>
+          <div className="lg:col-span-5 bg-zinc-50 p-8 text-zinc-900 min-h-[450px] flex flex-col justify-between border-r border-zinc-200">
+            <div className="flex gap-6 mb-6 border-b border-zinc-200 pb-3">
+              <h3 className="text-sm font-black text-zinc-950 border-b-2 border-[#ea580c] pb-3 translate-y-[13px] font-mono uppercase tracking-wider">Photos</h3>
+              <h3 className="text-sm font-bold text-zinc-400 hover:text-zinc-700 cursor-pointer pb-3 translate-y-[13px] transition-colors font-mono uppercase tracking-wider">Videos</h3>
             </div>
             
-            <div className="bg-white text-black rounded-sm overflow-hidden flex-1 flex flex-col shadow-lg">
-              <div className="h-48 bg-slate-200 relative">
+            <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm">
+              <div className="h-44 bg-zinc-100 relative">
                 {dynamicPhotos.length > 0 && (
                   <Image src={dynamicPhotos[0]?.image_url || '/placeholder.png'} alt={dynamicPhotos[0]?.title || 'Photo'} fill style={{ objectFit: 'cover' }} className="opacity-90" />
                 )}
               </div>
-              <div className="p-4 flex-1 font-bold text-lg flex items-center">
+              <div className="p-4 flex-1 font-bold text-xs text-zinc-800 flex items-center font-mono">
                 {dynamicPhotos.length > 0 ? dynamicPhotos[0]?.title : "Healix BioLabs Foundation Day"}
               </div>
             </div>
 
             <div className="flex justify-between items-center mt-6">
-              <button className="px-6 py-2 border border-white/30 rounded-full hover:bg-white/10 transition-colors text-sm">View All</button>
-              <div className="flex gap-2">
-                <button className="p-2 rounded-full border border-white/30 hover:bg-white/10 transition-colors"><ChevronLeft className="h-4 w-4" /></button>
-                <button className="p-2 rounded-full border border-white/30 hover:bg-white/10 transition-colors"><ChevronRight className="h-4 w-4" /></button>
+              <button className="h-8 px-4 border border-zinc-300 rounded-lg hover:bg-zinc-100 text-xs font-mono uppercase font-bold tracking-wider">View All</button>
+              <div className="flex gap-1.5">
+                <button className="w-8 h-8 rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors flex items-center justify-center cursor-pointer"><ChevronLeft className="h-4 w-4" /></button>
+                <button className="w-8 h-8 rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors flex items-center justify-center cursor-pointer"><ChevronRight className="h-4 w-4" /></button>
               </div>
             </div>
           </div>
 
-          {/* Middle Column: Events (Overlapping Card) */}
-          <div className="lg:col-span-3 relative lg:-mt-6 lg:-mb-6 z-10 bg-white text-slate-900 rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex flex-col border border-slate-200">
+          {/* Middle Column: Events */}
+          <div className="lg:col-span-3 bg-zinc-50 text-zinc-900 flex flex-col border-r border-zinc-200">
             {dynamicEvents.length > 0 && (
               <>
-                <div className="h-32 bg-slate-200 relative shrink-0">
+                <div className="h-32 bg-zinc-100 relative shrink-0 border-b border-zinc-200">
                   <Image src={dynamicEvents[currentEvent]?.image_url || '/placeholder.png'} alt="Event" fill style={{ objectFit: 'cover' }} />
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-2xl font-black tracking-tight">Events</h3>
-                    <span className="text-xs text-slate-400 font-mono">{currentEvent + 1} / {dynamicEvents.length}</span>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3 border-b border-zinc-200 pb-2">
+                      <h3 className="text-[10px] font-mono font-bold tracking-wider text-[#ea580c] uppercase">Events</h3>
+                      <span className="text-[10px] text-zinc-400 font-mono">{currentEvent + 1} / {dynamicEvents.length}</span>
+                    </div>
+                    <h4 className="font-bold text-xs text-zinc-800 mb-2 leading-snug font-mono">{dynamicEvents[currentEvent]?.title}</h4>
+                    <p className="text-[11px] text-zinc-600 mb-4 leading-relaxed line-clamp-4">
+                      {dynamicEvents[currentEvent]?.description}
+                    </p>
                   </div>
-                  <h4 className="font-bold text-sm mb-3">{dynamicEvents[currentEvent]?.title}</h4>
-                  <p className="text-xs text-slate-600 mb-6 leading-relaxed flex-1">
-                    {dynamicEvents[currentEvent]?.description}
-                  </p>
-                  <p className="text-xs font-semibold text-orange-600 mb-6">
-                    {dynamicEvents[currentEvent]?.start_date && new Date(dynamicEvents[currentEvent].start_date).toLocaleDateString()} to {dynamicEvents[currentEvent]?.end_date && new Date(dynamicEvents[currentEvent].end_date).toLocaleDateString()}
-                  </p>
                   
-                  <div className="flex justify-between items-center">
-                    <button className="px-5 py-1.5 border border-orange-500 text-orange-600 rounded-full hover:bg-orange-50 transition-colors text-xs font-semibold">View All</button>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentEvent(prev => (prev === 0 ? dynamicEvents.length - 1 : prev - 1))}
-                        className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setCurrentEvent(prev => (prev + 1) % dynamicEvents.length)}
-                        className="p-1.5 rounded-full border border-orange-200 text-orange-400 hover:bg-orange-50 transition-colors"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                  <div>
+                    <p className="text-[9px] font-mono text-[#ea580c] mb-4 font-bold">
+                      {dynamicEvents[currentEvent]?.start_date && new Date(dynamicEvents[currentEvent].start_date).toLocaleDateString()} to {dynamicEvents[currentEvent]?.end_date && new Date(dynamicEvents[currentEvent].end_date).toLocaleDateString()}
+                    </p>
+                    
+                    <div className="flex justify-between items-center">
+                      <button className="h-7 px-3 border border-[#ea580c] text-[#ea580c] rounded-lg hover:bg-orange-50 transition-colors text-[9px] font-mono uppercase tracking-wider font-bold">View All</button>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setCurrentEvent(prev => (prev === 0 ? dynamicEvents.length - 1 : prev - 1))}
+                          className="w-7 h-7 rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-100 transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentEvent(prev => (prev + 1) % dynamicEvents.length)}
+                          className="w-7 h-7 rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-100 transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -372,44 +397,46 @@ export default function BioLabsPage() {
           </div>
 
           {/* Right Column: What's New */}
-          <div className="lg:col-span-4 bg-slate-50 p-8 text-slate-900 min-h-[450px] flex flex-col border border-slate-200 lg:border-l-0">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black tracking-tight">What&apos;s New</h3>
-              <button className="text-xs font-semibold text-orange-600 flex items-center gap-1 hover:text-orange-700">PAUSE <span className="text-lg">||</span></button>
-            </div>
-            
-            <div className="space-y-4 flex-1">
-              {dynamicNews.map((newsItem, idx) => (
-                <div key={idx} className={idx < dynamicNews.length - 1 ? "border-b border-slate-200 pb-4" : "pb-4"}>
-                  <p className="text-sm text-slate-700 hover:text-blue-600 cursor-pointer transition-colors">
-                    {newsItem.title} {newsItem.is_document && `📄 ( ${newsItem.file_size} )`}
-                  </p>
-                </div>
-              ))}
+          <div className="lg:col-span-4 bg-zinc-50 p-8 text-zinc-900 min-h-[450px] flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-6 border-b border-zinc-200 pb-3">
+                <h3 className="text-sm font-black text-zinc-950 font-mono uppercase tracking-wider">What&apos;s New</h3>
+                <button className="text-[9px] font-mono tracking-wider text-zinc-500 hover:text-zinc-800 flex items-center gap-1 uppercase">PAUSE <span className="text-xs">||</span></button>
+              </div>
+              
+              <div className="space-y-4">
+                {dynamicNews.map((newsItem, idx) => (
+                  <div key={idx} className={idx < dynamicNews.length - 1 ? "border-b border-zinc-200 pb-3" : "pb-3"}>
+                    <p className="text-xs text-zinc-700 hover:text-[#ea580c] cursor-pointer transition-colors leading-relaxed">
+                      {newsItem.title} {newsItem.is_document && <span className="text-[10px] text-zinc-400 font-mono">📄 ({newsItem.file_size})</span>}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="mt-4">
-              <button className="px-6 py-2 border border-orange-500 text-orange-600 rounded-full hover:bg-orange-50 transition-colors text-sm font-semibold">View All</button>
+              <button className="h-8 px-4 border border-zinc-300 rounded-lg hover:bg-zinc-100 text-xs font-mono uppercase font-bold tracking-wider">View All</button>
             </div>
           </div>
 
         </div>
 
         {/* --- GENOMIC INTELLIGENCE ENGINE SECTION --- */}
-        <section className="mt-20">
-          <div className="relative overflow-hidden rounded-sm border border-[#eab308]/30 bg-gradient-to-r from-[#eab308]/5 via-[#ca8a04]/10 to-[#eab308]/5 p-8 md:p-12 shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#eab308] via-[#ca8a04] to-[#eab308]" />
+        <section className="mt-28">
+          <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-zinc-50 via-white to-zinc-50 p-8 md:p-12 shadow-md">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#ea580c]" />
             
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-[#eab308]/20 rounded">
-                    <Activity className="h-6 w-6 text-[#eab308]" />
+                  <div className="p-2 bg-[#ea580c]/10 rounded-lg border border-[#ea580c]/20">
+                    <Activity className="h-5 w-5 text-[#ea580c]" />
                   </div>
-                  <span className="text-[#eab308] font-bold uppercase tracking-widest text-[10px]">AI Research Platform</span>
+                  <span className="text-[#ea580c] font-bold uppercase tracking-widest text-[9px] font-mono">AI Research Platform</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight font-mono">Healix BioLabs Genomic Intelligence Engine</h2>
-                <p className="text-white/60 max-w-2xl text-sm md:text-base leading-relaxed">
+                <h2 className="text-2xl md:text-3xl font-black mb-4 tracking-tight font-mono text-zinc-950 uppercase">Genomic Intelligence Engine</h2>
+                <p className="text-zinc-600 max-w-2xl text-xs md:text-sm leading-relaxed">
                   Unlock the power of AI-driven genomic analysis. Our high-performance engine provides deep insights into genetic markers, enabling precision medicine and accelerated research in oncology and rare diseases.
                 </p>
               </div>
@@ -417,18 +444,13 @@ export default function BioLabsPage() {
               <div className="shrink-0">
                 <Link 
                   href="/genomics-research" 
-                  className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#eab308] hover:bg-[#ca8a04] text-black font-bold rounded-sm transition-all shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] overflow-hidden"
+                  className="h-12 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all shadow-md flex items-center gap-2"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                  <span className="uppercase tracking-wider text-xs">Access Engine</span>
-                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <span>Access Engine</span>
+                  <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
-
-            {/* Background Decorative Elements */}
-            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-[#eab308]/5 rounded-full blur-3xl" />
-            <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#ca8a04]/5 rounded-full blur-3xl" />
           </div>
         </section>
 
@@ -437,28 +459,27 @@ export default function BioLabsPage() {
           const featured = dynamicPublications.find((p: any) => p.is_featured);
           const editions = dynamicPublications.filter((p: any) => !p.is_featured);
           return (
-            <section className="mt-24 mb-16 pt-16 border-t border-white/10 relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-[#eab308]/50 to-transparent" />
+            <section className="mt-28 mb-16 pt-16 border-t border-zinc-200 relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-[#ea580c]/30 to-transparent" />
               
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
                 
                 {/* Featured Left Column */}
                 {featured && (
                   <div className="lg:col-span-4">
-                    <a href={featured.link_url || "#"} className="block relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.8)] group cursor-pointer">
+                    <a href={featured.link_url || "#"} className="block relative w-full aspect-[3/4] bg-zinc-100 rounded-2xl overflow-hidden border border-zinc-200 shadow-md group cursor-pointer">
                       <Image 
                         src={featured?.image_url || '/placeholder.png'} 
                         alt={featured?.title || 'Featured'} 
                         fill 
-                        className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" 
+                        className="object-cover opacity-90 group-hover:scale-102 transition-all duration-700" 
                       />
-                      <div className="absolute inset-0 bg-white/5 mix-blend-overlay pointer-events-none" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
-                      <div className="absolute bottom-6 left-6 right-6">
-                        <p className="text-[#eab308] text-xs font-bold uppercase tracking-widest mb-2 border-l-2 border-[#eab308] pl-2">{featured.label}</p>
-                        <h3 className="font-black text-white text-2xl leading-tight drop-shadow-lg mb-2">{featured.title}</h3>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute bottom-6 left-6 right-6 z-10">
+                        <p className="text-yellow-400 text-[9px] font-bold uppercase tracking-widest mb-2 border-l-2 border-yellow-500 pl-2 font-mono">{featured.label}</p>
+                        <h3 className="font-bold text-white text-lg leading-tight mb-2 font-mono uppercase">{featured.title}</h3>
                         {featured.description && (
-                          <p className="text-xs text-white/70 line-clamp-3">{featured.description}</p>
+                          <p className="text-[11px] text-white/90 line-clamp-3 leading-relaxed">{featured.description}</p>
                         )}
                       </div>
                     </a>
@@ -469,37 +490,35 @@ export default function BioLabsPage() {
                 <div className={featured ? "lg:col-span-8 flex flex-col justify-center" : "lg:col-span-12 flex flex-col"}>
                   
                   {featured?.subtitle && (
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-white leading-snug">
-                      <span className="text-[#eab308]">{featured.subtitle.split(' - ')[0]}</span>
+                    <h2 className="text-xl md:text-2xl font-black mb-4 tracking-tight text-zinc-950 leading-tight font-mono uppercase">
+                      <span className="text-[#ea580c]">{featured.subtitle.split(' - ')[0]}</span>
                       {featured.subtitle.includes(' - ') && ` - ${featured.subtitle.split(' - ')[1]}`}
                     </h2>
                   )}
                   
-                  <p className="text-white/70 mb-10 text-sm md:text-base leading-relaxed max-w-3xl">
-                    <span className="text-[#ca8a04] font-bold text-lg">Newsletter - </span> 
+                  <p className="text-zinc-700 mb-10 text-xs md:text-sm leading-relaxed max-w-3xl">
+                    <span className="text-[#ea580c] font-bold font-mono">Newsletter - </span> 
                     aims to share our work, keep you informed of research milestones and invite you to be part of this dynamic ecosystem.
                   </p>
 
                   {/* Tab Headers */}
-                  <div className="flex gap-8 mb-8 border-b border-white/10 pb-0">
-                    <h3 className="text-[#eab308] font-bold text-lg px-4 pb-3 border-b-2 border-[#eab308] translate-y-[1px]">Latest Edition</h3>
-                    <h3 className="text-white/50 font-bold text-lg hover:text-white transition-colors cursor-pointer px-4 pb-3">Previous Editions</h3>
+                  <div className="flex gap-8 mb-8 border-b border-zinc-200 pb-0">
+                    <h3 className="text-[#ea580c] font-bold text-xs px-4 pb-3 border-b-2 border-[#ea580c] translate-y-[1px] font-mono uppercase tracking-wider">Latest Edition</h3>
+                    <h3 className="text-zinc-400 font-bold text-xs hover:text-zinc-700 transition-colors cursor-pointer px-4 pb-3 font-mono uppercase tracking-wider">Previous Editions</h3>
                   </div>
 
                   {/* Grid of Edition Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 mt-4 relative">
-                    <div className="hidden sm:block absolute top-4 left-10 right-10 h-px bg-white/10 z-0" />
-                    
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 mt-4 relative">
                     {editions.slice(0, 3).map((item: any) => (
-                      <a key={item.id} href={item.link_url || "#"} className="relative group cursor-pointer z-10">
+                      <a key={item.id} href={item.link_url || "#"} className="relative group cursor-pointer z-10 block">
                         {/* Ribbon Bookmark */}
-                        <div className="absolute -top-4 left-6 z-20 w-10 md:w-12 drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">
+                        <div className="absolute -top-3 left-4 z-20 w-8 md:w-10 drop-shadow-sm">
                           <div 
-                            className={`h-20 md:h-24 w-full bg-gradient-to-b ${item.ribbon_color || 'from-green-600 to-emerald-900'} relative border-x border-white/20`} 
+                            className={`h-16 md:h-20 w-full bg-gradient-to-b ${item.ribbon_color || 'from-zinc-700 to-zinc-900'} relative border-x border-white/10`} 
                             style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)' }}
                           >
                             <div className="absolute inset-0 flex items-center justify-center pt-1 pb-3">
-                              <span className="text-white text-[10px] md:text-xs font-bold -rotate-90 whitespace-nowrap tracking-widest drop-shadow-md">
+                              <span className="text-white text-[8px] font-mono font-bold -rotate-90 whitespace-nowrap tracking-wider">
                                 {item.label}
                               </span>
                             </div>
@@ -507,17 +526,16 @@ export default function BioLabsPage() {
                         </div>
                         
                         {/* Card Thumbnail */}
-                        <div className="relative w-full aspect-[3/4] bg-[#0a0a0a] rounded-sm overflow-hidden border border-white/10 group-hover:border-[#eab308] transition-all duration-300 shadow-2xl group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-15px_rgba(234,179,8,0.3)]">
+                        <div className="relative w-full aspect-[3/4] bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200 group-hover:border-[#ea580c]/40 transition-all duration-300 shadow-md">
                           <Image 
                             src={item?.image_url || '/placeholder.png'}
                             alt={item?.title || 'Edition'}
                             fill
-                            className="object-cover opacity-50 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700 grayscale group-hover:grayscale-0"
+                            className="object-cover opacity-80 group-hover:scale-102 transition-all duration-500 grayscale group-hover:grayscale-0"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                            <p className="text-white text-xs font-bold line-clamp-2">{item.title}</p>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 z-10">
+                            <p className="text-white text-[11px] font-bold line-clamp-2 leading-snug font-mono">{item.title}</p>
                           </div>
-                          <div className="absolute inset-0 border-[4px] border-[#050505]/50 group-hover:border-transparent transition-colors pointer-events-none" />
                         </div>
                       </a>
                     ))}
@@ -534,7 +552,7 @@ export default function BioLabsPage() {
 
 function UserAvatarIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-white/40">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-zinc-400">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
       <circle cx="12" cy="7" r="4"></circle>
     </svg>

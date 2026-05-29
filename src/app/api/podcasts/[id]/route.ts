@@ -19,7 +19,7 @@ export async function PATCH(
   // 2. Perform write with admin client (bypasses RLS issues)
   const adminSupabase = createAdminClient();
   const { data, error } = await adminSupabase
-    .from("mentors")
+    .from("podcasts")
     .update(body)
     .eq("id", id)
     .select()
@@ -44,7 +44,7 @@ export async function DELETE(
 
   // 2. Perform write with admin client (bypasses RLS issues)
   const adminSupabase = createAdminClient();
-  const { error } = await adminSupabase.from("mentors").delete().eq("id", id);
+  const { error } = await adminSupabase.from("podcasts").delete().eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

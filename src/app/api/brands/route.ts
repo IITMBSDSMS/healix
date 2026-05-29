@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const all = searchParams.get("all") === "true";
 
   let query = supabase
-    .from("mentors")
+    .from("brands")
     .select("*")
     .order("display_order", { ascending: true });
 
@@ -16,7 +16,13 @@ export async function GET(req: Request) {
 
   const { data, error } = await query;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    // If table doesn't exist (code 42P01), return empty array so client falls back to seed data
+    if (error.code === "42P01") {
+      return NextResponse.json([]);
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -28,12 +34,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Perform write with admin client (bypasses RLS issues)
+  // 2. Insert with service-role admin client
   const adminSupabase = createAdminClient();
   const body = await req.json();
 
   const { data, error } = await adminSupabase
-    .from("mentors")
+    .from("brands")
     .insert([body])
     .select()
     .single();

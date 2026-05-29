@@ -12,20 +12,35 @@ export async function POST(req: Request) {
 
   const formData = await req.formData();
   const file = formData.get("file") as File;
-  const mentorId = formData.get("mentorId") as string;
+  const brandId = formData.get("brandId") as string;
 
   if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
   const ext = file.name.split(".").pop();
-  const fileName = `${mentorId}-${Date.now()}.${ext}`;
+  const fileName = `${brandId || 'temp'}-${Date.now()}.${ext}`;
   const arrayBuffer = await file.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
 
-  // 2. Upload photo and update DB with admin client (bypasses RLS issues)
   const adminSupabase = createAdminClient();
 
+  // 2. Verify & create 'brand-logos' bucket if it doesn't exist
+  try {
+    const { data: buckets } = await adminSupabase.storage.listBuckets();
+    const hasBucket = buckets?.some(b => b.id === 'brand-logos');
+    if (!hasBucket) {
+      await adminSupabase.storage.createBucket('brand-logos', {
+        public: true,
+        allowedMimeTypes: ['image/*'],
+        fileSizeLimit: 5242880 // 5MB
+      });
+    }
+  } catch (bucketErr) {
+    console.error("Error creating bucket:", bucketErr);
+  }
+
+  // 3. Upload file
   const { error: uploadError } = await adminSupabase.storage
-    .from("mentor-photos")
+    .from("brand-logos")
     .upload(fileName, buffer, {
       contentType: file.type,
       upsert: true,
@@ -34,15 +49,15 @@ export async function POST(req: Request) {
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
   const { data: urlData } = adminSupabase.storage
-    .from("mentor-photos")
+    .from("brand-logos")
     .getPublicUrl(fileName);
 
-  // If mentorId is a real UUID (not "temp" or empty), update the mentors record
-  if (mentorId && mentorId !== "temp" && mentorId !== "") {
+  // If brandId is a real UUID, update the record
+  if (brandId && brandId !== "temp" && brandId !== "") {
     await adminSupabase
-      .from("mentors")
-      .update({ photo_url: urlData.publicUrl })
-      .eq("id", mentorId);
+      .from("brands")
+      .update({ logo_url: urlData.publicUrl })
+      .eq("id", brandId);
   }
 
   return NextResponse.json({ url: urlData.publicUrl });

@@ -1,12 +1,26 @@
 "use client";
-import Link from "next/link";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
+import { useRealtimeTelemetry } from "@/hooks/useRealtimeTelemetry";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/Button";
+
 import { 
   Shield, TestTube, Car, Trash2, CheckCircle, XCircle, Plus, 
-  LayoutDashboard, Activity, Server, Cpu, Database, MapPin, AlertTriangle, Users, Download, Link as LinkIcon, Image as ImageIcon, FileText, Megaphone, Calendar, GraduationCap, PlayCircle
+  LayoutDashboard, Activity, Server, Cpu, Database, MapPin, AlertTriangle, Users, 
+  Download, Link as LinkIcon, Image as ImageIcon, FileText, Megaphone, Calendar, 
+  GraduationCap, PlayCircle, Eye, EyeOff, Edit3, X, Check, Upload, Loader2, ArrowUpRight, 
+  DollarSign, BookOpen, Star, Book, UserPlus, Code2, Link2, MessageCircle, RefreshCw, 
+  Battery, Signal, Zap, ShieldAlert, Play, Square, ExternalLink, Copy, Smartphone,
+  ChevronUp, ChevronDown
 } from "lucide-react";
+
 import { 
   getAdminData, updateApplicationStatus, deleteProject, updateProjectProgress, addVehicle, deleteVehicle,
   addBiolabPhoto, deleteBiolabPhoto, addBiolabEvent, deleteBiolabEvent, 
@@ -15,16 +29,81 @@ import {
   addSessionPhoto, deleteSessionPhoto,
   addBiolabPublication, deleteBiolabPublication
 } from "./actions";
-import BrandedQRCard from "@/components/ui/BrandedQRCard";
-import { Copy, ExternalLink, Download as DownloadIcon } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRealtimeTelemetry } from "@/hooks/useRealtimeTelemetry";
 
-export default function AdminPage() {
+import { getCourses, getMentors } from "@/lib/academy/db";
+import { addMentor, deleteMentor, addCourse, deleteCourse } from "./academy/actions";
+import { getSurakshaData, createVirtualDevice, triggerSimulationEvent } from "./suraksha/actions";
+import { generateInitialState, generateNextState, TelemetryState } from "@/lib/suraksha/simulator";
+
+// Lazy-load dynamic components
+const VehicleMap = dynamic(() => import("@/components/ui/VehicleMap"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full w-full text-gray-500 font-mono text-xs">Initializing Tracking Subsystem...</div>
+});
+
+const BrandedQRCard = dynamic(() => import("@/components/ui/BrandedQRCard"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-64 text-gray-500 text-sm font-mono">Rendering QR Card...</div>
+});
+
+const PredictiveAnalytics = dynamic(() => import("@/components/ui/PredictiveAnalytics").then(mod => mod.PredictiveAnalytics), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-64 text-gray-500 text-sm font-mono">Initializing Predictive Models...</div>
+});
+
+// Corporate Mentors form template
+const EMPTY_CORP_MENTOR = {
+  name: "",
+  role: "",
+  organization: "",
+  bio: "",
+  quote: "",
+  photo_url: "",
+  linkedin_url: "https://linkedin.com",
+  twitter_url: "https://x.com",
+  github_url: "https://github.com",
+  display_order: 0,
+  active: true,
+};
+
+const EMPTY_TEAM_MEMBER = {
+  name: "",
+  role: "",
+  focus: "",
+  photo_url: "",
+  display_order: 0,
+  active: true,
+};
+
+const EMPTY_PODCAST = {
+  title: "",
+  description: "",
+  youtube_url: "",
+  thumbnail_url: "",
+  duration: "15:00",
+  display_order: 0,
+  active: true,
+};
+
+const EMPTY_BRAND = {
+  name: "",
+  role: "",
+  description: "",
+  logo_text: "",
+  color: "#ea580c",
+  accent: "text-[#ea580c] bg-[#ea580c]/10 border-[#ea580c]/20",
+  icon_name: "Shield",
+  logo_url: "",
+  display_order: 0,
+  active: true,
+};
+
+export default function UnifiedAdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "shesecure" | "branding" | "system" | "reels">("overview");
+  
+  // Master active tab state
+  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "suraksha" | "academy" | "mentors" | "team" | "podcasts" | "branding" | "reels" | "system">("overview");
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,14 +111,77 @@ export default function AdminPage() {
   // Realtime Integration
   const { latestTelemetry, activeAlerts } = useRealtimeTelemetry();
 
-  // Session photo drag-drop state
+  // Dynamic Query Param Tab Activation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && ["overview", "biolabs", "suraksha", "academy", "mentors", "team", "podcasts", "branding", "reels", "system"].includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
+  // ─── 1. TELEMETRY & SIMULATOR STATES ───
+  const [surakshaActiveTab, setSurakshaActiveTab] = useState<"registry" | "map" | "incidents" | "analytics">("registry");
+  const [surakshaData, setSurakshaData] = useState<any>(null);
+  const [activeSimulations, setActiveSimulations] = useState<Record<string, TelemetryState>>({});
+  const [globalAlert, setGlobalAlert] = useState<{deviceId: string, description: string} | null>(null);
+  const [alarmPlaying, setAlarmPlaying] = useState(false);
+  const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
+
+  // ─── 2. ACADEMY CRM STATES ───
+  const [academyActiveTab, setAcademyActiveTab] = useState<"dashboard" | "courses" | "mentors">("dashboard");
+  const [academyCourses, setAcademyCourses] = useState<any[]>([]);
+  const [academyMentors, setAcademyMentors] = useState<any[]>([]);
+  const [showAcademyMentorModal, setShowAcademyMentorModal] = useState(false);
+  const [showAcademyCourseModal, setShowAcademyCourseModal] = useState(false);
+  const [academySearchTerm, setAcademySearchTerm] = useState("");
+  const [isUploadingAcademy, setIsUploadingAcademy] = useState<string | null>(null); 
+  const [newAcademyMentorPhotoUrl, setNewAcademyMentorPhotoUrl] = useState("");
+
+  // ─── 3. CORPORATE MENTORS CRUD STATES ───
+  const [corpMentors, setCorpMentors] = useState<any[]>([]);
+  const [showCorpForm, setShowCorpForm] = useState(false);
+  const [editingCorpId, setEditingCorpId] = useState<string | null>(null);
+  const [corpForm, setCorpForm] = useState(EMPTY_CORP_MENTOR);
+  const [corpSubmitting, setCorpSubmitting] = useState(false);
+  const [corpUploadingFor, setCorpUploadingFor] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
+
+  // ─── 3.5 ENGINEERING TEAM CRUD STATES ───
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [teamForm, setTeamForm] = useState(EMPTY_TEAM_MEMBER);
+  const [teamSubmitting, setTeamSubmitting] = useState(false);
+  const [teamUploadingFor, setTeamUploadingFor] = useState<string | null>(null);
+
+  // ─── 3.6 PODCASTS CRUD STATES ───
+  const [podcasts, setPodcasts] = useState<any[]>([]);
+  const [showPodcastForm, setShowPodcastForm] = useState(false);
+  const [editingPodcastId, setEditingPodcastId] = useState<string | null>(null);
+  const [podcastForm, setPodcastForm] = useState(EMPTY_PODCAST);
+  const [podcastSubmitting, setPodcastSubmitting] = useState(false);
+  const [podcastUploadingFor, setPodcastUploadingFor] = useState<string | null>(null);
+
+  // ─── 3.7 BRANDS CRUD STATES ───
+  const [brandsList, setBrandsList] = useState<any[]>([]);
+  const [showBrandForm, setShowBrandForm] = useState(false);
+  const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
+  const [brandForm, setBrandForm] = useState(EMPTY_BRAND);
+  const [brandSubmitting, setBrandSubmitting] = useState(false);
+  const [brandUploadingFor, setBrandUploadingFor] = useState<string | null>(null);
+
+  // ─── 4. BRANDING PHOTO DRAG-DROP STATES ───
+  const [brandingActiveSubTab, setBrandingActiveSubTab] = useState<"assets" | "gallery" | "brands">("assets");
+  const [brandingCopied, setBrandingCopied] = useState(false);
   const [photoDragOver, setPhotoDragOver] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoCaption, setPhotoCaption] = useState("");
   const [photoAdding, setPhotoAdding] = useState(false);
   const photoFileRef = React.useRef<HTMLInputElement>(null);
 
-  // BioLabs drag-drop states
   const [heroPhotoDragOver, setHeroPhotoDragOver] = useState(false);
   const [heroPhotoPreview, setHeroPhotoPreview] = useState<string | null>(null);
   const [heroPhotoTitle, setHeroPhotoTitle] = useState("");
@@ -49,35 +191,78 @@ export default function AdminPage() {
   const [eventPreview, setEventPreview] = useState<string | null>(null);
   const eventPhotoRef = React.useRef<HTMLInputElement>(null);
 
-  // Publications drag-drop state
   const [pubDragOver, setPubDragOver] = useState(false);
   const [pubImagePreview, setPubImagePreview] = useState<string | null>(null);
   const pubPhotoRef = React.useRef<HTMLInputElement>(null);
 
-  const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
+  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
+  // Fetch Master Data
   const fetchData = async () => {
     setLoading(true);
-    const res = await getAdminData();
-    if (res.error) {
-      setError(res.error);
-      if (res.error === "Unauthorized") {
-        router.push("/login");
-      }
-    } else {
-      if (typeof window !== 'undefined') {
-        // Merge local session photos
-        const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
-        res.session_photos = [...localPhotos, ...(res.session_photos || [])];
-        // Merge local publications (fallback when biolab_publications table doesn't exist yet)
-        const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
-        if (localPubs.length > 0) {
-          res.publications = [...localPubs, ...(res.publications || [])];
+    try {
+      const res = await getAdminData();
+      if (res.error) {
+        setError(res.error);
+        if (res.error === "Unauthorized") {
+          router.push("/login");
         }
+      } else {
+        if (typeof window !== 'undefined') {
+          // Merge local session photos fallback
+          const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+          res.session_photos = [...localPhotos, ...(res.session_photos || [])];
+          // Merge local publications fallback
+          const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
+          if (localPubs.length > 0) {
+            res.publications = [...localPubs, ...(res.publications || [])];
+          }
+        }
+        setData(res);
       }
-      setData(res);
+
+      // Load academy courses and mentors
+      const [coursesData, mentorsData] = await Promise.all([
+        getCourses(),
+        getMentors()
+      ]);
+      setAcademyCourses(coursesData);
+      setAcademyMentors(mentorsData);
+
+      // Load Suraksha data
+      const surakshaRes = await getSurakshaData();
+      if (surakshaRes && !("error" in surakshaRes)) {
+        setSurakshaData(surakshaRes);
+      }
+
+      // Load corporate advisors/mentors
+      const corpRes = await fetch("/api/mentors?all=true");
+      const corpData = await corpRes.json();
+      setCorpMentors(Array.isArray(corpData) ? corpData : []);
+
+      // Load engineering team
+      const teamRes = await fetch("/api/team?all=true");
+      const teamData = await teamRes.json();
+      setTeamMembers(Array.isArray(teamData) ? teamData : []);
+
+      // Load podcasts
+      const podcastRes = await fetch("/api/podcasts?all=true");
+      const podcastData = await podcastRes.json();
+      setPodcasts(Array.isArray(podcastData) ? podcastData : []);
+
+      // Load brands
+      const brandsRes = await fetch("/api/brands?all=true");
+      const brandsData = await brandsRes.json();
+      setBrandsList(Array.isArray(brandsData) ? brandsData : []);
+
+    } catch (e: any) {
+      setError("Failed to fetch administrative data.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -85,8 +270,875 @@ export default function AdminPage() {
     supabase.auth.getSession().then(() => {
       fetchData();
     });
+
+    // Realtime Suraksha sub triggers
+    const channel = supabase
+      .channel("unified_suraksha_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "iot_devices" }, fetchData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "failsafe_events" }, fetchData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "incident_reports" }, (payload) => {
+        fetchData();
+        if (payload.eventType === 'INSERT' && payload.new.type === 'SOS') {
+          setGlobalAlert({ deviceId: payload.new.device_id, description: payload.new.description });
+          setAlarmPlaying(true);
+          setTimeout(() => setAlarmPlaying(false), 4000); 
+          setActiveTab("suraksha"); 
+          setSurakshaActiveTab("map");
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
+  // Suraksha Telemetry Simulation Pulse Loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const activeIds = Object.keys(activeSimulations);
+      if (activeIds.length === 0) return;
+
+      activeIds.forEach(async (id) => {
+        const current = activeSimulations[id];
+        const next = generateNextState(current);
+        
+        setActiveSimulations(prev => ({ ...prev, [id]: next }));
+
+        try {
+          await fetch('/api/suraksha/telemetry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              deviceId: id,
+              ...next
+            })
+          });
+        } catch (e) {
+          console.error("Simulation pulse failed:", e);
+        }
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeSimulations]);
+
+  // ─── SURAKSHA SIMULATOR FUNCTIONS ───
+  const toggleSimulation = (deviceId: string) => {
+    if (activeSimulations[deviceId]) {
+      const newSims = { ...activeSimulations };
+      delete newSims[deviceId];
+      setActiveSimulations(newSims);
+    } else {
+      setActiveSimulations(prev => ({
+        ...prev,
+        [deviceId]: generateInitialState()
+      }));
+    }
+  };
+
+  const handleCreateDevice = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const res = await createVirtualDevice(formData);
+    if (res.error) alert(res.error);
+    else {
+      form.reset();
+      fetchData();
+    }
+  };
+
+  const handleSimulateEvent = async (deviceId: string, type: 'failsafe' | 'tamper' | 'sos') => {
+    let details = "";
+    if (type === 'failsafe') details = "Passenger device failed. IoT override engaged.";
+    if (type === 'tamper') details = "Physical tampering detected on device casing.";
+    if (type === 'sos') details = "Manual SOS triggered from hardware.";
+    
+    if (confirm(`Trigger ${type} for ${deviceId}?`)) {
+      const res = await triggerSimulationEvent(deviceId, type, details);
+      if (res.error) alert(res.error);
+    }
+  };
+
+  // ─── FRONTEND ACADEMY HANDLERS ───
+  const handleAcademyPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, mentorId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const targetId = mentorId || 'new';
+    setIsUploadingAcademy(targetId);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    if (mentorId) formData.append("mentorId", mentorId);
+
+    try {
+      const res = await fetch("/api/admin/academy/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.url) {
+        if (mentorId) {
+          await fetchData();
+        } else {
+          setNewAcademyMentorPhotoUrl(data.url);
+        }
+      } else {
+        alert("Upload error: " + (data.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      alert("Failed to upload image: " + err.message);
+    } finally {
+      setIsUploadingAcademy(null);
+    }
+  };
+
+  const handleAddAcademyMentor = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const res = await addMentor(formData);
+    if (res && 'error' in res && res.error) {
+      alert(res.error);
+    } else {
+      setShowAcademyMentorModal(false);
+      fetchData();
+    }
+  };
+
+  const handleDeleteAcademyMentor = async (id: string) => {
+    if(confirm("Are you sure you want to delete this instructor?")) {
+      const res = await deleteMentor(id);
+      if (res && 'error' in res && res.error) alert(res.error);
+      else fetchData();
+    }
+  };
+
+  const handleAddAcademyCourse = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const res = await addCourse(formData);
+    if (res && 'error' in res && res.error) {
+      alert(res.error);
+    } else {
+      setShowAcademyCourseModal(false);
+      fetchData();
+    }
+  };
+
+  const handleDeleteAcademyCourse = async (id: string) => {
+    if(confirm("Are you sure you want to delete this course?")) {
+      const res = await deleteCourse(id);
+      if (res && 'error' in res && res.error) alert(res.error);
+      else fetchData();
+    }
+  };
+
+  // ─── CORPORATE ADVISORS / MENTORS HANDLERS ───
+  const openCorpAddForm = () => {
+    setEditingCorpId(null);
+    setCorpForm({ ...EMPTY_CORP_MENTOR, display_order: corpMentors.length });
+    setShowCorpForm(true);
+  };
+
+  const openCorpEditForm = (m: any) => {
+    setEditingCorpId(m.id);
+    setCorpForm({
+      name: m.name, role: m.role, organization: m.organization ?? "",
+      bio: m.bio ?? "", quote: m.quote ?? "", photo_url: m.photo_url ?? "",
+      linkedin_url: m.linkedin_url ?? "https://linkedin.com", twitter_url: m.twitter_url ?? "https://x.com",
+      github_url: m.github_url ?? "https://github.com", display_order: m.display_order,
+      active: m.active,
+    });
+    setShowCorpForm(true);
+  };
+
+  const handleCorpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCorpSubmitting(true);
+    try {
+      if (editingCorpId) {
+        const res = await fetch(`/api/mentors/${editingCorpId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to update advisor details");
+        }
+        showToast("Adviser details updated!");
+      } else {
+        const res = await fetch("/api/mentors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to save advisor details");
+        }
+        showToast("New advisor registered successfully!");
+      }
+      setShowCorpForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save corporate advisor details", "err");
+    } finally {
+      setCorpSubmitting(false);
+    }
+  };
+
+  const handleCorpDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete advisor ${name}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/mentors/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete advisor");
+      }
+      showToast(`${name} removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleCorpActive = async (m: any) => {
+    try {
+      const res = await fetch(`/api/mentors/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !m.active }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to toggle active status");
+      }
+      showToast(`${m.name} ${m.active ? "hidden" : "activated"} on the about directory.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to toggle status", "err");
+    }
+  };
+
+  const handleCorpPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, mentorId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCorpUploadingFor(mentorId);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("mentorId", mentorId);
+      const res = await fetch("/api/mentors/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Photo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setCorpUploadingFor(null);
+    }
+  };
+
+  const handleCorpPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, mentorId: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setCorpUploadingFor(mentorId);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("mentorId", mentorId);
+      const res = await fetch("/api/mentors/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Photo uploaded and synced via drag & drop!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setCorpUploadingFor(null);
+    }
+  };
+
+  const uploadPhotoFromModal = async (file: File, idToUse: string) => {
+    setCorpSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("mentorId", idToUse);
+      const res = await fetch("/api/mentors/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setCorpForm(f => ({ ...f, photo_url: data.url }));
+        showToast("Photo uploaded successfully!");
+        if (idToUse !== "temp" && idToUse !== "") {
+          fetchData();
+        }
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setCorpSubmitting(false);
+    }
+  };
+
+  const moveCorpOrder = async (m: any, dir: "up" | "down") => {
+    const newOrder = dir === "up" ? m.display_order - 1 : m.display_order + 1;
+    try {
+      const res = await fetch(`/api/mentors/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  // ─── ENGINEERING TEAM CRUD HANDLERS ───
+  const openTeamAddForm = () => {
+    setEditingTeamId(null);
+    setTeamForm({ ...EMPTY_TEAM_MEMBER, display_order: teamMembers.length });
+    setShowTeamForm(true);
+  };
+
+  const openTeamEditForm = (m: any) => {
+    setEditingTeamId(m.id);
+    setTeamForm({
+      name: m.name, role: m.role, focus: m.focus, photo_url: m.photo_url ?? "",
+      display_order: m.display_order, active: m.active
+    });
+    setShowTeamForm(true);
+  };
+
+  const handleTeamSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTeamSubmitting(true);
+    try {
+      if (editingTeamId) {
+        const res = await fetch(`/api/team/${editingTeamId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(teamForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to update team member details");
+        }
+        showToast("Team member details updated!");
+      } else {
+        const res = await fetch("/api/team", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(teamForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to save team member details");
+        }
+        showToast("New team member registered successfully!");
+      }
+      setShowTeamForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save team member details", "err");
+    } finally {
+      setTeamSubmitting(false);
+    }
+  };
+
+  const handleTeamDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete team member ${name}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/team/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete team member");
+      }
+      showToast(`${name} removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleTeamActive = async (m: any) => {
+    try {
+      const res = await fetch(`/api/team/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !m.active }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to toggle active status");
+      }
+      showToast(`${m.role} ${m.active ? "hidden" : "activated"} on the about directory.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to toggle status", "err");
+    }
+  };
+
+  const handleTeamPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setTeamUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("teamMemberId", id);
+      const res = await fetch("/api/team/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Photo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setTeamUploadingFor(null);
+    }
+  };
+
+  const handleTeamPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setTeamUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("teamMemberId", id);
+      const res = await fetch("/api/team/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Photo uploaded and synced via drag & drop!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setTeamUploadingFor(null);
+    }
+  };
+
+  const uploadTeamPhotoFromModal = async (file: File, idToUse: string) => {
+    setTeamSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("teamMemberId", idToUse);
+      const res = await fetch("/api/team/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setTeamForm(f => ({ ...f, photo_url: data.url }));
+        showToast("Photo uploaded successfully!");
+        if (idToUse !== "temp" && idToUse !== "") {
+          fetchData();
+        }
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setTeamSubmitting(false);
+    }
+  };
+
+  const moveTeamOrder = async (m: any, dir: "up" | "down") => {
+    const newOrder = dir === "up" ? m.display_order - 1 : m.display_order + 1;
+    try {
+      const res = await fetch(`/api/team/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  // ─── PODCASTS CRUD HANDLERS ───
+  const openPodcastAddForm = () => {
+    setEditingPodcastId(null);
+    setPodcastForm({ ...EMPTY_PODCAST, display_order: podcasts.length });
+    setShowPodcastForm(true);
+  };
+
+  const openPodcastEditForm = (p: any) => {
+    setEditingPodcastId(p.id);
+    setPodcastForm({
+      title: p.title, description: p.description, youtube_url: p.youtube_url, thumbnail_url: p.thumbnail_url ?? "",
+      duration: p.duration ?? "15:00", display_order: p.display_order, active: p.active
+    });
+    setShowPodcastForm(true);
+  };
+
+  const handlePodcastSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPodcastSubmitting(true);
+    try {
+      if (editingPodcastId) {
+        const res = await fetch(`/api/podcasts/${editingPodcastId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(podcastForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to update podcast details");
+        }
+        showToast("Podcast details updated!");
+      } else {
+        const res = await fetch("/api/podcasts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(podcastForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to save podcast details");
+        }
+        showToast("New podcast episode registered!");
+      }
+      setShowPodcastForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save podcast details", "err");
+    } finally {
+      setPodcastSubmitting(false);
+    }
+  };
+
+  const handlePodcastDelete = async (id: string, title: string) => {
+    if (!confirm(`Delete podcast "${title}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/podcasts/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete podcast");
+      }
+      showToast(`"${title}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const togglePodcastActive = async (p: any) => {
+    try {
+      const res = await fetch(`/api/podcasts/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !p.active }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to toggle active status");
+      }
+      showToast(`Podcast ${p.active ? "hidden" : "activated"} on the home page.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to toggle status", "err");
+    }
+  };
+
+  const handlePodcastPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPodcastUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("podcastId", id);
+      const res = await fetch("/api/podcasts/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Thumbnail uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Thumbnail upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setPodcastUploadingFor(null);
+    }
+  };
+
+  const handlePodcastPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setPodcastUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("podcastId", id);
+      const res = await fetch("/api/podcasts/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Thumbnail uploaded and synced via drag & drop!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Thumbnail upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setPodcastUploadingFor(null);
+    }
+  };
+
+  const uploadPodcastPhotoFromModal = async (file: File, idToUse: string) => {
+    setPodcastSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("podcastId", idToUse);
+      const res = await fetch("/api/podcasts/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setPodcastForm(f => ({ ...f, thumbnail_url: data.url }));
+        showToast("Thumbnail uploaded successfully!");
+        if (idToUse !== "temp" && idToUse !== "") {
+          fetchData();
+        }
+      } else {
+        showToast(data.error ?? "Thumbnail upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setPodcastSubmitting(false);
+    }
+  };
+
+  const movePodcastOrder = async (p: any, dir: "up" | "down") => {
+    const newOrder = dir === "up" ? p.display_order - 1 : p.display_order + 1;
+    try {
+      const res = await fetch(`/api/podcasts/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  // ─── BRANDS CRUD HANDLERS ───
+  const openBrandAddForm = () => {
+    setEditingBrandId(null);
+    setBrandForm({ ...EMPTY_BRAND, display_order: brandsList.length });
+    setShowBrandForm(true);
+  };
+
+  const openBrandEditForm = (b: any) => {
+    setEditingBrandId(b.id);
+    setBrandForm({
+      name: b.name,
+      role: b.role,
+      description: b.description || b.desc || "",
+      logo_text: b.logo_text || b.logoText || "",
+      color: b.color || "#ea580c",
+      accent: b.accent || "text-[#ea580c] bg-[#ea580c]/10 border-[#ea580c]/20",
+      icon_name: b.icon_name || "Shield",
+      logo_url: b.logo_url || "",
+      display_order: b.display_order ?? 0,
+      active: b.active ?? true
+    });
+    setShowBrandForm(true);
+  };
+
+  const handleBrandSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBrandSubmitting(true);
+    try {
+      if (editingBrandId) {
+        const res = await fetch(`/api/brands/${editingBrandId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(brandForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to update brand details");
+        }
+        showToast("Brand details updated!");
+      } else {
+        const res = await fetch("/api/brands", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(brandForm),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to save brand details");
+        }
+        showToast("New brand registered!");
+      }
+      setShowBrandForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save brand details", "err");
+    } finally {
+      setBrandSubmitting(false);
+    }
+  };
+
+  const handleBrandDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete brand "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/brands/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete brand");
+      }
+      showToast(`"${name}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleBrandActive = async (b: any) => {
+    try {
+      const res = await fetch(`/api/brands/${b.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !b.active }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to toggle active status");
+      }
+      showToast(`Brand ${b.active ? "hidden" : "activated"} on the home page.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to toggle status", "err");
+    }
+  };
+
+  const handleBrandPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBrandUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("brandId", id);
+      const res = await fetch("/api/brands/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Brand logo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Logo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setBrandUploadingFor(null);
+    }
+  };
+
+  const handleBrandPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setBrandUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("brandId", id);
+      const res = await fetch("/api/brands/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Brand logo uploaded and synced via drag & drop!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Logo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setBrandUploadingFor(null);
+    }
+  };
+
+  const uploadBrandPhotoFromModal = async (file: File, idToUse: string) => {
+    setBrandSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("brandId", idToUse);
+      const res = await fetch("/api/brands/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setBrandForm(f => ({ ...f, logo_url: data.url }));
+        showToast("Brand logo uploaded successfully!");
+        if (idToUse !== "temp" && idToUse !== "") {
+          fetchData();
+        }
+      } else {
+        showToast(data.error ?? "Logo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setBrandSubmitting(false);
+    }
+  };
+
+  const moveBrandOrder = async (b: any, dir: "up" | "down") => {
+    const newOrder = dir === "up" ? b.display_order - 1 : b.display_order + 1;
+    try {
+      const res = await fetch(`/api/brands/${b.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  // ─── STANDARD CONSOLE EVENT HANDLERS ───
   const handleAppStatus = async (id: string, status: 'accepted' | 'rejected') => {
     const res = await updateApplicationStatus(id, status);
     if (res.error) alert(res.error);
@@ -140,10 +1192,8 @@ export default function AdminPage() {
   const handleDeleteContent = async (id: string, deleteFunc: Function) => {
     if(confirm("Delete this content?")) {
       if (typeof window !== 'undefined') {
-        // Clean session photos from localStorage
         const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
         localStorage.setItem('healix_mock_photos', JSON.stringify(localPhotos.filter((p: any) => p.id !== id)));
-        // Clean publications from localStorage
         const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
         localStorage.setItem('healix_publications', JSON.stringify(localPubs.filter((p: any) => p.id !== id)));
       }
@@ -153,14 +1203,12 @@ export default function AdminPage() {
     }
   };
 
-  // Dedicated handler for publications with localStorage fallback
   const handleAddPublication = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
     const res = await addBiolabPublication(formData) as any;
     if (res.localFallback && res.data) {
-      // DB table missing — save to localStorage so it still works
       const newPub = { id: crypto.randomUUID(), created_at: new Date().toISOString(), ...res.data };
       const local = JSON.parse(localStorage.getItem('healix_publications') || '[]');
       local.unshift(newPub);
@@ -177,20 +1225,26 @@ export default function AdminPage() {
     }
   };
 
-  if (loading) return (
+  if (loading && !data) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505]">
-      <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4" />
-      <p className="text-purple-400 font-medium animate-pulse">Initializing Admin Core...</p>
+      <div className="w-16 h-16 border-4 border-orange-500/30 border-t-[#ea580c] rounded-full animate-spin mb-4" />
+      <p className="text-[#ea580c] font-mono text-xs uppercase tracking-widest animate-pulse">Initializing Master Admin Core...</p>
     </div>
   );
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 bg-[#050505]">Critical Error: {error}</div>;
+  
+  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 bg-[#050505] font-mono">Critical Security Error: {error}</div>;
   if (!data) return null;
 
+  // Tabs layout navigation
   const tabs = [
     { id: "overview", label: "Overview", icon: LayoutDashboard, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { id: "biolabs", label: "BioLabs", icon: TestTube, color: "text-purple-400", bg: "bg-purple-500/10" },
-    { id: "shesecure", label: "SheSecure", icon: Car, color: "text-orange-400", bg: "bg-orange-500/10" },
-    { id: "branding", label: "Branding", icon: ImageIcon, color: "text-blue-400", bg: "bg-blue-500/10" },
+    { id: "biolabs", label: "BioLabs Pipeline", icon: TestTube, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { id: "suraksha", label: "Suraksha Control", icon: Shield, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { id: "academy", label: "Academy CRM", icon: GraduationCap, color: "text-[#eab308]", bg: "bg-yellow-500/10" },
+    { id: "mentors", label: "Corporate Mentors", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { id: "team", label: "Engineering Team", icon: Code2, color: "text-[#ea580c]", bg: "bg-orange-500/10" },
+    { id: "podcasts", label: "Podcasts Manager", icon: Play, color: "text-red-400", bg: "bg-red-500/10" },
+    { id: "branding", label: "Branding Manager", icon: ImageIcon, color: "text-indigo-400", bg: "bg-indigo-500/10" },
     { id: "reels", label: "Comm. Reels", icon: PlayCircle, color: "text-pink-400", bg: "bg-pink-500/10" },
     { id: "system", label: "System Health", icon: Server, color: "text-green-400", bg: "bg-green-500/10" }
   ] as const;
@@ -202,7 +1256,46 @@ export default function AdminPage() {
   const activeTrips = data.trips.filter((t:any) => t.status === 'active').length;
 
   return (
-    <div className="min-h-screen bg-[#050505] flex font-sans">
+    <div className="min-h-screen bg-[#09090b] flex font-sans text-gray-200 admin-console">
+      
+      {/* Toast popup */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl flex items-center gap-2 ${
+              toast.type === "ok" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
+            }`}
+          >
+            {toast.type === "ok" ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global SOS Alert */}
+      {globalAlert && (
+        <motion.div 
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-3xl bg-red-600 border-2 border-red-400 text-white p-4 rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.6)] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <AlertTriangle className="w-8 h-8 animate-pulse" />
+            <div>
+              <h2 className="text-xl font-bold tracking-widest">CRITICAL SOS ENGAGED</h2>
+              <p className="text-sm text-red-100 font-mono">DEVICE: {globalAlert.deviceId} — {globalAlert.description}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setGlobalAlert(null)}
+            className="bg-black/20 hover:bg-black/40 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+          >
+            ACKNOWLEDGE
+          </button>
+        </motion.div>
+      )}
+
       {/* SIDEBAR */}
       <div className="w-64 border-r border-white/10 bg-[#0a0a0a] flex flex-col h-screen sticky top-0">
         <div className="p-6 border-b border-white/10 flex items-center gap-3">
@@ -211,22 +1304,25 @@ export default function AdminPage() {
           </div>
           <div>
             <h1 className="font-mono font-bold text-sm leading-tight tracking-tighter text-white">HEALIX_CONSOLE</h1>
-            <p className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-mono">Root Access</p>
+            <p className="text-[9px] text-[#ea580c] uppercase tracking-[0.2em] font-mono font-bold">Integrated Terminal</p>
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  router.push(`/admin?tab=${tab.id}`, { scroll: false });
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm transition-all relative overflow-hidden group ${isActive ? 'bg-white/10 text-white border border-white/10' : 'text-white/50 hover:bg-white/5 hover:text-white/80 border border-transparent'}`}
               >
                 {isActive && (
-                  <motion.div layoutId="activeTabIndicator" className="absolute left-0 top-0 bottom-0 w-0.5 bg-white" />
+                  <motion.div layoutId="activeTabIndicator" className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#ea580c]" />
                 )}
                 <Icon className={`h-4 w-4 ${isActive ? tab.color : 'text-current transition-colors group-hover:text-white'}`} />
                 <span className="font-mono text-xs uppercase tracking-wider">{tab.label}</span>
@@ -235,96 +1331,102 @@ export default function AdminPage() {
           })}
         </nav>
 
-        <div className="px-4 pb-2">
-          <Link href="/admin/academy" className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-white/50 hover:bg-[#eab308]/10 hover:text-[#eab308] border border-transparent hover:border-[#eab308]/20 transition-all">
-            <GraduationCap className="h-4 w-4" />
-            <span className="font-mono text-xs uppercase tracking-wider">Academy CRM</span>
-          </Link>
-          <Link href="/admin/mentors" className="w-full flex items-center gap-3 px-3 py-2 rounded-sm text-white/50 hover:bg-[#eab308]/10 hover:text-[#eab308] border border-transparent hover:border-[#eab308]/20 transition-all">
-            <Users className="h-4 w-4" />
-            <span className="font-mono text-xs uppercase tracking-wider">Mentors</span>
-          </Link>
-        </div>
-        
         <div className="p-6 border-t border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]" />
-            <span className="text-xs text-white/50 font-mono">System Online</span>
+            <span className="text-xs text-white/50 font-mono">Operations Online</span>
           </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-y-auto h-screen relative">
+      {/* MAIN CONTENT WINDOW */}
+      <div className="flex-1 overflow-y-auto h-screen relative bg-[#050505]">
+        
+        {/* Glow backlight */}
         <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl pointer-events-none" aria-hidden="true">
           <div className={`relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem] transition-colors duration-1000 ${
             activeTab === 'biolabs' ? 'bg-gradient-to-tr from-purple-500 to-blue-500' :
-            activeTab === 'shesecure' ? 'bg-gradient-to-tr from-orange-500 to-red-500' :
+            activeTab === 'suraksha' ? 'bg-gradient-to-tr from-orange-500 to-blue-500' :
+            activeTab === 'academy' ? 'bg-gradient-to-tr from-[#eab308]/50 to-orange-500' :
+            activeTab === 'mentors' ? 'bg-gradient-to-tr from-emerald-500 to-teal-500' :
             activeTab === 'system' ? 'bg-gradient-to-tr from-green-500 to-emerald-500' :
             'bg-gradient-to-tr from-blue-500 to-indigo-500'
           }`} />
         </div>
 
-        <main className="p-8 max-w-6xl mx-auto w-full">
+        <main className="p-8 max-w-[94%] mx-auto w-full pb-32">
           <AnimatePresence mode="wait">
             
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
-              <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
+              <motion.div key="overview" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2">Command Center</h2>
-                  <p className="text-white/50">Real-time holistic view of Healix platforms.</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900 mb-4">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ea580c] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ea580c]"></span>
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest font-bold">CONSOLE HUB</span>
+                  </div>
+                  <h2 className="text-3xl font-black font-mono tracking-tight text-white uppercase">Command Center</h2>
+                  <p className="text-white/50 text-sm">Real-time integrated telemetry, education and research platform administration.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {/* BioLabs Stats */}
                   <GlassCard className="border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.05)] relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                       <TestTube className="h-24 w-24 text-purple-500" />
                     </div>
-                    <p className="text-sm text-purple-400 font-semibold uppercase tracking-wider mb-2">BioLabs Active</p>
-                    <p className="text-5xl font-bold text-white mb-2">{activeProjects}</p>
-                    <p className="text-xs text-white/50">+{pendingApps} pending applications</p>
+                    <p className="text-xs text-purple-400 font-bold font-mono uppercase tracking-wider mb-2">BioLabs Incubations</p>
+                    <p className="text-5xl font-black text-white mb-2">{activeProjects}</p>
+                    <p className="text-[10px] font-mono text-white/50">+{pendingApps} queue applications</p>
                   </GlassCard>
 
-                  <GlassCard className="border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden group flex flex-col justify-between">
+                  {/* Suraksha Stats */}
+                  <GlassCard className="border-orange-500/20 shadow-[0_0_30px_rgba(234,88,12,0.05)] relative overflow-hidden group flex flex-col justify-between">
                     <div>
                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <Car className="h-24 w-24 text-orange-500" />
                       </div>
-                      <p className="text-sm text-orange-400 font-semibold uppercase tracking-wider mb-2">SheSecure Live</p>
-                      <p className="text-5xl font-bold text-white mb-2">{activeTrips}</p>
-                      <p className="text-xs text-white/50">{fleetSize} total vehicles registered</p>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-white/5 relative z-10">
-                       <a href="/admin/suraksha" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white bg-orange-500/20 hover:bg-orange-500/40 px-3 py-2 rounded transition-colors w-full justify-center">
-                         <Shield className="w-4 h-4" /> Open Operations Center
-                       </a>
+                      <p className="text-xs text-orange-400 font-bold font-mono uppercase tracking-wider mb-2">Suraksha Telemetry</p>
+                      <p className="text-5xl font-black text-white mb-2">{activeTrips}</p>
+                      <p className="text-[10px] font-mono text-white/50">{fleetSize} active virtual nodes</p>
                     </div>
                   </GlassCard>
 
-                  <GlassCard className="border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.05)] relative overflow-hidden group">
+                  {/* Academy Stats */}
+                  <GlassCard className="border-yellow-500/20 shadow-[0_0_30px_rgba(234,179,8,0.05)] relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <Activity className="h-24 w-24 text-green-500" />
+                      <GraduationCap className="h-24 w-24 text-yellow-500" />
                     </div>
-                    <p className="text-sm text-green-400 font-semibold uppercase tracking-wider mb-2">System Load</p>
-                    <p className="text-5xl font-bold text-white mb-2">12<span className="text-2xl text-white/50">%</span></p>
-                    <p className="text-xs text-green-400/80">Optimal performance</p>
+                    <p className="text-xs text-[#eab308] font-bold font-mono uppercase tracking-wider mb-2">Academy Cohorts</p>
+                    <p className="text-5xl font-black text-white mb-2">{academyCourses.length}</p>
+                    <p className="text-[10px] font-mono text-white/50">{academyMentors.length} instructors online</p>
+                  </GlassCard>
+
+                  {/* Advisors/Mentors Stats */}
+                  <GlassCard className="border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Users className="h-24 w-24 text-emerald-500" />
+                    </div>
+                    <p className="text-xs text-emerald-400 font-bold font-mono uppercase tracking-wider mb-2">Leadership board</p>
+                    <p className="text-5xl font-black text-white mb-2">{corpMentors.length}</p>
+                    <p className="text-[10px] font-mono text-white/50">{corpMentors.filter(m => m.active).length} visible profiles</p>
                   </GlassCard>
                 </div>
 
-                {/* Animated Global Map / Activity Chart */}
-                <GlassCard className="p-0 overflow-hidden h-[400px] relative border-white/5">
+                {/* Simulated Activity Chart */}
+                <GlassCard className="p-0 overflow-hidden h-[360px] relative border-white/5 bg-[#0a0a0a]">
                   <div className="absolute inset-0 p-6 z-10 pointer-events-none flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-lg">Global Activity Stream</h3>
-                      <p className="text-xs text-white/40">Aggregated pipeline throughput</p>
+                      <h3 className="font-bold text-base font-mono uppercase tracking-wider">Network Intelligence Stream</h3>
+                      <p className="text-xs text-white/40">Aggregated digital twin bandwidth logs</p>
                     </div>
                   </div>
                   
-                  {/* Custom SVG Wave Animation representing activity */}
-                  <div className="w-full h-full bg-[#0a0a0a] flex items-end relative overflow-hidden">
-                    {/* Grid */}
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+                  <div className="w-full h-full bg-[#080808] flex items-end relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:40px_40px]" />
                     
                     <svg viewBox="0 0 1000 300" preserveAspectRatio="none" className="w-full h-64 opacity-50 absolute bottom-0">
                       <motion.path 
@@ -336,7 +1438,7 @@ export default function AdminPage() {
                       />
                       <motion.path 
                         d="M0,200 C200,200 300,100 500,150 C700,200 800,50 1000,150 L1000,300 L0,300 Z"
-                        fill="url(#gradPurple)"
+                        fill="url(#gradOrange)"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.8 }}
                         transition={{ duration: 2, delay: 0.5 }}
@@ -346,9 +1448,9 @@ export default function AdminPage() {
                           <stop offset="0%" stopColor="rgba(59, 130, 246, 0.4)" />
                           <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
                         </linearGradient>
-                        <linearGradient id="gradPurple" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(168, 85, 247, 0.4)" />
-                          <stop offset="100%" stopColor="rgba(168, 85, 247, 0)" />
+                        <linearGradient id="gradOrange" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(234, 88, 12, 0.4)" />
+                          <stop offset="100%" stopColor="rgba(234, 88, 12, 0)" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -359,35 +1461,25 @@ export default function AdminPage() {
 
             {/* BIOLABS TAB */}
             {activeTab === "biolabs" && (
-              <motion.div key="biolabs" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
-                <div className="flex items-center justify-between mb-8">
+              <motion.div key="biolabs" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-6">
                   <div>
-                    <h2 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">BioLabs Pipeline</h2>
-                    <p className="text-white/50">Manage research applications and active incubations.</p>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                      <p className="text-2xl font-bold">{pendingApps}</p>
-                      <p className="text-[10px] uppercase text-white/40 tracking-wider">Queue</p>
-                    </div>
-                    <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                      <p className="text-2xl font-bold text-purple-400">{activeProjects}</p>
-                      <p className="text-[10px] uppercase text-white/40 tracking-wider">Active</p>
-                    </div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">BioLabs Pipeline</h2>
+                    <p className="text-white/50 text-sm">Manage research applications and active incubations.</p>
                   </div>
                 </div>
 
                 {/* Applications Queue */}
-                <GlassCard className="border-white/5 shadow-xl">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><TestTube className="h-5 w-5 text-purple-400" /> Intake Queue</h3>
+                <GlassCard className="border-white/5 shadow-xl bg-[#0a0a0a] p-6">
+                  <h3 className="text-base font-bold font-mono uppercase tracking-wider mb-4 flex items-center gap-2"><TestTube className="h-5 w-5 text-purple-400" /> Intake Queue</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead className="text-white/30 uppercase text-[10px] tracking-wider border-b border-white/5">
                         <tr>
-                          <th className="pb-3 font-semibold">Applicant</th>
-                          <th className="pb-3 font-semibold">Research Proposal</th>
-                          <th className="pb-3 font-semibold">Category</th>
-                          <th className="pb-3 font-semibold text-right">Decision</th>
+                          <th className="pb-3 font-semibold font-mono">Applicant</th>
+                          <th className="pb-3 font-semibold font-mono">Research Proposal</th>
+                          <th className="pb-3 font-semibold font-mono">Category</th>
+                          <th className="pb-3 font-semibold font-mono text-right">Decision</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -395,15 +1487,15 @@ export default function AdminPage() {
                           {data.applications.filter((a:any) => a.status === 'pending').map((app: any) => (
                             <motion.tr key={app.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, height: 0 }} className="hover:bg-white/[0.02] transition-colors group">
                               <td className="py-4 pr-4">
-                                <p className="font-medium">{app.name}</p>
+                                <p className="font-semibold">{app.name}</p>
                                 <p className="text-xs text-white/40">{app.email}</p>
                               </td>
                               <td className="py-4 pr-4 max-w-xs">
-                                <p className="font-medium text-white/90">{app.idea_title}</p>
+                                <p className="font-semibold text-white/90">{app.idea_title}</p>
                                 <p className="text-xs text-white/40 truncate mt-0.5">{app.description || "No description provided."}</p>
                               </td>
                               <td className="py-4 pr-4">
-                                <span className="px-2 py-1 bg-white/5 border border-white/10 text-white/70 rounded-md text-xs">{app.category}</span>
+                                <span className="px-2 py-1 bg-white/5 border border-white/10 text-white/70 rounded-md text-xs font-mono">{app.category}</span>
                               </td>
                               <td className="py-4 text-right">
                                 <div className="flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
@@ -427,23 +1519,19 @@ export default function AdminPage() {
                 </GlassCard>
 
                 {/* Active Projects */}
-                <GlassCard className="border-white/5 shadow-xl">
-                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Cpu className="h-5 w-5 text-blue-400" /> Active Incubations</h3>
+                <GlassCard className="border-white/5 shadow-xl bg-[#0a0a0a] p-6">
+                  <h3 className="text-base font-bold font-mono uppercase tracking-wider mb-6 flex items-center gap-2"><Cpu className="h-5 w-5 text-blue-400" /> Active Incubations</h3>
                   <div className="space-y-4">
                     {data.projects.map((proj: any) => (
-                      <div key={proj.id} className="p-4 bg-[#0a0a0a] border border-white/5 rounded-2xl flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden group">
-                        
-                        {/* Background Progress Fill Indicator */}
+                      <div key={proj.id} className="p-4 bg-[#050505] border border-white/5 rounded-2xl flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden group">
                         <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 pointer-events-none transition-all duration-500 ease-out" style={{ width: `${proj.progress || 0}%` }} />
-
                         <div className="flex-1 z-10">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold text-lg">{proj.title}</h4>
-                            <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md text-[10px] uppercase font-bold tracking-wider">{proj.status}</span>
+                            <h4 className="font-semibold text-base">{proj.title}</h4>
+                            <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md text-[9px] uppercase font-bold tracking-wider font-mono">{proj.status}</span>
                           </div>
                           <p className="text-xs text-white/40 mb-3">{proj.category}</p>
                           
-                          {/* Progress Slider Custom UI */}
                           <div className="flex items-center gap-4">
                             <span className="text-xs font-mono text-white/50 w-8">{proj.progress || 0}%</span>
                             <div className="flex-1 relative h-2 bg-white/5 rounded-full overflow-hidden">
@@ -456,7 +1544,6 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </div>
-
                         <div className="z-10 flex md:flex-col justify-end gap-2">
                           <button onClick={() => handleDeleteProject(proj.id)} className="p-2 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20">
                             <Trash2 className="h-4 w-4"/>
@@ -470,15 +1557,14 @@ export default function AdminPage() {
                   </div>
                 </GlassCard>
 
-                {/* --- CONTENT MANAGEMENT --- */}
-                <GlassCard className="border-white/5 shadow-xl mt-8">
-                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-purple-400">
+                {/* Content Management Form Sections */}
+                <GlassCard className="border-white/5 bg-[#0a0a0a] p-6 shadow-xl">
+                  <h3 className="text-base font-bold font-mono uppercase tracking-wider mb-6 flex items-center gap-2 text-purple-400">
                     <LayoutDashboard className="h-5 w-5" /> Page Content Management
                   </h3>
-                  
                   <div className="space-y-12">
                     
-                    {/* Photos */}
+                    {/* Hero Photos */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><ImageIcon className="h-4 w-4 text-blue-400"/> Hero Photos</h4>
                       <form onSubmit={(e) => {
@@ -488,11 +1574,7 @@ export default function AdminPage() {
                       }} className="space-y-4 mb-4">
                         <div
                           className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
-                            heroPhotoDragOver
-                              ? "border-purple-500 bg-purple-500/10"
-                              : heroPhotoPreview
-                              ? "border-purple-500/40 bg-[#0a0a0a]"
-                              : "border-white/10 bg-[#0a0a0a] hover:border-purple-500/40 hover:bg-purple-500/5"
+                            heroPhotoDragOver ? "border-purple-500 bg-purple-500/10" : "border-white/10 bg-[#050505] hover:border-purple-500/40"
                           }`}
                           onDragOver={(e) => { e.preventDefault(); setHeroPhotoDragOver(true); }}
                           onDragLeave={() => setHeroPhotoDragOver(false)}
@@ -508,52 +1590,33 @@ export default function AdminPage() {
                           }}
                           onClick={() => heroPhotoRef.current?.click()}
                         >
-                          <input
-                            ref={heroPhotoRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => setHeroPhotoPreview(ev.target?.result as string);
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
+                          <input ref={heroPhotoRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setHeroPhotoPreview(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }} />
                           {heroPhotoPreview ? (
                             <div className="relative">
                               <img src={heroPhotoPreview} alt="Preview" className="w-full h-32 object-cover rounded-xl" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl" />
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setHeroPhotoPreview(null); }}
-                                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
+                              <button type="button" onClick={(e) => { e.stopPropagation(); setHeroPhotoPreview(null); }} className="absolute top-2 right-2 p-1 bg-black text-white rounded-full"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           ) : (
                             <div className="flex flex-col items-center justify-center py-6 px-4">
-                              <ImageIcon className={`h-6 w-6 mb-2 transition-colors ${heroPhotoDragOver ? "text-purple-400" : "text-white/30"}`} />
-                              <p className="text-xs font-semibold text-white/70">{heroPhotoDragOver ? "Drop to upload" : "Drag & drop image"}</p>
+                              <ImageIcon className="h-6 w-6 mb-2 text-white/30" />
+                              <p className="text-xs text-white/50">Drag & drop image or browse files</p>
                             </div>
                           )}
                         </div>
-
                         <div className="flex gap-2">
-                          <input name="title" value={heroPhotoTitle} onChange={e => setHeroPhotoTitle(e.target.value)} required placeholder="Image Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
-                          {!heroPhotoPreview && (
-                             <input name="image_url" required={!heroPhotoPreview} placeholder="Or paste Image URL (/biolabs/hero.png)" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/50" />
-                          )}
-                          {heroPhotoPreview && (
-                             <input type="hidden" name="image_url" value={heroPhotoPreview} />
-                          )}
-                          <button type="submit" className="px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold"><Plus className="h-4 w-4"/> Add</button>
+                          <input name="title" value={heroPhotoTitle} onChange={e => setHeroPhotoTitle(e.target.value)} required placeholder="Image Title" className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                          <input type="hidden" name="image_url" value={heroPhotoPreview || ""} />
+                          <button type="submit" className="px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs">Add Photo</button>
                         </div>
                       </form>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto custom-scrollbar">
                         {data.photos?.map((p: any) => (
                           <div key={p.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
                             <div className="flex items-center gap-3">
@@ -566,784 +1629,932 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Events */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><Calendar className="h-4 w-4 text-orange-400"/> Events</h4>
-                      <form onSubmit={(e) => {
-                        handleAddContent(e, addBiolabEvent);
-                        setEventPreview(null);
-                      }} className="space-y-3 mb-4">
-                        <div className="flex gap-4">
-                          <div
-                            className={`relative w-1/3 rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
-                              eventDragOver
-                                ? "border-orange-500 bg-orange-500/10"
-                                : eventPreview
-                                ? "border-orange-500/40 bg-[#0a0a0a]"
-                                : "border-white/10 bg-[#0a0a0a] hover:border-orange-500/40 hover:bg-orange-500/5"
-                            }`}
-                            onDragOver={(e) => { e.preventDefault(); setEventDragOver(true); }}
-                            onDragLeave={() => setEventDragOver(false)}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              setEventDragOver(false);
-                              const file = e.dataTransfer.files?.[0];
-                              if (file && file.type.startsWith("image/")) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => setEventPreview(ev.target?.result as string);
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                            onClick={() => eventPhotoRef.current?.click()}
-                          >
-                            <input
-                              ref={eventPhotoRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (ev) => setEventPreview(ev.target?.result as string);
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                            />
-                            {eventPreview ? (
-                              <div className="relative h-full w-full">
-                                <img src={eventPreview} alt="Preview" className="w-full h-full object-cover rounded-xl absolute inset-0" />
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.stopPropagation(); setEventPreview(null); }}
-                                  className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors z-10"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center justify-center h-full min-h-[100px] px-2 text-center">
-                                <ImageIcon className={`h-5 w-5 mb-1 transition-colors ${eventDragOver ? "text-orange-400" : "text-white/30"}`} />
-                                <p className="text-[10px] font-semibold text-white/70">{eventDragOver ? "Drop!" : "Drag Image"}</p>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex-1 space-y-3">
-                            <div className="flex gap-2">
-                              <input name="title" required placeholder="Event Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
-                              {!eventPreview && (
-                                <input name="image_url" required={!eventPreview} placeholder="Image URL" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
-                              )}
-                              {eventPreview && (
-                                <input type="hidden" name="image_url" value={eventPreview} />
-                              )}
-                            </div>
-                            <textarea name="description" required placeholder="Event Description..." className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-16" />
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <input type="date" name="start_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
-                          <input type="date" name="end_date" required className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white/50 text-sm" />
-                          <button type="submit" className="px-6 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm">Add Event</button>
-                        </div>
-                      </form>
-                      <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-                        {data.events?.map((e: any) => (
-                          <div key={e.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
-                            <div>
-                              <p className="text-sm font-medium">{e.title}</p>
-                              <p className="text-xs text-white/40">{new Date(e.start_date).toLocaleDateString()}</p>
-                            </div>
-                            <button onClick={() => handleDeleteContent(e.id, deleteBiolabEvent)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Announcements */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><Megaphone className="h-4 w-4 text-green-400"/> Marquee Announcements</h4>
-                      <form onSubmit={(e) => handleAddContent(e, addBiolabAnnouncement)} className="flex gap-2 mb-4">
-                        <input name="content" required placeholder="Announcement Text" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                        <button type="submit" className="px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold"><Plus className="h-4 w-4"/> Add</button>
-                      </form>
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
-                        {data.announcements?.map((a: any) => (
-                          <div key={a.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
-                            <span className="text-sm text-white/70">{a.content}</span>
-                            <button onClick={() => handleDeleteContent(a.id, deleteBiolabAnnouncement)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* News */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><FileText className="h-4 w-4 text-pink-400"/> What's New</h4>
-                      <form onSubmit={(e) => handleAddContent(e, addBiolabNews)} className="flex gap-2 mb-4 items-center">
-                        <input name="title" required placeholder="News Title" className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                        <input name="link_url" placeholder="Link URL (opt)" className="w-1/4 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
-                        <input name="file_size" placeholder="File Size (e.g. 1.2 MB)" className="w-1/4 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
-                        <label className="flex items-center gap-1 text-xs text-white/50"><input type="checkbox" name="is_document" /> Doc</label>
-                        <button type="submit" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm"><Plus className="h-4 w-4"/></button>
-                      </form>
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
-                        {data.news?.map((n: any) => (
-                          <div key={n.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
-                            <span className="text-sm text-white/70">{n.title} {n.is_document && `📄 (${n.file_size})`}</span>
-                            <button onClick={() => handleDeleteContent(n.id, deleteBiolabNews)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Outreach Programs */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><GraduationCap className="h-4 w-4 text-blue-400"/> Outreach Programs</h4>
-                      <form onSubmit={(e) => handleAddContent(e, addBiolabProgram)} className="space-y-3 mb-4">
-                        <input name="title" required placeholder="Program Title (e.g. Winter Training 2026)" className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                        <div className="flex gap-2">
-                          <input name="description" required placeholder="Short description..." className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                          <button type="submit" className="px-6 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm">Add Program</button>
-                        </div>
-                      </form>
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
-                        {data.programs?.map((p: any) => (
-                          <div key={p.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
-                            <div>
-                              <p className="text-sm font-medium">{p.title}</p>
-                              <p className="text-xs text-white/40">{p.description}</p>
-                            </div>
-                            <button onClick={() => handleDeleteContent(p.id, deleteBiolabProgram)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Research Publications */}
+                    {/* Publications */}
                     <div className="border-t border-white/5 pt-8">
-                      <h4 className="font-semibold flex items-center gap-2 mb-1 text-[#eab308]"><FileText className="h-4 w-4"/> Research Papers & Publications</h4>
-                      <p className="text-xs text-white/40 mb-4">Manage the newsletter/research papers section on the BioLabs page. Mark one entry as Featured to use it as the big left-column poster.</p>
-
-                      <form onSubmit={handleAddPublication} className="space-y-3 mb-4 p-4 bg-[#0a0a0a] border border-[#eab308]/20 rounded-xl">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <input name="title" required placeholder="Title (e.g. INCUBATING DEEP TECH)" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#eab308]/50" />
-                          <input name="label" required placeholder="Ribbon Label (e.g. June 26, Featured)" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><FileText className="h-4 w-4 text-[#eab308]"/> Publications & Papers</h4>
+                      <form onSubmit={handleAddPublication} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <input name="title" required placeholder="Publication Title" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                          <input name="subtitle" placeholder="Subtitle" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
                         </div>
-                        <input name="subtitle" placeholder="Subtitle (e.g. National Hub - ET Feature 30.05.2026)" className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                        <textarea name="description" placeholder="Short description shown on the card..." className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-14 focus:outline-none" />
-                        {/* Image: drag-and-drop OR paste URL — mutually exclusive */}
-                        {pubImagePreview ? (
-                          <input type="hidden" name="image_url" value={pubImagePreview} />
-                        ) : (
-                          <input
-                            name="image_url"
-                            required
-                            placeholder="Paste Image URL (https://... or /path/to/image.png)"
-                            className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#eab308]/50"
-                          />
-                        )}
+                        <textarea name="description" placeholder="Description of findings..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-16" />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input name="image_url" placeholder="Image URL / Graphic" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                          <input name="link_url" placeholder="PDF File / Link URL" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm" />
+                        </div>
+                        <button type="submit" className="px-6 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold text-xs uppercase tracking-wider">Publish Document</button>
+                      </form>
+                      <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto custom-scrollbar">
+                        {data.publications?.map((pub: any) => (
+                          <div key={pub.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
+                            <div>
+                              <p className="text-sm font-semibold">{pub.title}</p>
+                              <p className="text-[10px] text-white/30 font-mono uppercase">{pub.label}</p>
+                            </div>
+                            <button onClick={() => handleDeleteContent(pub.id, deleteBiolabPublication)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                        {/* Drag & Drop Upload Zone */}
-                        <div
-                          className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
-                            pubDragOver
-                              ? "border-[#eab308] bg-[#eab308]/10"
-                              : pubImagePreview
-                              ? "border-[#eab308]/40 bg-[#0a0a0a]"
-                              : "border-white/10 bg-[#0a0a0a] hover:border-[#eab308]/40 hover:bg-[#eab308]/5"
-                          }`}
-                          onDragOver={(e) => { e.preventDefault(); setPubDragOver(true); }}
-                          onDragLeave={() => setPubDragOver(false)}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            setPubDragOver(false);
-                            const file = e.dataTransfer.files?.[0];
-                            if (file && file.type.startsWith("image/")) {
-                              const reader = new FileReader();
-                              reader.onload = (ev) => setPubImagePreview(ev.target?.result as string);
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          onClick={() => pubPhotoRef.current?.click()}
-                        >
-                          <input
-                            ref={pubPhotoRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => setPubImagePreview(ev.target?.result as string);
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                          {pubImagePreview ? (
-                            <div className="relative w-full h-28">
-                              <img src={pubImagePreview} alt="Preview" className="w-full h-full object-cover rounded-xl" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-xl" />
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setPubImagePreview(null); if(pubPhotoRef.current) pubPhotoRef.current.value = ""; }}
-                                className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 transition-colors"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                              <span className="absolute bottom-2 left-3 text-white/60 text-[10px] font-mono">✓ Image ready — click × to change</span>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            )}
+
+            {/* SURAKSHA CONTROL CENTER TAB */}
+            {activeTab === "suraksha" && (
+              <motion.div key="suraksha" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                
+                {/* System Status Ticker */}
+                <div className="w-full bg-blue-500/5 border border-white/10 rounded-lg overflow-hidden flex items-center h-8">
+                  <div className="bg-blue-500/10 px-3 h-full flex items-center border-r border-white/10">
+                    <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+                    <span className="ml-2 text-[9px] font-mono font-bold text-blue-400 uppercase tracking-widest whitespace-nowrap">Live Fleet Telemetry</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden relative h-full flex items-center">
+                    <motion.div 
+                      animate={{ x: ["100%", "-100%"] }}
+                      transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+                      className="flex items-center gap-12 whitespace-nowrap text-[10px] font-mono text-gray-400"
+                    >
+                      <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-green-500" /> SYSTEM HEALTH: 99.98% OPTIMAL</span>
+                      <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-blue-500" /> ACTIVE TELEMETRY STREAMS: {surakshaData?.devices?.length || 0}</span>
+                      <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-purple-500" /> PROTOCOL: HSF-SECURE-v3.2</span>
+                      <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-green-500" /> DATABASE CONNECTED</span>
+                    </motion.div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-white/10 pb-6">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Suraksha Operations</h2>
+                    <p className="text-white/50 text-sm">Enterprise digital twin simulation, live vehicle maps and hardware tracking center.</p>
+                  </div>
+                </div>
+
+                {/* Sub Tab Navigation */}
+                <div className="flex gap-2 mb-4 border-b border-white/5 pb-3">
+                  {[
+                    { id: "registry", label: "Virtual Registry", icon: Server },
+                    { id: "map", label: "Live Fleet Map", icon: MapPin },
+                    { id: "incidents", label: "Incident Reports", icon: AlertTriangle },
+                    { id: "analytics", label: "AI Anomaly Detection", icon: Zap }
+                  ].map((subTab) => (
+                    <button
+                      key={subTab.id}
+                      onClick={() => setSurakshaActiveTab(subTab.id as any)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${
+                        surakshaActiveTab === subTab.id 
+                          ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" 
+                          : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+                      }`}
+                    >
+                      <subTab.icon className="w-3.5 h-3.5" />
+                      {subTab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6">
+                  {surakshaActiveTab === "registry" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      <div className="lg:col-span-1">
+                        <GlassCard className="p-6 border-white/5 bg-[#0a0a0a]">
+                          <h2 className="text-base font-bold font-mono uppercase tracking-wider text-white mb-4 flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-blue-400" /> Provision Virtual Node
+                          </h2>
+                          <form onSubmit={handleCreateDevice} className="space-y-4">
+                            <div>
+                              <label className="block text-[10px] font-mono text-gray-400 mb-1 uppercase">Vehicle Type</label>
+                              <select name="vehicle_type" className="w-full bg-[#050505] border border-white/10 rounded-md p-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="CAB">Cab / Taxi</option>
+                                <option value="AUTO">Auto Rickshaw</option>
+                                <option value="BUS">School Bus</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono text-gray-400 mb-1 uppercase">Vehicle Registration</label>
+                              <input name="vehicle_reg" required placeholder="e.g., MH-12-AB-5678" className="w-full bg-[#050505] border border-white/10 rounded-md p-2.5 text-white" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono text-gray-400 mb-1 uppercase">Driver Name</label>
+                              <input name="driver_name" required placeholder="Rajesh Kumar" className="w-full bg-[#050505] border border-white/10 rounded-md p-2.5 text-white" />
+                            </div>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-mono uppercase tracking-wider text-xs font-bold py-2.5 rounded-md transition-colors">
+                              Deploy IoT Node
+                            </button>
+                          </form>
+                        </GlassCard>
+                      </div>
+
+                      <div className="lg:col-span-2 space-y-6">
+                        <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white flex items-center gap-2">
+                          <Server className="w-5 h-5 text-gray-400" /> Active IoT Hardware Nodes
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {surakshaData?.devices?.map((device: any) => (
+                            <GlassCard key={device.id} className="p-5 flex flex-col gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div className="text-[9px] font-mono text-gray-500 mb-1 uppercase">Node device identifier</div>
+                                  <div className="text-base font-bold text-white tracking-wide font-mono">{device.id}</div>
+                                </div>
+                                <div className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${device.online_state ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                  {device.online_state ? 'ONLINE' : 'OFFLINE'}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                  <div className="text-gray-500 uppercase text-[9px] font-mono mb-0.5">Registration</div>
+                                  <div className="text-gray-200 font-mono">{device.vehicle_reg}</div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-500 uppercase text-[9px] font-mono mb-0.5">Driver Operator</div>
+                                  <div className="text-gray-200">{device.driver_name}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 border-t border-white/5 pt-4 mt-2">
+                                <span className="flex items-center gap-1 text-[10px] font-mono text-gray-400"><Battery className="w-3.5 h-3.5 text-green-400" /> {device.battery_level}%</span>
+                                <span className="flex items-center gap-1 text-[10px] font-mono text-gray-400"><Signal className="w-3.5 h-3.5 text-blue-400" /> {device.signal_strength} Bars</span>
+                                <span className="flex items-center gap-1 text-[10px] font-mono text-gray-400">
+                                  {device.encryption_status ? <Shield className="w-3.5 h-3.5 text-green-400"/> : <ShieldAlert className="w-3.5 h-3.5 text-red-400" />}
+                                  {device.encryption_status ? "AES Secured" : "Unsecured"}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                                <button
+                                  onClick={() => setQrModal({ deviceId: device.id, vehicleReg: device.vehicle_reg, driverName: device.driver_name })}
+                                  className="px-2.5 py-1.5 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 text-blue-400 text-[10px] font-mono uppercase tracking-wider font-bold rounded-lg transition-all"
+                                >
+                                  QR Badge
+                                </button>
+                                <div className="flex gap-2">
+                                  <button onClick={() => toggleSimulation(device.id)} className={`px-2 py-1 text-[10px] font-mono font-bold uppercase rounded transition-colors ${activeSimulations[device.id] ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                    {activeSimulations[device.id] ? "Stop" : "Simulate"}
+                                  </button>
+                                  <button onClick={() => handleSimulateEvent(device.id, 'failsafe')} className="px-2 py-1 bg-purple-500/20 text-purple-400 text-[10px] font-mono rounded">Failsafe</button>
+                                  <button onClick={() => handleSimulateEvent(device.id, 'tamper')} className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-mono rounded">Tamper</button>
+                                </div>
+                              </div>
+                            </GlassCard>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {surakshaActiveTab === "map" && (
+                    <GlassCard className="p-6 h-[600px] flex flex-col bg-[#0a0a0a] border-white/5">
+                      <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white mb-4">Active Operations Map</h3>
+                      <div className="flex-1 bg-black/50 rounded-xl border border-white/10 overflow-hidden relative">
+                        <VehicleMap telemetryData={surakshaData?.telemetry || []} sosActive={!!globalAlert} playAlarm={alarmPlaying} />
+                      </div>
+                    </GlassCard>
+                  )}
+
+                  {surakshaActiveTab === "incidents" && (
+                    <GlassCard className="p-6 bg-[#0a0a0a] border-white/5">
+                      <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white mb-4">Emergency Incident Log</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-white/5 text-gray-400 uppercase font-mono tracking-widest text-[9px]">
+                            <tr>
+                              <th className="p-3">Timestamp</th>
+                              <th className="p-3">Device ID</th>
+                              <th className="p-3">Type</th>
+                              <th className="p-3">Incident details</th>
+                              <th className="p-3">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5 font-mono">
+                            {surakshaData?.incidents?.map((inc: any) => (
+                              <tr key={inc.id} className="hover:bg-white/5">
+                                <td className="p-3 text-gray-500">{new Date(inc.timestamp).toLocaleString()}</td>
+                                <td className="p-3 text-blue-400">{inc.device_id}</td>
+                                <td className="p-3"><span className="px-2 py-0.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-[9px] font-bold">{inc.type}</span></td>
+                                <td className="p-3 text-gray-300">{inc.description}</td>
+                                <td className="p-3 text-gray-400 uppercase">{inc.status}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </GlassCard>
+                  )}
+
+                  {surakshaActiveTab === "analytics" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      <div className="lg:col-span-2">
+                        <PredictiveAnalytics devices={surakshaData?.devices || []} />
+                      </div>
+                      <GlassCard className="p-6 bg-[#0a0a0a] border-white/5">
+                        <h4 className="text-xs font-mono text-purple-400 uppercase tracking-widest mb-4">Model Details</h4>
+                        <div className="space-y-4 text-[10px] font-mono text-white/50 leading-relaxed uppercase">
+                          <p>Inference Engine: Healix-Biomed-v4</p>
+                          <p>Handshake accuracy: 99.82%</p>
+                          <p>Dynamic override model latency: 45ms</p>
+                          <p className="text-purple-400 animate-pulse font-bold mt-6">Active model drift calibration</p>
+                        </div>
+                      </GlassCard>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ACADEMY CRM TAB */}
+            {activeTab === "academy" && (
+              <motion.div key="academy" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-white/10 pb-6">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Academy Control Center</h2>
+                    <p className="text-white/50 text-sm">Manage student cohorts, active courses, and instructor portals.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    {academyActiveTab === "courses" && (
+                      <Button onClick={() => setShowAcademyCourseModal(true)} className="flex items-center gap-2 px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider">
+                        <Book className="w-4 h-4" /> Add Course
+                      </Button>
+                    )}
+                    {academyActiveTab === "mentors" && (
+                      <Button onClick={() => { setNewAcademyMentorPhotoUrl(""); setShowAcademyMentorModal(true); }} className="flex items-center gap-2 px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider">
+                        <UserPlus className="w-4 h-4" /> Add Instructor
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sub-tabs */}
+                <div className="flex gap-2 mb-6 border-b border-white/5 pb-3">
+                  {[
+                    { id: "dashboard", label: "Cohort Analytics" },
+                    { id: "courses", label: "Academy Courses" },
+                    { id: "mentors", label: "Academy Instructors" }
+                  ].map((subTab) => (
+                    <button
+                      key={subTab.id}
+                      onClick={() => setAcademyActiveTab(subTab.id as any)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${
+                        academyActiveTab === subTab.id 
+                          ? "bg-yellow-500/20 text-[#eab308] border border-yellow-500/30" 
+                          : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+                      }`}
+                    >
+                      {subTab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {academyActiveTab === "dashboard" && (
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {[
+                        { label: "Enrolled Students", value: "1,284", icon: Users, color: "text-[#eab308]" },
+                        { label: "Monthly Intake", value: "84.2K", icon: DollarSign, color: "text-emerald-400" },
+                        { label: "Active Cohorts", value: "12", icon: BookOpen, color: "text-blue-400" },
+                        { label: "Completion Rate", value: "92%", icon: Star, color: "text-purple-400" }
+                      ].map((stat, i) => (
+                        <GlassCard key={i} className="p-6 border-white/5 bg-[#0a0a0a]">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className={`p-2.5 rounded-xl bg-white/5 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
+                            <span className="text-emerald-400 text-xs font-mono font-bold">+8%</span>
+                          </div>
+                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-1">{stat.label}</p>
+                          <p className="text-2xl font-black font-mono text-white">{stat.value}</p>
+                        </GlassCard>
+                      ))}
+                    </div>
+
+                    {/* Enrollment queue */}
+                    <GlassCard className="border-white/5 bg-[#0a0a0a] p-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-base font-mono uppercase tracking-wider">Active Enrollment Logs</h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                          <thead className="bg-white/5 text-gray-400 uppercase font-mono tracking-widest text-[9px]">
+                            <tr>
+                              <th className="p-3">Student Name</th>
+                              <th className="p-3">Selected Course</th>
+                              <th className="p-3">Payment status</th>
+                              <th className="p-3">Intake Date</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {[
+                              { name: "Rahul Sharma", email: "rahul@iitm.ac.in", course: "AI Systems Engineering", status: "Paid", date: "Oct 12, 2025" },
+                              { name: "Sneha Patel", email: "sneha@google.com", course: "Full Stack Product", status: "Paid", date: "Oct 14, 2025" },
+                              { name: "Amit Kumar", email: "amit@startup.io", course: "Genomic AI Research", status: "Pending", date: "Oct 15, 2025" },
+                              { name: "Priya Singh", email: "priya@stanford.edu", course: "AI Systems Engineering", status: "Paid", date: "Oct 15, 2025" },
+                            ].map((e, idx) => (
+                              <tr key={idx} className="hover:bg-white/5">
+                                <td className="p-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white/10" />
+                                    <div>
+                                      <p className="text-sm font-semibold">{e.name}</p>
+                                      <p className="text-xs text-white/30">{e.email}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-sm font-semibold text-gray-200">{e.course}</td>
+                                <td className="p-3">
+                                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider ${e.status === 'Paid' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/20 text-[#eab308] border border-yellow-500/30'}`}>
+                                    {e.status}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-xs text-gray-500 font-mono">{e.date}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </GlassCard>
+                  </div>
+                )}
+
+                {academyActiveTab === "courses" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {academyCourses.map(course => (
+                      <GlassCard key={course.id} className="p-5 border-white/5 bg-[#0a0a0a] relative group">
+                        <div className="aspect-video relative rounded-lg overflow-hidden mb-4 bg-white/5">
+                          {course.thumbnail && <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />}
+                        </div>
+                        <h3 className="font-bold text-base mb-2">{course.title}</h3>
+                        <p className="text-xs text-white/50 line-clamp-2 mb-4">{course.shortDescription}</p>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-[#eab308] font-bold font-mono">₹{course.price}</span>
+                          <span className="text-white/40 font-mono">{course.duration}</span>
+                        </div>
+                        <button onClick={() => handleDeleteAcademyCourse(course.id)} className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </GlassCard>
+                    ))}
+                  </div>
+                )}
+
+                {academyActiveTab === "mentors" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {academyMentors.map(mentor => (
+                      <GlassCard key={mentor.id} className="p-5 border-white/5 bg-[#0a0a0a] text-center relative group">
+                        <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-2 border-white/10 relative group/avatar cursor-pointer">
+                          {isUploadingAcademy === mentor.id ? (
+                            <div className="absolute inset-0 bg-black/75 flex items-center justify-center">
+                              <Loader2 className="w-5 h-5 text-[#eab308] animate-spin" />
                             </div>
                           ) : (
-                            <div className="flex flex-col items-center justify-center py-5 px-4 text-center">
-                              <ImageIcon className={`h-6 w-6 mb-1.5 transition-colors ${pubDragOver ? "text-[#eab308]" : "text-white/30"}`} />
-                              <p className="text-xs font-semibold text-white/60">{pubDragOver ? "Drop to upload" : "Drag & drop image, or click to browse"}</p>
-                              <p className="text-[10px] text-white/30 mt-0.5">PNG, JPG, WebP — supersedes the URL field above</p>
-                            </div>
+                            <>
+                              <Image src={mentor.photoUrl || "https://i.pravatar.cc/150"} alt={mentor.name} width={80} height={80} className="object-cover w-full h-full" />
+                              <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                <Upload className="w-3.5 h-3.5 mb-1 text-[#eab308]" /> Update
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAcademyPhotoUpload(e, mentor.id)} />
+                              </label>
+                            </>
                           )}
                         </div>
-                        <div className="flex gap-3 items-center">
-                          <input name="link_url" placeholder="Link URL (optional, # for none)" className="flex-1 bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
-                          <select name="ribbon_color" className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none">
-                            <option value="from-green-600 to-emerald-900">Green</option>
-                            <option value="from-[#ca8a04] to-amber-900">Amber</option>
-                            <option value="from-blue-600 to-indigo-900">Blue</option>
-                            <option value="from-purple-600 to-purple-900">Purple</option>
-                            <option value="from-red-600 to-rose-900">Red</option>
-                          </select>
-                          <label className="flex items-center gap-2 text-xs text-white/60 whitespace-nowrap">
-                            <input type="checkbox" name="is_featured" className="accent-[#eab308]" /> 
-                            Set as Featured
-                          </label>
-                          <button type="submit" className="px-5 py-2 bg-[#eab308] hover:bg-[#ca8a04] text-black rounded-xl font-bold text-sm transition-colors"><Plus className="h-4 w-4 inline -mt-0.5"/> Add</button>
-                        </div>
-                      </form>
-
-                      <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-                        {data.publications?.map((pub: any) => (
-                          <div key={pub.id} className="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-xl group">
-                            <img src={pub.image_url} alt="thumb" className="w-12 h-14 object-cover rounded bg-black shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                {pub.is_featured && <span className="text-[9px] bg-[#eab308]/20 text-[#eab308] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Featured</span>}
-                                <p className="text-sm font-bold truncate">{pub.title}</p>
-                              </div>
-                              <p className="text-xs text-white/40 truncate">{pub.subtitle || pub.label}</p>
-                            </div>
-                            <button onClick={() => handleDeleteContent(pub.id, deleteBiolabPublication)} className="text-white/20 hover:text-red-400 p-2 transition-colors shrink-0"><Trash2 className="h-4 w-4"/></button>
-                          </div>
-                        ))}
-                        {(!data.publications || data.publications.length === 0) && (
-                          <p className="text-center text-white/30 italic text-sm py-4">No publications yet. Add one above.</p>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                </GlassCard>
-
-              </motion.div>
-            )}
-
-            {/* SHESECURE TAB */}
-            {activeTab === "shesecure" && (
-              <motion.div key="shesecure" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">Fleet Operations</h2>
-                    <p className="text-white/50">Manage vehicles and monitor live emergency trips.</p>
-                  </div>
-                </div>
-
-                {/* Animated Radar / Live Map */}
-                <GlassCard className="p-0 overflow-hidden relative h-[350px] border-orange-500/20 shadow-[0_0_40px_rgba(249,115,22,0.1)]">
-                  <div className="absolute inset-0 bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-                    
-                    {/* Radar Circles */}
-                    <div className="absolute w-[200px] h-[200px] rounded-full border border-orange-500/10" />
-                    <div className="absolute w-[400px] h-[400px] rounded-full border border-orange-500/10" />
-                    <div className="absolute w-[600px] h-[600px] rounded-full border border-orange-500/10" />
-                    
-                    {/* Radar Sweep */}
-                    <motion.div 
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                      className="absolute w-[600px] h-[600px] rounded-full"
-                      style={{ background: "conic-gradient(from 0deg, transparent 70%, rgba(249, 115, 22, 0.2) 100%)" }}
-                    />
-
-                    {/* Simulated active trip blips */}
-                    {data.trips.filter((t:any) => t.status === 'active').map((trip: any, i: number) => {
-                      // Randomize position based on index for demo
-                      const angle = (i * 137.5) * (Math.PI / 180);
-                      const radius = 100 + (i * 30);
-                      const top = `calc(50% + ${Math.sin(angle) * radius}px)`;
-                      const left = `calc(50% + ${Math.cos(angle) * radius}px)`;
-
-                      return (
-                        <div key={trip.id} className="absolute" style={{ top, left }}>
-                          <div className="relative">
-                            <div className="w-3 h-3 bg-orange-500 rounded-full shadow-[0_0_15px_5px_rgba(249,115,22,0.6)] animate-pulse" />
-                            <div className="absolute top-4 -left-10 bg-black/80 backdrop-blur-md border border-white/10 px-2 py-1 rounded-md text-[10px] text-white whitespace-nowrap">
-                              {trip.vehicles?.vehicle_number || "Unknown"}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {/* Realtime IoT Pulsar */}
-                    {latestTelemetry && (
-                      <div 
-                        className="absolute z-20" 
-                        style={{ 
-                          top: `calc(50% + ${Math.sin(Date.now() / 1000) * 150}px)`, 
-                          left: `calc(50% + ${Math.cos(Date.now() / 1000) * 150}px)` 
-                        }}
-                      >
-                         <motion.div 
-                          initial={{ scale: 0 }}
-                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                          className="absolute inset-0 bg-blue-500 rounded-full"
-                        />
-                        <div className="w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.8)] border-2 border-white relative z-10" />
-                        <div className="absolute top-6 -left-12 bg-blue-600/90 backdrop-blur-md border border-blue-400/50 px-2 py-1 rounded-md text-[10px] text-white whitespace-nowrap font-bold shadow-lg">
-                          IOT PULSE: {latestTelemetry.device_id}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {activeTrips === 0 && !latestTelemetry && (
-                      <div className="absolute z-10 text-white/30 flex items-center gap-2 font-mono text-sm">
-                        <MapPin className="h-4 w-4" /> No Active Signals
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="absolute top-4 left-4 z-10">
-                    <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${(activeTrips > 0 || latestTelemetry) ? 'bg-orange-500 animate-pulse' : 'bg-white/20'}`} />
-                      <span className="text-xs font-mono text-white/70">GPS RADAR {(activeTrips > 0 || latestTelemetry) ? 'ACTIVE' : 'STANDBY'}</span>
-                    </div>
-                  </div>
-                </GlassCard>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Vehicle Management */}
-                  <GlassCard className="border-white/5">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg font-bold flex items-center gap-2"><Car className="h-5 w-5 text-orange-400" /> Fleet Registry</h3>
-                      <span className="px-2 py-1 bg-white/5 rounded-md text-xs text-white/50 font-mono">{fleetSize} total</span>
-                    </div>
-                    
-                    <form onSubmit={handleAddVehicle} className="mb-6 flex gap-2">
-                      <div className="flex-1 flex gap-2">
-                        <input name="driver_name" required placeholder="Driver Name" className="w-1/3 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
-                        <input name="vehicle_number" required placeholder="Plate No." className="w-1/3 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
-                        <input name="iot_device_id" placeholder="IoT Device ID (Opt)" className="w-1/3 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
-                      </div>
-                      <button type="submit" className="px-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl flex flex-col items-center justify-center gap-1 transition-colors group">
-                        <Plus className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] uppercase font-bold tracking-wider">Add</span>
-                      </button>
-                    </form>
-
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                      {data.vehicles.map((v: any) => (
-                        <div key={v.id} className="p-3 bg-white/[0.02] border border-white/5 rounded-xl flex flex-col gap-3 group hover:border-orange-500/20 transition-colors">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-orange-400 transition-colors"><Car className="h-4 w-4"/></div>
-                              <div>
-                                <p className="font-bold text-sm text-white/90">{v.vehicle_number}</p>
-                                <p className="text-xs text-white/50">
-                                  {v.driver_name} <span className="mx-1">•</span> <span className="font-mono text-orange-400/80">{v.qr_code}</span>
-                                  {v.iot_device_id && <><span className="mx-1">•</span><span className="font-mono text-blue-400/80">IoT: {v.iot_device_id}</span></>}
-                                </p>
-                              </div>
-                            </div>
-                            <button onClick={() => handleDeleteVehicle(v.id)} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="h-4 w-4" /></button>
-                          </div>
-                          {v.qr_code && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <button
-                                onClick={() => setQrModal({ deviceId: v.iot_device_id || v.id, vehicleReg: v.vehicle_number, driverName: v.driver_name })}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 text-xs font-medium rounded-lg transition-all"
-                              >
-                                🏷 Branded QR Card
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-                                  navigator.clipboard.writeText(`${siteUrl}/suraksha/start?vid=${v.id}`);
-                                  alert("Test link copied to clipboard!");
-                                }}
-                                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium w-fit bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/30"
-                              >
-                                <LinkIcon className="h-3 w-3" /> Copy Test Link
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {fleetSize === 0 && <div className="text-center py-4 text-xs text-white/30 italic">No vehicles registered.</div>}
-                    </div>
-                  </GlassCard>
-
-                  {/* Trip Logs */}
-                  <GlassCard className="border-white/5">
-                    <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Activity className="h-5 w-5 text-orange-400" /> Recent Trip Logs</h3>
-                    <div className="relative pl-4 border-l border-white/10 space-y-6">
-                      {data.trips.slice(0, 5).map((trip: any) => (
-                        <div key={trip.id} className="relative">
-                          <div className={`absolute -left-[21px] w-2.5 h-2.5 rounded-full border-2 border-[#111] ${trip.status === 'active' ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)] animate-pulse' : 'bg-white/20'}`} />
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-xs text-white/70">TRIP-{trip.id.substring(0, 6).toUpperCase()}</span>
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${trip.status === 'active' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-white/5 text-white/40 border border-white/10'}`}>
-                                {trip.status}
-                              </span>
-                            </div>
-                            <p className="text-sm">{trip.vehicles?.vehicle_number || "Unknown Vehicle"}</p>
-                            <p className="text-xs text-white/40 mt-1">{new Date(trip.created_at).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      ))}
-                      {data.trips.length === 0 && <p className="text-xs text-white/30 italic pl-2">No trips recorded in the system.</p>}
-                    </div>
-                  </GlassCard>
-                </div>
-
-                {/* Session Photos Management */}
-                <GlassCard className="border-white/5 mt-8">
-                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5 text-pink-400" /> Session Photos
-                    <span className="text-xs text-white/40 font-normal ml-2">— displayed in the SheSecure photo marquee</span>
-                  </h3>
-
-                  {/* Drag-drop upload zone */}
-                  <div
-                    className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 mb-4 cursor-pointer ${
-                      photoDragOver
-                        ? "border-pink-500 bg-pink-500/10"
-                        : photoPreview
-                        ? "border-pink-500/40 bg-[#0a0a0a]"
-                        : "border-white/10 bg-[#0a0a0a] hover:border-pink-500/40 hover:bg-pink-500/5"
-                    }`}
-                    onDragOver={(e) => { e.preventDefault(); setPhotoDragOver(true); }}
-                    onDragLeave={() => setPhotoDragOver(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setPhotoDragOver(false);
-                      const file = e.dataTransfer.files?.[0];
-                      if (file && file.type.startsWith("image/")) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    onClick={() => photoFileRef.current?.click()}
-                  >
-                    <input
-                      ref={photoFileRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                    {photoPreview ? (
-                      <div className="relative">
-                        <img src={photoPreview} alt="Preview" className="w-full max-h-64 object-cover rounded-xl" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl" />
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setPhotoPreview(null); }}
-                          className="absolute top-3 right-3 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
+                        <h3 className="font-bold text-sm">{mentor.name}</h3>
+                        <p className="text-xs text-[#eab308] font-mono mt-1">{mentor.role}</p>
+                        <p className="text-[10px] text-white/40 mt-2 line-clamp-2">{mentor.bio}</p>
+                        <button onClick={() => handleDeleteAcademyMentor(mentor.id)} className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                        <p className="absolute bottom-3 left-3 text-xs text-white/60">Click to replace</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-10 px-4">
-                        <div className={`p-4 rounded-2xl mb-3 transition-colors ${photoDragOver ? "bg-pink-500/20" : "bg-white/5"}`}>
-                          <ImageIcon className={`h-8 w-8 transition-colors ${photoDragOver ? "text-pink-400" : "text-white/30"}`} />
-                        </div>
-                        <p className="text-sm font-semibold text-white/70">{photoDragOver ? "Drop to upload" : "Drag & drop an image here"}</p>
-                        <p className="text-xs text-white/30 mt-1">or click to browse · PNG, JPG, WebP</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* URL fallback + caption + submit */}
-                  <div className="flex gap-2">
-                    <input
-                      value={photoCaption}
-                      onChange={(e) => setPhotoCaption(e.target.value)}
-                      placeholder="Caption (e.g. Digital Safety Training)"
-                      className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-500/50"
-                    />
-                    {!photoPreview && (
-                      <input
-                        id="photo-url-fallback"
-                        placeholder="Or paste image URL"
-                        className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-500/50"
-                      />
-                    )}
-                    <button
-                      disabled={photoAdding || (!photoPreview && !(document?.getElementById("photo-url-fallback") as HTMLInputElement)?.value)}
-                      onClick={async () => {
-                        const urlInput = document?.getElementById("photo-url-fallback") as HTMLInputElement;
-                        const imageUrl = photoPreview || urlInput?.value?.trim();
-                        if (!imageUrl || !photoCaption.trim()) {
-                          alert("Please add an image and a caption.");
-                          return;
-                        }
-                        setPhotoAdding(true);
-
-                        // In mock mode, we save to local storage for persistence
-                        if (typeof window !== 'undefined') {
-                          const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
-                          const newPhoto = {
-                            id: 'mock-' + Date.now(),
-                            caption: photoCaption.trim(),
-                            image_url: imageUrl,
-                            created_at: new Date().toISOString()
-                          };
-                          localStorage.setItem('healix_mock_photos', JSON.stringify([newPhoto, ...localPhotos]));
-                        }
-
-                        const fd = new FormData();
-                        fd.append("caption", photoCaption.trim());
-                        fd.append("image_url", imageUrl);
-                        const res = await addSessionPhoto(fd);
-                        if (res?.error) {
-                          alert(res.error);
-                        } else {
-                          setPhotoPreview(null);
-                          setPhotoCaption("");
-                          if (urlInput) urlInput.value = "";
-                          fetchData();
-                        }
-                        setPhotoAdding(false);
-                      }}
-                      className="px-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-40 text-white rounded-xl flex items-center gap-1 transition-colors text-sm font-bold shrink-0"
-                    >
-                      {photoAdding ? (
-                        <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <><Plus className="h-4 w-4" /> Add Photo</>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Photos grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1 mt-6">
-                    {(data.session_photos || []).map((p: any) => (
-                      <div key={p.id} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-video">
-                        <img src={p.image_url} alt={p.caption} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                        <p className="absolute bottom-2 left-2 right-8 text-xs text-white font-semibold truncate">{p.caption}</p>
-                        <button
-                          onClick={() => handleDeleteContent(p.id, deleteSessionPhoto)}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
+                      </GlassCard>
                     ))}
-                    {(data.session_photos || []).length === 0 && (
-                      <div className="col-span-full py-8 text-center text-white/30 border border-dashed border-white/10 rounded-xl">
-                        No session photos yet. Upload or paste a URL above.
-                      </div>
-                    )}
                   </div>
-                </GlassCard>
+                )}
               </motion.div>
             )}
 
-            {/* SYSTEM TAB */}
-            {activeTab === "system" && (
-              <motion.div key="system" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">System Logs</h2>
-                  <p className="text-white/50">Infrastructure health and automated diagnostics.</p>
+            {/* CORPORATE MENTORS/ADVISORS TAB */}
+            {activeTab === "mentors" && (
+              <motion.div key="mentors" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Mentors & Leaders</h2>
+                    <p className="text-white/50 text-sm">Manage corporate advisors and leadership profiles appearing on the About page.</p>
+                  </div>
+                  <button onClick={openCorpAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                    <Plus className="w-4 h-4" /> Add Mentor
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <GlassCard className="border-white/5">
-                    <h3 className="font-bold flex items-center gap-2 mb-4"><Database className="h-5 w-5 text-green-400" /> Database Integrity</h3>
-                    <div className="space-y-3 font-mono text-xs text-white/70">
-                      <div className="flex justify-between border-b border-white/5 pb-2"><span>Connection</span> <span className="text-green-400">OK</span></div>
-                      <div className="flex justify-between border-b border-white/5 pb-2"><span>Latency</span> <span>42ms</span></div>
-                      <div className="flex justify-between border-b border-white/5 pb-2"><span>Users Table</span> <span>Synchronized</span></div>
-                      <div className="flex justify-between border-b border-white/5 pb-2"><span>Storage Bucket</span> <span>2.1GB / 50GB</span></div>
-                    </div>
-                  </GlassCard>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {corpMentors.map((m) => (
+                    <GlassCard key={m.id} className={`p-5 flex flex-col gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${m.active ? "opacity-100" : "opacity-55"}`}>
+                      <div className="flex gap-4">
+                        <div 
+                          className={`w-20 h-20 rounded-full overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                            corpUploadingFor === m.id ? "border-emerald-500 bg-emerald-500/20 scale-105" : "border-white/10"
+                          }`}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleCorpPhotoDrop(e, m.id)}
+                        >
+                          {m.photo_url ? (
+                            <Image src={m.photo_url} alt={m.name} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{m.name[0]}</div>
+                          )}
+                          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                            <Upload className="w-3.5 h-3.5 mb-1 text-emerald-400 animate-bounce" /> Drag & Drop
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCorpPhotoUpload(e, m.id)} />
+                          </label>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{m.role}</p>
+                          <h3 className="text-base font-bold text-white">{m.name}</h3>
+                          <p className="text-xs text-gray-500 font-medium">{m.organization}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                        <div className="flex gap-1">
+                          <button onClick={() => moveCorpOrder(m, "up")} className="p-1.5 bg-white/5 rounded"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                          <button onClick={() => moveCorpOrder(m, "down")} className="p-1.5 bg-white/5 rounded"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={() => toggleCorpActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+                            {m.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                          </button>
+                          <button onClick={() => openCorpEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                          <button onClick={() => handleCorpDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded"><Trash2 className="w-3.5 h-3.5"/></button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-                  <GlassCard className="border-white/5">
-                    <h3 className="font-bold flex items-center gap-2 mb-4"><AlertTriangle className="h-5 w-5 text-yellow-400" /> Security Feed</h3>
-                    <div className="space-y-3 font-mono text-[10px] text-white/50">
-                      <p>[{new Date().toISOString().split('T')[1].substring(0,8)}] Admin session initiated.</p>
-                      <p>[{new Date(Date.now() - 3600000).toISOString().split('T')[1].substring(0,8)}] Automated backup completed.</p>
-                      <p className="text-yellow-400/80">[{new Date(Date.now() - 7200000).toISOString().split('T')[1].substring(0,8)}] Multiple failed login attempts blocked from IP 192.168.1.104</p>
-                      <p>[{new Date(Date.now() - 86400000).toISOString().split('T')[1].substring(0,8)}] Database index rebuilt successfully.</p>
-                    </div>
-                  </GlassCard>
+            {/* ENGINEERING TEAM TAB */}
+            {activeTab === "team" && (
+              <motion.div key="team" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Engineering Team</h2>
+                    <p className="text-white/50 text-sm">Manage software & clinical engineers appearing on the About page.</p>
+                  </div>
+                  <button onClick={openTeamAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                    <Plus className="w-4 h-4" /> Add Team Member
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {teamMembers.map((m) => (
+                    <GlassCard key={m.id} className={`p-5 flex flex-col gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${m.active ? "opacity-100" : "opacity-55"}`}>
+                      <div className="flex gap-4">
+                        <div 
+                          className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                            teamUploadingFor === m.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                          }`}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleTeamPhotoDrop(e, m.id)}
+                        >
+                          {m.photo_url ? (
+                            <Image src={m.photo_url} alt={m.role} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{m.role[0]}</div>
+                          )}
+                          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                            <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleTeamPhotoUpload(e, m.id)} />
+                          </label>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider">{m.role}</p>
+                          <h3 className="text-base font-bold text-white">{m.name || "Unnamed"}</h3>
+                          <p className="text-xs text-gray-500 font-medium">{m.focus}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                        <div className="flex gap-1">
+                          <button onClick={() => moveTeamOrder(m, "up")} className="p-1.5 bg-white/5 rounded"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                          <button onClick={() => moveTeamOrder(m, "down")} className="p-1.5 bg-white/5 rounded"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={() => toggleTeamActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                            {m.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                          </button>
+                          <button onClick={() => openTeamEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                          <button onClick={() => handleTeamDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded"><Trash2 className="w-3.5 h-3.5"/></button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* PODCASTS TAB */}
+            {activeTab === "podcasts" && (
+              <motion.div key="podcasts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Podcasts Manager</h2>
+                    <p className="text-white/50 text-sm">Manage dynamic video podcast episodes appearing on the Home page.</p>
+                  </div>
+                  <button onClick={openPodcastAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                    <Plus className="w-4 h-4" /> Add Episode
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {podcasts.map((p) => (
+                    <GlassCard key={p.id} className={`p-5 flex flex-col gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${p.active ? "opacity-100" : "opacity-55"}`}>
+                      <div className="flex gap-4">
+                        <div 
+                          className={`w-24 h-16 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                            podcastUploadingFor === p.id ? "border-red-500 bg-red-500/20 scale-105" : "border-white/10"
+                          }`}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handlePodcastPhotoDrop(e, p.id)}
+                        >
+                          {p.thumbnail_url ? (
+                            <Image src={p.thumbnail_url} alt={p.title} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-bold bg-[#111]">No Thumb</div>
+                          )}
+                          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                            <Upload className="w-3.5 h-3.5 mb-1 text-red-400 animate-bounce" /> Drag & Drop
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handlePodcastPhotoUpload(e, p.id)} />
+                          </label>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] font-mono text-red-450 uppercase tracking-wider truncate">Youtube Episode</p>
+                          <h3 className="text-sm font-bold text-white truncate">{p.title || "Untitled"}</h3>
+                          <p className="text-xs text-gray-500 truncate">{p.duration || "15:00"}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                        <div className="flex gap-1">
+                          <button onClick={() => movePodcastOrder(p, "up")} className="p-1.5 bg-white/5 rounded"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                          <button onClick={() => movePodcastOrder(p, "down")} className="p-1.5 bg-white/5 rounded"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={() => togglePodcastActive(p)} className={`p-1.5 rounded transition-all ${p.active ? "bg-red-500/10 text-red-400" : "bg-red-500/10 text-red-400"}`}>
+                            {p.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                          </button>
+                          <button onClick={() => openPodcastEditForm(p)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                          <button onClick={() => handlePodcastDelete(p.id, p.title)} className="p-1.5 bg-red-500/10 text-red-400 rounded"><Trash2 className="w-3.5 h-3.5"/></button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  ))}
                 </div>
               </motion.div>
             )}
 
             {/* BRANDING TAB */}
             {activeTab === "branding" && (
-              <motion.div key="branding" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Identity & Branding</h2>
-                  <p className="text-white/50">Manage your scannable branded assets and infrastructure logos.</p>
+              <motion.div key="branding" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="mb-6 border-b border-white/10 pb-4">
+                  <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Branding Manager</h2>
+                  <p className="text-white/50 text-sm">Manage clinical session photo albums and global marketing assets.</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                  {/* Preview Section */}
-                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <BrandedQRCard 
-                      deviceId="HEALIX-SAFE-001"
-                      vehicleReg="DL-1-SAFE-2026"
-                      driverName="Healix Safety Driver"
-                      rideUrl="https://healix-nu.vercel.app/ride/HEALIX-SAFE-001"
-                    />
-                  </motion.div>
+                {/* Sub-tabs */}
+                <div className="flex gap-2 mb-6 border-b border-white/5 pb-3">
+                  {[
+                    { id: "assets", label: "Identity QR Assets" },
+                    { id: "gallery", label: "Clinical Gallery" },
+                    { id: "brands", label: "Our Brands" }
+                  ].map((subTab) => (
+                    <button
+                      key={subTab.id}
+                      onClick={() => setBrandingActiveSubTab(subTab.id as any)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${
+                        brandingActiveSubTab === subTab.id 
+                          ? "bg-yellow-500/20 text-[#eab308] border border-yellow-500/30" 
+                          : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+                      }`}
+                    >
+                      {subTab.label}
+                    </button>
+                  ))}
+                </div>
 
-                  {/* Configuration / Details */}
-                  <div className="space-y-6">
-                    <GlassCard className="p-6">
-                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        <Shield className="text-blue-400 w-5 h-5" /> Infrastructure Logo
-                      </h3>
-                      <p className="text-xs text-white/50 mb-6 leading-relaxed">
-                        This scannable identity card combines the **Healix Shield** with high-error-correction QR logic. Engineered for visibility in high-stress emergency environments.
-                      </p>
-
-                      <div className="space-y-3">
-                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Standard Print Density</p>
-                          <p className="text-base font-bold">300 DPI / Matte Finish</p>
+                {brandingActiveSubTab === "gallery" && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <GlassCard className="p-6 border-white/5 bg-[#0a0a0a] shadow-xl">
+                      <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white mb-4 flex items-center gap-2"><ImageIcon className="w-5 h-5 text-indigo-400" /> Upload Session Photo</h3>
+                      <form onSubmit={(e) => {
+                        handleAddContent(e, addSessionPhoto);
+                        setPhotoPreview(null);
+                        setPhotoCaption("");
+                      }} className="space-y-4">
+                        <div
+                          className={`relative rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
+                            photoDragOver ? "border-indigo-500 bg-indigo-500/10" : "border-white/10 bg-[#050505] hover:border-indigo-500/40"
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setPhotoDragOver(true); }}
+                          onDragLeave={() => setPhotoDragOver(false)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setPhotoDragOver(false);
+                            const file = e.dataTransfer.files?.[0];
+                            if (file && file.type.startsWith("image/")) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          onClick={() => photoFileRef.current?.click()}
+                        >
+                          <input ref={photoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }} />
+                          {photoPreview ? (
+                            <div className="relative">
+                              <img src={photoPreview} alt="Preview" className="w-full h-36 object-cover rounded-xl" />
+                              <button type="button" onClick={(e) => { e.stopPropagation(); setPhotoPreview(null); }} className="absolute top-2 right-2 p-1.5 bg-black text-white rounded-full"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                              <ImageIcon className="h-8 w-8 mb-2 text-white/30" />
+                              <p className="text-xs text-white/60">Drag and drop file or browse files</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Error Correction</p>
-                          <p className="text-base font-bold">Level H (30% Resilience)</p>
+                        <div className="flex gap-2">
+                          <input name="caption" required value={photoCaption} onChange={e => setPhotoCaption(e.target.value)} placeholder="Describe this session caption..." className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none" />
+                          <input type="hidden" name="image_url" value={photoPreview || ""} />
+                          <button type="submit" className="px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold font-mono text-xs uppercase tracking-wider">Upload</button>
                         </div>
-                      </div>
-
-                      <button className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
-                        <DownloadIcon className="w-4 h-4" /> Export Branding Kit
-                      </button>
+                      </form>
                     </GlassCard>
 
-                    <GlassCard className="p-6 border-purple-500/10">
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-purple-400">
-                         Deployment Guide
-                      </h3>
-                      <ul className="space-y-3 text-xs text-white/60">
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
-                          Download the high-resolution PNG asset.
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
-                          Apply as a 4x6" vinyl sticker on the vehicle dashboard.
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
-                          Passengers scan this to initialize the safety pipeline.
-                        </li>
-                      </ul>
-                    </GlassCard>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* === REELS TAB === */}
-            {activeTab === "reels" && (
-              <motion.div key="reels" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold font-mono tracking-tight mb-2">COMMUNITY_REELS_MANAGER</h2>
-                  <p className="text-white/40 text-sm font-mono">Manage homepage user stories and telemetry logs.</p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Active Reels */}
-                  <div className="lg:col-span-2 space-y-4">
-                    <h3 className="font-mono text-sm uppercase text-white/50 tracking-wider">Active Reels</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {data.reels?.map((reel: any) => (
-                        <div key={reel.id} className="relative aspect-[9/16] bg-[#0a0a0a] border border-white/10 rounded overflow-hidden group">
-                          <img src={reel.thumbnail_url} alt={reel.title} className="w-full h-full object-cover opacity-60" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 flex flex-col justify-end">
-                            <p className="text-xs text-white/50 font-mono mb-1">{reel.user_handle}</p>
-                            <p className="text-sm font-bold leading-tight mb-4">{reel.title}</p>
+                    <div className="space-y-4">
+                      <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white">Active Session Gallery</h3>
+                      <div className="grid grid-cols-2 gap-4 max-h-[460px] overflow-y-auto custom-scrollbar">
+                        {data?.session_photos?.map((photo: any) => (
+                          <div key={photo.id} className="relative rounded-2xl overflow-hidden border border-white/5 bg-[#0a0a0a] group aspect-square">
+                            <img src={photo.image_url} alt="session" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                              <p className="text-xs text-white/80 line-clamp-2 mb-2 font-medium">{photo.caption}</p>
+                              <button onClick={() => handleDeleteContent(photo.id, deleteSessionPhoto)} className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-mono text-[9px] uppercase tracking-wider font-bold rounded">Delete</button>
+                            </div>
                           </div>
-                          <button 
-                            onClick={async () => {
-                              await deleteReel(reel.id);
-                              fetchData();
-                            }}
-                            className="absolute top-2 right-2 p-2 bg-red-500/20 text-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {brandingActiveSubTab === "assets" && (() => {
+                  const rideUrl = typeof window !== 'undefined' ? `${window.location.origin}/ride/DEMO-SAFE-001` : "https://healix-nu.vercel.app/ride/DEMO-SAFE-001";
+                  const copyUrl = () => {
+                    navigator.clipboard.writeText(rideUrl);
+                    setBrandingCopied(true);
+                    setTimeout(() => setBrandingCopied(false), 2000);
+                  };
+                  return (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start text-white">
+                      {/* Preview Section */}
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                      >
+                        <BrandedQRCard 
+                          deviceId="DEMO-SAFE-001"
+                          vehicleReg="DL-1-SAFE-2026"
+                          driverName="Healix Safety Driver"
+                          rideUrl={rideUrl}
+                        />
+                      </motion.div>
+
+                      {/* Configuration / Details */}
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="space-y-8"
+                      >
+                        <GlassCard className="p-8 bg-[#0a0a0a] border-white/5 shadow-xl">
+                          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <Shield className="text-blue-400" /> Infrastructure Logo
+                          </h2>
+                          <p className="text-white/60 mb-8 leading-relaxed text-sm">
+                            This high-fidelity scannable logo combines the Healix Shield with a high-error-correction QR code. Even if 30% of the card is damaged, the safety logic remains operational.
+                          </p>
+
+                          <div className="space-y-4">
+                            <div className="p-4 bg-[#050505] rounded-xl border border-white/10">
+                              <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Target Endpoint</p>
+                              <div className="flex items-center justify-between">
+                                <code className="text-xs text-blue-400 break-all">{rideUrl}</code>
+                                <button onClick={copyUrl} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 shrink-0">
+                                  {brandingCopied ? <span className="text-green-500 text-[10px] font-bold">COPIED</span> : <Copy className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 bg-[#050505] rounded-xl border border-white/10">
+                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Print Density</p>
+                                <p className="text-base font-bold font-mono">300 DPI</p>
+                              </div>
+                              <div className="p-4 bg-[#050505] rounded-xl border border-white/10">
+                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Safe Zone</p>
+                                <p className="text-base font-bold font-mono">14.2%</p>
+                              </div>
+                            </div>
+                          </div>
+                        </GlassCard>
+
+                        <GlassCard className="p-8 border-white/5 bg-[#0a0a0a] shadow-xl">
+                          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Smartphone className="text-purple-400" /> Deployment Guide
+                          </h3>
+                          <ol className="space-y-3 text-xs text-white/60 list-decimal pl-4">
+                            <li>Download the high-resolution PNG using the button on the left.</li>
+                            <li>Print on a durable vinyl sticker or 300gsm matte card.</li>
+                            <li>Place on the left-rear passenger window or vehicle dashboard.</li>
+                            <li>Passengers scan this to initialize a Suraksha Secure Ride.</li>
+                          </ol>
+                        </GlassCard>
+                      </motion.div>
+                    </div>
+                  );
+                })()}
+
+                {brandingActiveSubTab === "brands" && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center pb-4 border-b border-white/10">
+                      <div>
+                        <h3 className="text-lg font-bold font-mono uppercase tracking-wider text-white">Our Brand Divisions</h3>
+                        <p className="text-white/40 text-xs font-mono">Manage the auto-cycling brand list showcased on the homepage.</p>
+                      </div>
+                      <button onClick={openBrandAddForm} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Brand
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {brandsList.map((b) => (
+                        <GlassCard key={b.id} className="p-6 border-white/5 bg-[#0a0a0a] flex flex-col justify-between group min-h-[320px]">
+                          <div className="space-y-4">
+                            {/* Drag and Drop Thumbnail Uploader */}
+                            <div 
+                              className="aspect-square bg-zinc-950 border border-white/10 rounded-xl relative overflow-hidden flex items-center justify-center cursor-pointer group-hover:border-indigo-500/40 transition-colors"
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => handleBrandPhotoDrop(e, b.id)}
+                              onClick={() => {
+                                const input = document.getElementById(`brand-photo-input-${b.id}`) as HTMLInputElement;
+                                input?.click();
+                              }}
+                            >
+                              <input 
+                                type="file" 
+                                id={`brand-photo-input-${b.id}`} 
+                                accept="image/*" 
+                                className="hidden" 
+                                onChange={(e) => handleBrandPhotoUpload(e, b.id)} 
+                              />
+                              {brandUploadingFor === b.id ? (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                  <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                                </div>
+                              ) : b.logo_url ? (
+                                <img src={b.logo_url} alt={b.name} className="w-full h-full object-contain p-2" />
+                              ) : (
+                                <div className="text-center p-4">
+                                  <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                                  <p className="text-[9px] font-mono text-white/40 uppercase tracking-wider">Drag & drop logo</p>
+                                </div>
+                              )}
+                            </div>
+
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-extrabold text-sm text-white font-mono uppercase tracking-wide truncate">{b.name}</h4>
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-white/5 text-indigo-400">{b.logo_text}</span>
+                              </div>
+                              <p className="text-[10px] text-zinc-500 font-mono mb-2">{b.role}</p>
+                              <p className="text-xs text-white/60 leading-relaxed font-sans line-clamp-3">{b.description || b.desc}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center pt-4 border-t border-white/5 mt-4">
+                            <div className="flex gap-1">
+                              <button onClick={() => moveBrandOrder(b, 'up')} className="p-1 text-white/40 hover:text-white hover:bg-white/5 rounded transition-all"><ChevronUp className="w-4 h-4" /></button>
+                              <button onClick={() => moveBrandOrder(b, 'down')} className="p-1 text-white/40 hover:text-white hover:bg-white/5 rounded transition-all"><ChevronDown className="w-4 h-4" /></button>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <button onClick={() => toggleBrandActive(b)} className={`p-1.5 rounded transition-all ${b.active ? "bg-indigo-500/10 text-indigo-400" : "bg-white/5 text-white/30"}`}>
+                                {b.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                              </button>
+                              <button onClick={() => openBrandEditForm(b)} className="p-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"><Edit3 className="w-4 h-4" /></button>
+                              <button onClick={() => handleBrandDelete(b.id, b.name)} className="p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </div>
+                        </GlassCard>
                       ))}
                     </div>
                   </div>
+                )}
+              </motion.div>
+            )}
 
-                  {/* Add New Reel */}
-                  <div>
-                    <h3 className="font-mono text-sm uppercase text-white/50 tracking-wider mb-4">Upload Reel</h3>
-                    <form action={async (formData) => {
-                      await addReel({
-                        title: formData.get("title") as string,
-                        user_handle: formData.get("user_handle") as string,
-                        thumbnail_url: formData.get("thumbnail_url") as string,
-                        video_url: formData.get("video_url") as string
-                      });
+            {/* REELS TAB */}
+            {activeTab === "reels" && (
+              <motion.div key="reels" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="mb-8 border-b border-white/10 pb-6">
+                  <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Communication Reels</h2>
+                  <p className="text-white/50 text-sm">Upload and manage active community video reels appearing on the home landing page.</p>
+                </div>
+                
+                <GlassCard className="p-6 bg-[#0a0a0a] border-white/5 max-w-xl mx-auto shadow-xl">
+                  <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white mb-6">Create New Video Reel</h3>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget;
+                    const fd = new FormData(form);
+                    const reelData = {
+                      title: fd.get("title") as string,
+                      user_handle: fd.get("user_handle") as string,
+                      thumbnail_url: fd.get("thumbnail_url") as string,
+                      video_url: fd.get("video_url") as string
+                    };
+                    const res = await addReel(reelData);
+                    if (res.error) alert(res.error);
+                    else {
+                      form.reset();
                       fetchData();
-                    }} className="space-y-4 bg-[#0a0a0a] border border-white/10 p-6 rounded-sm">
-                      <div>
-                        <label className="text-[10px] uppercase text-white/40 font-mono">Reel Title</label>
-                        <input name="title" required className="w-full bg-black border border-white/10 rounded-sm px-3 py-2 text-sm mt-1 focus:border-white/30" placeholder="e.g. SOS Test" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase text-white/40 font-mono">User Handle</label>
-                        <input name="user_handle" required className="w-full bg-black border border-white/10 rounded-sm px-3 py-2 text-sm mt-1 focus:border-white/30" placeholder="@username" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase text-white/40 font-mono">Thumbnail URL</label>
-                        <input name="thumbnail_url" required className="w-full bg-black border border-white/10 rounded-sm px-3 py-2 text-sm mt-1 focus:border-white/30" placeholder="/reel-1-thumb.webp" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] uppercase text-white/40 font-mono">Video URL</label>
-                        <input name="video_url" required className="w-full bg-black border border-white/10 rounded-sm px-3 py-2 text-sm mt-1 focus:border-white/30" placeholder="https://..." defaultValue="https://www.w3schools.com/html/mov_bbb.mp4" />
-                      </div>
-                      <button type="submit" className="w-full py-2 bg-white text-black font-bold uppercase tracking-wider text-xs rounded-sm hover:bg-white/90">
-                        Upload Reel
-                      </button>
-                    </form>
+                    }
+                  }} className="space-y-4">
+                    <input name="title" required placeholder="Reel Title" className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm" />
+                    <input name="user_handle" required placeholder="User Handle (e.g. @scientist_s)" className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm" />
+                    <input name="thumbnail_url" required placeholder="Thumbnail Graphic URL" className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm" />
+                    <input name="video_url" required placeholder="Video Asset CDN URL" className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm" />
+                    <button type="submit" className="w-full py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-mono uppercase tracking-wider text-xs font-bold rounded-xl transition-all">Publish Reel</button>
+                  </form>
+                </GlassCard>
+
+                <div className="space-y-4 mt-8">
+                  <h3 className="text-base font-bold font-mono uppercase tracking-wider text-white">Active Communication Reels</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {data.reels?.map((reel: any) => (
+                      <GlassCard key={reel.id} className="p-4 bg-[#0a0a0a] border-white/5 relative group">
+                        <div className="aspect-[9/16] relative rounded-xl overflow-hidden mb-4 bg-black">
+                          <img src={reel.thumbnail_url} alt="thumbnail" className="w-full h-full object-cover" />
+                        </div>
+                        <h4 className="font-bold text-sm leading-tight text-white mb-1">{reel.title}</h4>
+                        <p className="text-xs text-pink-400 font-mono">{reel.user_handle}</p>
+                        <button onClick={() => handleDeleteContent(reel.id, deleteReel)} className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </GlassCard>
+                    ))}
                   </div>
                 </div>
               </motion.div>
             )}
+
+            {/* SYSTEM HEALTH TAB */}
+            {activeTab === "system" && (
+              <motion.div key="system" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="mb-8 border-b border-white/10 pb-6">
+                  <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">System Diagnostics</h2>
+                  <p className="text-white/50 text-sm">Real-time edge gateway status and cloud database connection metrics.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <GlassCard className="p-6 bg-[#0a0a0a] border-white/5">
+                    <h3 className="font-bold text-base font-mono uppercase tracking-wider mb-4 text-green-400">Node Status Logs</h3>
+                    <div className="space-y-3 text-xs font-mono text-white/70">
+                      <p className="flex justify-between"><span>Core Server</span> <span className="text-green-400 font-bold">ONLINE</span></p>
+                      <p className="flex justify-between"><span>Region Handshake</span> <span className="text-green-400 font-bold">OPTIMAL (Delhi-1)</span></p>
+                      <p className="flex justify-between"><span>Edge SSL Gateway</span> <span className="text-green-400 font-bold">ACTIVE (Let's Encrypt)</span></p>
+                      <p className="flex justify-between"><span>Supabase client connection</span> <span className="text-green-400 font-bold">CONNECTED</span></p>
+                      <p className="flex justify-between"><span>Redis Sliding-window limiter</span> <span className="text-green-400 font-bold">ONLINE</span></p>
+                    </div>
+                  </GlassCard>
+
+                  <GlassCard className="p-6 bg-[#0a0a0a] border-white/5">
+                    <h3 className="font-bold text-base font-mono uppercase tracking-wider mb-4 text-purple-400">Audit logs</h3>
+                    <div className="space-y-3 text-[10px] font-mono text-white/50 max-h-[160px] overflow-y-auto custom-scrollbar uppercase">
+                      {data.evidence?.map((log: any) => (
+                        <p key={log.id} className="border-b border-white/5 pb-2">
+                          <span className="text-purple-400">{new Date(log.created_at).toLocaleTimeString()}</span> - Actor ID: {log.trips?.user_id?.substring(0, 8) || "System"} executed action {log.action}
+                        </p>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              </motion.div>
+            )}
+
           </AnimatePresence>
         </main>
       </div>
@@ -1366,13 +2577,13 @@ export default function AdminPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="text-center">
-                <div className="flex items-center gap-2 justify-center text-orange-400 mb-1">
+                <div className="flex items-center gap-2 justify-center text-blue-400 mb-1">
                   <Shield className="w-4 h-4" />
                   <span className="font-mono text-xs tracking-wider uppercase">Project Suraksha</span>
                 </div>
                 <h2 className="text-lg font-bold text-white">Branded QR Card</h2>
                 <p className="text-xs text-gray-500 mt-1">
-                  Print or display this for <span className="text-orange-400 font-mono">{qrModal.deviceId}</span>
+                  Print or display this for <span className="text-blue-400 font-mono">{qrModal.deviceId}</span>
                 </p>
               </div>
 
@@ -1395,12 +2606,455 @@ export default function AdminPage() {
         )}
       </AnimatePresence>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-      `}} />
+      {/* Corporate Mentors Modal */}
+      <AnimatePresence>
+        {showCorpForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowCorpForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingCorpId ? "Edit Advisor" : "Register New Advisor"}</h2>
+                <button onClick={() => setShowCorpForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              <form onSubmit={handleCorpSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Full Name *</label>
+                    <input required value={corpForm.name} onChange={e => setCorpForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Role / Title *</label>
+                    <input required value={corpForm.role} onChange={e => setCorpForm(f => ({ ...f, role: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Organization *</label>
+                    <input required value={corpForm.organization} onChange={e => setCorpForm(f => ({ ...f, organization: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo URL</label>
+                    <div className="flex gap-2">
+                      <input value={corpForm.photo_url} onChange={e => setCorpForm(f => ({ ...f, photo_url: e.target.value }))} className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                      <div className="relative">
+                        <input type="file" accept="image/*" id="modal-photo-upload-btn" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadPhotoFromModal(file, editingCorpId || "temp");
+                        }} />
+                        <label htmlFor="modal-photo-upload-btn" className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer h-full flex items-center justify-center">
+                          Upload
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Drag and Drop Zone inside Modal */}
+                <div 
+                  className="border border-dashed border-white/10 hover:border-emerald-500/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/5 relative h-32"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      uploadPhotoFromModal(file, editingCorpId || "temp");
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-emerald-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadPhotoFromModal(file, editingCorpId || "temp");
+                  }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Biography</label>
+                  <textarea rows={3} value={corpForm.bio} onChange={e => setCorpForm(f => ({ ...f, bio: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Inspiring Quote</label>
+                  <input value={corpForm.quote} onChange={e => setCorpForm(f => ({ ...f, quote: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <input placeholder="LinkedIn Url" value={corpForm.linkedin_url} onChange={e => setCorpForm(f => ({ ...f, linkedin_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
+                  <input placeholder="Twitter Url" value={corpForm.twitter_url} onChange={e => setCorpForm(f => ({ ...f, twitter_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
+                  <input placeholder="GitHub Url" value={corpForm.github_url} onChange={e => setCorpForm(f => ({ ...f, github_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
+                </div>
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowCorpForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={corpSubmitting} className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {corpSubmitting ? "Saving..." : editingCorpId ? "Save Changes" : "Register Advisor"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Engineering Team Modal */}
+      <AnimatePresence>
+        {showTeamForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowTeamForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingTeamId ? "Edit Team Member" : "Add Team Member"}</h2>
+                <button onClick={() => setShowTeamForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              <form onSubmit={handleTeamSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Full Name *</label>
+                    <input required value={teamForm.name} onChange={e => setTeamForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Role / Title *</label>
+                    <input required value={teamForm.role} onChange={e => setTeamForm(f => ({ ...f, role: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Focus / Specialization *</label>
+                    <input required value={teamForm.focus} onChange={e => setTeamForm(f => ({ ...f, focus: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo URL</label>
+                    <div className="flex gap-2">
+                      <input value={teamForm.photo_url} onChange={e => setTeamForm(f => ({ ...f, photo_url: e.target.value }))} className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                      <div className="relative">
+                        <input type="file" accept="image/*" id="team-modal-photo-upload-btn" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadTeamPhotoFromModal(file, editingTeamId || "temp");
+                        }} />
+                        <label htmlFor="team-modal-photo-upload-btn" className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer h-full flex items-center justify-center">
+                          Upload
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Drag and Drop Zone inside Modal */}
+                <div 
+                  className="border border-dashed border-white/10 hover:border-orange-500/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/5 relative h-32"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      uploadTeamPhotoFromModal(file, editingTeamId || "temp");
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadTeamPhotoFromModal(file, editingTeamId || "temp");
+                  }} />
+                </div>
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowTeamForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={teamSubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {teamSubmitting ? "Saving..." : editingTeamId ? "Save Changes" : "Register Team Member"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Podcasts Modal */}
+      <AnimatePresence>
+        {showPodcastForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowPodcastForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingPodcastId ? "Edit Podcast" : "Add Podcast"}</h2>
+                <button onClick={() => setShowPodcastForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              <form onSubmit={handlePodcastSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Title *</label>
+                    <input required value={podcastForm.title} onChange={e => setPodcastForm(f => ({ ...f, title: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">YouTube URL *</label>
+                    <input required value={podcastForm.youtube_url} onChange={e => setPodcastForm(f => ({ ...f, youtube_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Duration (e.g. 15:30) *</label>
+                    <input required value={podcastForm.duration} onChange={e => setPodcastForm(f => ({ ...f, duration: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Thumbnail URL</label>
+                    <div className="flex gap-2">
+                      <input value={podcastForm.thumbnail_url} onChange={e => setPodcastForm(f => ({ ...f, thumbnail_url: e.target.value }))} className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                      <div className="relative">
+                        <input type="file" accept="image/*" id="podcast-modal-photo-upload-btn" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadPodcastPhotoFromModal(file, editingPodcastId || "temp");
+                        }} />
+                        <label htmlFor="podcast-modal-photo-upload-btn" className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer h-full flex items-center justify-center">
+                          Upload
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Drag and Drop Zone inside Modal */}
+                <div 
+                  className="border border-dashed border-white/10 hover:border-red-500/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/5 relative h-32"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      uploadPodcastPhotoFromModal(file, editingPodcastId || "temp");
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-red-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadPodcastPhotoFromModal(file, editingPodcastId || "temp");
+                  }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Description *</label>
+                  <textarea rows={3} required value={podcastForm.description} onChange={e => setPodcastForm(f => ({ ...f, description: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm" />
+                </div>
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowPodcastForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={podcastSubmitting} className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {podcastSubmitting ? "Saving..." : editingPodcastId ? "Save Changes" : "Register Episode"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Academy Course Creation Modal */}
+      <AnimatePresence>
+        {showAcademyCourseModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowAcademyCourseModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider mb-6">Create Cohort Course</h2>
+              <form onSubmit={handleAddAcademyCourse} className="space-y-4">
+                <input name="title" required placeholder="Course Title" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                <input name="shortDescription" required placeholder="Short Description" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="price" type="number" required placeholder="Price (₹)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                  <input name="duration" required placeholder="Duration (e.g. 12 Weeks)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                </div>
+                <input name="thumbnail" required placeholder="Thumbnail image URL (https://...)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowAcademyCourseModal(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" className="flex-1 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold font-mono text-sm uppercase tracking-wider">Save Course</button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Academy Instructor Creation Modal */}
+      <AnimatePresence>
+        {showAcademyMentorModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowAcademyMentorModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider mb-6">Create Academy Instructor</h2>
+              <form onSubmit={handleAddAcademyMentor} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="name" required placeholder="Full Name" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                  <input name="role" required placeholder="Role (e.g. Lead Educator)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="institution" required placeholder="Company / Institution" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                  <input name="experience" required placeholder="Experience (e.g. 8+ Years)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                </div>
+                
+                <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
+                  <div className="w-20 h-20 rounded-xl border border-white/10 bg-white/5 relative overflow-hidden flex items-center justify-center">
+                    {isUploadingAcademy === 'new' ? (
+                      <Loader2 className="w-5 h-5 text-[#eab308] animate-spin" />
+                    ) : newAcademyMentorPhotoUrl ? (
+                      <Image src={newAcademyMentorPhotoUrl} alt="Preview" fill className="object-cover" />
+                    ) : (
+                      <span className="text-[9px] font-mono text-white/30 text-center">No Photo</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <input name="photoUrl" value={newAcademyMentorPhotoUrl} onChange={(e) => setNewAcademyMentorPhotoUrl(e.target.value)} required placeholder="Or paste direct Image URL..." className="flex-1 bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                    <label className="px-3 py-3 bg-[#eab308] text-black rounded-lg font-bold text-[9px] flex items-center gap-1 cursor-pointer uppercase tracking-wider shrink-0 font-mono">
+                      <Upload className="w-3.5 h-3.5" /> Upload File
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAcademyPhotoUpload(e)} />
+                    </label>
+                  </div>
+                </div>
+
+                <textarea name="bio" rows={3} required placeholder="Instructor Biography..." className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowAcademyMentorModal(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" className="flex-1 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold font-mono text-sm uppercase tracking-wider">Save Instructor</button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Brands Modal */}
+      <AnimatePresence>
+        {showBrandForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowBrandForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingBrandId ? "Edit Brand" : "Add Brand"}</h2>
+                <button onClick={() => setShowBrandForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              <form onSubmit={handleBrandSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Brand Name *</label>
+                    <input required value={brandForm.name} onChange={e => setBrandForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Logo Abbreviation (Text) *</label>
+                    <input required value={brandForm.logo_text} onChange={e => setBrandForm(f => ({ ...f, logo_text: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Role / Sub-headline *</label>
+                    <input required value={brandForm.role} onChange={e => setBrandForm(f => ({ ...f, role: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Lucide Icon Name (e.g. Shield, Heart) *</label>
+                    <input required value={brandForm.icon_name} onChange={e => setBrandForm(f => ({ ...f, icon_name: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Accent Theme Class</label>
+                    <input value={brandForm.accent} onChange={e => setBrandForm(f => ({ ...f, accent: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" placeholder="text-blue-500 bg-blue-500/10 border-blue-500/20" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Accent Color (Hex)</label>
+                    <input value={brandForm.color} onChange={e => setBrandForm(f => ({ ...f, color: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" placeholder="#ea580c" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Logo Image URL</label>
+                  <div className="flex gap-2">
+                    <input value={brandForm.logo_url} onChange={e => setBrandForm(f => ({ ...f, logo_url: e.target.value }))} className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" placeholder="https://..." />
+                    <div className="relative">
+                      <input type="file" accept="image/*" id="brand-modal-photo-upload-btn" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadBrandPhotoFromModal(file, editingBrandId || "temp");
+                      }} />
+                      <label htmlFor="brand-modal-photo-upload-btn" className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer h-full flex items-center justify-center">
+                        Upload
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                {/* Drag and Drop Zone inside Modal */}
+                <div 
+                  className="border border-dashed border-white/10 hover:border-indigo-500/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-white/5 relative h-32"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      uploadBrandPhotoFromModal(file, editingBrandId || "temp");
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-indigo-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadBrandPhotoFromModal(file, editingBrandId || "temp");
+                  }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Description *</label>
+                  <textarea rows={3} required value={brandForm.description} onChange={e => setBrandForm(f => ({ ...f, description: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowBrandForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={brandSubmitting} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {brandSubmitting ? "Saving..." : editingBrandId ? "Save Changes" : "Register Brand"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

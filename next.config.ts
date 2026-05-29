@@ -16,9 +16,11 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://avatars.githubusercontent.com https://*.basemaps.cartocdn.com https://unpkg.com https://api.qrserver.com https://*.supabase.co",
+      "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://avatars.githubusercontent.com https://*.basemaps.cartocdn.com https://unpkg.com https://api.qrserver.com https://*.supabase.co https://i.ytimg.com",
       "media-src 'self' data: blob: https://www.w3schools.com https://*.supabase.co",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://healix-biolabs.onrender.com",
+      // Allow YouTube embeds in the podcast modal player
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -34,10 +36,7 @@ const staticCacheHeaders = [
   },
 ];
 
-const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+const nextConfig: any = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -53,6 +52,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400, // 1 day
     deviceSizes: [390, 640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 64, 96, 128, 256],
+    dangerouslyAllowSVG: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },
