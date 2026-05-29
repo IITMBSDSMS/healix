@@ -5,13 +5,14 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   FileText, Plus, Calendar, Clock, CheckCircle, 
   XCircle, AlertCircle, Cpu, Network, Database,
-  CreditCard, Upload, Video, Users, Mail, ArrowRight, Shield, Fingerprint, Activity, Beaker
+  CreditCard, Upload, Video, Users, Mail, ArrowRight, Shield, Fingerprint, Activity, Beaker, QrCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserApplications, submitApplication } from "../actions";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import QRCode from "qrcode";
 
 export default function UserDashboardPage() {
   const router = useRouter();
@@ -24,6 +25,27 @@ export default function UserDashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [uniqueId, setUniqueId] = useState("");
   const [isFlipped, setIsFlipped] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+
+  useEffect(() => {
+    if (!uniqueId) return;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://healix-nu.vercel.app";
+    const nameVal = user?.user_metadata?.full_name || "Dr. Priya Sharma";
+    const verifyUrl = `${origin}/verify/${uniqueId}?name=${encodeURIComponent(nameVal)}&role=Research+Fellow&div=BioLabs+Research`;
+    
+    QRCode.toDataURL(verifyUrl, {
+      margin: 1,
+      width: 256,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF"
+      }
+    }).then(url => {
+      setQrCodeUrl(url);
+    }).catch(err => {
+      console.error("QR Code generation error:", err);
+    });
+  }, [uniqueId, user]);
 
   const fetchDashboardData = async () => {
     const res = await getUserApplications();
@@ -205,133 +227,217 @@ export default function UserDashboardPage() {
                   <p className="text-white/40 text-sm font-mono tracking-wide">Click the card to flip and view the reverse side.</p>
                 </div>
 
-                {/* ID Card 3D Container */}
-                <div className="group w-[340px] h-[540px] perspective-[2000px] cursor-pointer" onClick={() => setIsFlipped(!isFlipped)}>
-                  <motion.div 
-                    className="w-full h-full relative transition-all duration-700 shadow-2xl"
-                    style={{ transformStyle: 'preserve-3d' }}
-                    animate={{ rotateY: isFlipped ? 180 : 0 }}
-                  >
-                    {/* FRONT SIDE */}
-                    <div className="absolute w-full h-full bg-[#080808] border border-[#eab308]/40 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.1)] flex flex-col" style={{ backfaceVisibility: 'hidden' }}>
-                      {/* Subtle Noise Texture overlay */}
-                      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-black pointer-events-none" />
-                      
-                      {/* Header */}
-                      <div className="pt-6 pb-4 px-4 text-center border-b border-[#eab308]/20 bg-gradient-to-b from-[#eab308]/10 to-transparent relative z-10">
-                        <h3 className="font-bold text-white tracking-widest text-[13px] leading-tight mb-1">HEALIX TECHNOLOGIES PVT. LTD.</h3>
-                        <p className="text-[#eab308] font-mono text-[9px] tracking-wide">जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र</p>
-                      </div>
+                {/* ID Card 3D Container Wrapper with mobile scaling */}
+                <div className="w-full flex flex-col items-center justify-center overflow-hidden py-4">
+                  {/* CSS styles for card animations */}
+                  <style>{`
+                    @keyframes spin-slow {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                    @keyframes spin-reverse-slow {
+                      0% { transform: rotate(360deg); }
+                      100% { transform: rotate(0deg); }
+                    }
+                    @keyframes heartbeat-pulse {
+                      0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 2px rgba(234,179,8,0.3)); }
+                      50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 8px rgba(234,179,8,0.6)); }
+                    }
+                    .animate-spin-slow {
+                      animation: spin-slow 40s linear infinite;
+                    }
+                    .animate-spin-reverse-slow {
+                      animation: spin-reverse-slow 30s linear infinite;
+                    }
+                    .animate-heartbeat {
+                      animation: heartbeat-pulse 2s infinite ease-in-out;
+                    }
+                  `}</style>
 
-                      {/* Content */}
-                      <div className="flex-1 px-6 py-6 flex flex-col items-center relative z-10">
-                        {/* Portrait */}
-                        <div className="w-32 h-40 border-2 border-[#eab308] rounded-xl overflow-hidden mb-6 p-1 bg-black/50 shadow-inner">
-                          <div className="w-full h-full bg-zinc-800 rounded-lg relative overflow-hidden flex items-center justify-center">
-                            <Image src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Profile" fill className="object-cover" unoptimized />
-                          </div>
+                  <div className="w-[320px] h-[195px] sm:w-[560px] sm:h-[340px] perspective-[2000px] cursor-pointer" onClick={() => setIsFlipped(!isFlipped)}>
+                    <motion.div 
+                      className="w-full h-full relative transition-all duration-700 shadow-2xl"
+                      style={{ transformStyle: 'preserve-3d' }}
+                      animate={{ rotateY: isFlipped ? 180 : 0 }}
+                    >
+                      {/* FRONT SIDE */}
+                      <div className="absolute w-full h-full bg-[#080808] border border-[#eab308]/40 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.1)] flex flex-col p-3 sm:p-5" style={{ backfaceVisibility: 'hidden' }}>
+                        {/* Subtle Noise Texture overlay */}
+                        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-black pointer-events-none z-0" />
+                        
+                        {/* Rotating Gear Watermarks in background */}
+                        <div className="absolute left-[8%] top-[15%] w-[100px] sm:w-[180px] h-[100px] sm:h-[180px] pointer-events-none opacity-[0.03] z-0">
+                          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1 1" className="w-full h-full text-white animate-spin-slow">
+                            <circle cx="50" cy="50" r="30" />
+                            <circle cx="50" cy="50" r="40" />
+                            {Array.from({ length: 12 }).map((_, i) => (
+                              <line
+                                key={i}
+                                x1="50"
+                                y1="10"
+                                x2="50"
+                                y2="20"
+                                transform={`rotate(${(i * 360) / 12} 50 50)`}
+                              />
+                            ))}
+                          </svg>
+                        </div>
+                        <div className="absolute right-[12%] bottom-[10%] w-[120px] sm:w-[200px] h-[120px] sm:h-[200px] pointer-events-none opacity-[0.03] z-0">
+                          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 1" className="w-full h-full text-white animate-spin-reverse-slow">
+                            <circle cx="50" cy="50" r="25" />
+                            <circle cx="50" cy="50" r="35" />
+                            {Array.from({ length: 8 }).map((_, i) => (
+                              <rect
+                                key={i}
+                                x="47"
+                                y="12"
+                                width="6"
+                                height="8"
+                                rx="1"
+                                transform={`rotate(${(i * 360) / 8} 50 50)`}
+                              />
+                            ))}
+                          </svg>
                         </div>
 
-                        {/* Details */}
-                        <div className="w-full space-y-4">
-                          <div className="text-center border-b border-white/10 pb-3">
-                            <p className="text-[10px] text-white/40 font-mono tracking-widest uppercase mb-1">Full Name</p>
-                            <p className="text-lg font-bold text-white uppercase tracking-wider">{user?.user_metadata?.full_name || "RESEARCHER"}</p>
-                          </div>
+                        {/* Header */}
+                        <div className="text-center border-b border-[#eab308]/20 pb-2 relative z-10 w-full">
+                          <h3 className="font-bold text-white tracking-widest text-[8px] sm:text-[13px] leading-tight mb-0.5">HEALIX TECHNOLOGIES PVT. LTD.</h3>
+                          <p className="text-[#eab308] font-mono text-[5.5px] sm:text-[9px] tracking-wider uppercase font-semibold">जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र</p>
+                        </div>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-[8px] text-white/40 font-mono tracking-widest uppercase mb-0.5">Designation</p>
-                              <p className="text-xs font-bold text-[#eab308] uppercase">Research Fellow</p>
-                            </div>
-                            <div>
-                              <p className="text-[8px] text-white/40 font-mono tracking-widest uppercase mb-0.5">Unique ID</p>
-                              <p className="text-xs font-mono font-bold text-white">{uniqueId}</p>
-                            </div>
-                            <div>
-                              <p className="text-[8px] text-white/40 font-mono tracking-widest uppercase mb-0.5">Division</p>
-                              <p className="text-[10px] font-bold text-white uppercase tracking-wide">BioLabs Research</p>
-                            </div>
-                            <div>
-                              <p className="text-[8px] text-white/40 font-mono tracking-widest uppercase mb-0.5">Validity</p>
-                              <p className="text-[10px] font-bold text-white uppercase tracking-wide">May 2026 - May 2027</p>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 flex justify-between items-end">
-                            <div>
-                              <p className="text-[8px] text-[#eab308]/60 font-mono tracking-widest uppercase mb-0.5">Access Level</p>
-                              <div className="flex items-center gap-1.5">
-                                <Shield className="h-3 w-3 text-[#eab308]" />
-                                <p className="text-xs font-bold text-white uppercase">Authorized</p>
+                        {/* Content */}
+                        <div className="flex-1 flex flex-row items-center justify-between gap-3 sm:gap-6 mt-3 sm:mt-4 relative z-10">
+                          
+                          {/* Photo & QR Box Left */}
+                          <div className="relative shrink-0 select-none">
+                            {/* Portrait Box */}
+                            <div className="w-[75px] h-[95px] sm:w-[130px] sm:h-[165px] border border-[#eab308]/30 rounded-lg overflow-hidden bg-black/50 p-0.5 sm:p-1 relative shadow-inner z-10">
+                              <div className="w-full h-full bg-zinc-800 rounded-md relative overflow-hidden flex items-center justify-center">
+                                <Image src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Profile" fill className="object-cover" unoptimized />
                               </div>
                             </div>
-                            <div className="p-1 bg-white rounded border-2 border-white/80">
-                                {/* Simulated QR Code */}
-                                <div className="grid grid-cols-4 grid-rows-4 gap-0.5 w-8 h-8">
-                                  {Array.from({length: 16}).map((_, i) => (
-                                    <div key={i} className={`bg-black ${Math.random() > 0.4 ? 'opacity-100' : 'opacity-0'}`} />
-                                  ))}
-                                  <div className="col-start-1 row-start-1 col-span-2 row-span-2 border-2 border-black bg-white" />
-                                </div>
+
+                            {/* Overlapping QR Code Box */}
+                            <div className="w-[45px] h-[45px] sm:w-[80px] sm:h-[80px] bg-white p-0.5 sm:p-1.5 rounded-md border border-white absolute -bottom-1 -left-2 sm:-bottom-2 sm:-left-3 shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-20 flex items-center justify-center transition-transform hover:scale-105">
+                              {qrCodeUrl ? (
+                                <Image src={qrCodeUrl} alt="QR Code" width={80} height={80} className="w-full h-full object-contain" />
+                              ) : (
+                                <div className="w-full h-full bg-zinc-200 animate-pulse rounded" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Details & Pill Right */}
+                          <div className="flex-1 flex flex-col justify-between h-full py-0.5">
+                            
+                            {/* Metadata Grid */}
+                            <div className="grid grid-cols-[auto_1fr] gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-2 select-text">
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">FULL NAME:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/90 truncate uppercase self-center font-mono tracking-wide">
+                                {user?.user_metadata?.full_name || "RESEARCH LEADER"}
+                              </span>
+
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">DESIGNATION:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
+                                RESEARCH LEAD
+                              </span>
+
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">UNIQUE ID:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/90 self-center font-mono tracking-wide">
+                                {uniqueId}
+                              </span>
+
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">DIVISION:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
+                                BioLabs
+                              </span>
+
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">VALIDITY:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-white/80 uppercase self-center font-mono tracking-wide">
+                                May 2026 – May 2027
+                              </span>
+
+                              <span className="text-[6.5px] sm:text-[9px] font-mono tracking-widest font-bold text-white/40 uppercase text-right self-center">ACCESS LEVEL:</span>
+                              <span className="text-[7.5px] sm:text-[11.5px] font-bold text-[#eab308] uppercase self-center font-mono tracking-wide flex items-center gap-0.5 sm:gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                                Authorized Research Access
+                              </span>
+                            </div>
+
+                            {/* Verification Pill */}
+                            <div className="mt-2 sm:mt-2 select-text">
+                              <div className="bg-black/60 border border-white/10 rounded-full py-0.5 px-2 sm:py-1 sm:px-3 text-[5.5px] sm:text-[8px] font-mono text-white/50 tracking-wider inline-flex items-center gap-1 w-fit">
+                                <span className="text-white/30 uppercase font-semibold">VERIFICATION PROFILE:</span>
+                                <span className="text-white/80 font-medium">healix-nu.vercel.app/verify/{uniqueId}</span>
+                              </div>
+                            </div>
+
+                          </div>
+                          
+                        </div>
+
+                        {/* Pulsing Heartbeat Telemetry Seal Bottom Right */}
+                        <div className="absolute right-2 bottom-2 sm:right-4 sm:bottom-4 pointer-events-none">
+                          <div className="w-[45px] h-[45px] sm:w-[72px] sm:h-[72px] rounded-full border border-dashed border-[#eab308]/60 p-0.5 sm:p-1 flex items-center justify-center bg-black/40 backdrop-blur-sm shadow-[0_0_15px_rgba(234,179,8,0.05)] z-20">
+                            <div className="bg-black w-full h-full rounded-full flex items-center justify-center border border-[#eab308]/80 shadow-[0_0_8px_rgba(234,179,8,0.15)]">
+                              <svg className="w-5 h-5 sm:w-10 sm:h-10 text-[#eab308] animate-heartbeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                              </svg>
                             </div>
                           </div>
                         </div>
+
                       </div>
 
-                      {/* Footer border accent */}
-                      <div className="h-2 w-full bg-gradient-to-r from-transparent via-[#eab308] to-transparent opacity-50 relative z-10" />
-                    </div>
-
-                    {/* BACK SIDE */}
-                    <div className="absolute w-full h-full bg-[#080808] border border-white/20 rounded-2xl overflow-hidden p-6 flex flex-col" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      {/* Large Watermark */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-                        <Image src="/biolabs-logo.png" alt="Watermark" width={250} height={250} className="object-contain grayscale" />
-                      </div>
-
-                      <div className="relative z-10 flex-1 flex flex-col">
-                        <div className="border-b border-white/10 pb-4 mb-4 text-center">
-                          <h4 className="font-mono text-xs text-white/50 tracking-[0.2em] uppercase">Institutional Credential</h4>
+                      {/* BACK SIDE */}
+                      <div className="absolute w-full h-full bg-[#080808] border border-white/20 rounded-2xl overflow-hidden p-3 sm:p-6 flex flex-col justify-between" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+                        {/* Large Watermark in background */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none z-0">
+                          <Image src="/biolabs-logo.png" alt="Watermark" width={220} height={220} className="object-contain grayscale" />
                         </div>
 
-                        <div className="space-y-6 flex-1">
-                          <div>
-                            <h5 className="text-[10px] text-[#eab308] font-bold uppercase tracking-wider mb-2">Authorized Access Areas:</h5>
-                            <ul className="text-xs text-white/80 space-y-1.5 font-mono">
-                              <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#eab308] rounded-full"/> Research Labs</li>
-                              <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#eab308] rounded-full"/> Bioinformatics Systems</li>
-                              <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#eab308] rounded-full"/> Clinical Intelligence Dashboard</li>
-                              <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#eab308] rounded-full"/> Internal Academic Network</li>
-                            </ul>
+                        <div className="relative z-10 flex-1 flex flex-col justify-between h-full">
+                          
+                          {/* Header section */}
+                          <div className="w-full">
+                            <h4 className="font-mono text-[9px] sm:text-[14px] text-white/50 tracking-[0.25em] uppercase text-center w-full font-semibold">Institutional Credential</h4>
+                            <div className="h-[1px] bg-white/10 w-full mt-2 mb-3 sm:mb-4" />
                           </div>
 
-                          <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
-                            <h5 className="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-1">Emergency Contact:</h5>
-                            <p className="text-sm font-mono text-white">+91 9540694581</p>
-                          </div>
+                          {/* Access list and warnings */}
+                          <div className="space-y-3 sm:space-y-4 flex-1">
+                            <div>
+                              <h5 className="text-[7.5px] sm:text-[10px] text-[#eab308] font-bold uppercase tracking-wider mb-1 sm:mb-2 font-mono">AUTHORIZED ACCESS AREAS:</h5>
+                              <ul className="text-[7.5px] sm:text-[11px] font-mono text-white/80 space-y-1 pl-1">
+                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Research Labs & Bio-Compute Clusters</li>
+                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Bioinformatics Systems (Level 4)</li>
+                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Clinical Intelligence Dashboard</li>
+                                <li className="flex items-center gap-1.5"><span className="text-[#eab308]">•</span> Internal Academic Network</li>
+                              </ul>
+                            </div>
 
-                          <div>
-                            <p className="text-[9px] text-white/40 leading-relaxed text-justify">
+                            <p className="text-[6px] sm:text-[9.5px] text-white/40 leading-normal text-justify font-sans tracking-wide">
                               This credential certifies official affiliation with Healix Technologies Pvt. Ltd. Unauthorized duplication, transfer, or misuse is strictly prohibited and subject to legal action under corporate espionage laws. If found, please return to the nearest Healix facility.
                             </p>
                           </div>
-                        </div>
 
-                        <div className="mt-auto pt-4 border-t border-white/10 flex flex-col items-center text-center">
-                          <div className="flex items-center gap-4 mb-3 text-white/30">
-                            <Activity className="h-4 w-4" />
-                            <Cpu className="h-4 w-4" />
-                            <Shield className="h-4 w-4" />
-                            <Fingerprint className="h-4 w-4" />
+                          {/* Bottom columns details */}
+                          <div className="pt-2 border-t border-white/10 flex flex-row justify-between items-end w-full">
+                            <div>
+                              <span className="text-[5.5px] sm:text-[8px] text-white/40 font-mono tracking-widest uppercase block mb-0.5">EMERGENCY CONTACT:</span>
+                              <span className="text-[8px] sm:text-[12px] font-bold font-mono text-white/90 block">+91 9540694581</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[5.5px] sm:text-[8px] text-white/40 font-mono tracking-widest uppercase block mb-0.5">WEBSITE:</span>
+                              <span className="text-[8px] sm:text-[12px] font-bold font-mono text-[#eab308] underline block hover:text-[#eab308]/80">healix-nu.vercel.app</span>
+                            </div>
                           </div>
-                          <p className="text-[10px] text-white/60 font-mono">https://healix-nu.vercel.app</p>
-                          <p className="text-[8px] text-[#eab308]/50 uppercase tracking-widest mt-1">Engineering Biomedical Intelligence</p>
+
                         </div>
                       </div>
-                    </div>
 
-                  </motion.div>
+                    </motion.div>
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-2 text-white/30 text-xs font-mono">
