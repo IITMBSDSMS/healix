@@ -394,13 +394,21 @@ export default function BioLabsPage() {
 
             {/* Application Portal Link */}
             <div className="bg-zinc-950 p-6 rounded-xl border border-zinc-900 text-center shadow-md relative overflow-hidden">
-              <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+              <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
               <GraduationCap className="h-8 w-8 text-zinc-400 mx-auto mb-3" />
-              <h3 className="font-bold text-xs text-white mb-1 font-mono uppercase tracking-wider">User Application Portal</h3>
-              <p className="text-[11px] text-zinc-400 mb-4 leading-relaxed">Access the user dashboard to submit research proposals and view facility schedules.</p>
-              <Link href="/biolabs/dashboard" className="w-full py-2.5 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-xs uppercase tracking-wider transition-all rounded-lg flex items-center justify-center shadow-md">
-                Login to Dashboard
-              </Link>
+              <h3 className="font-bold text-xs text-white mb-1 font-mono uppercase tracking-wider">Join The Network</h3>
+              <p className="text-[11px] text-zinc-400 mb-4 leading-relaxed">Be part of India&apos;s leading biomedical research and innovation network. Apply to collaborate, learn, and grow.</p>
+              <a
+                href="https://biomedical-network.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 bg-[#ea580c] hover:bg-[#c2410c] active:bg-[#9a3412] text-white font-bold text-xs uppercase tracking-wider transition-all rounded-lg flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              >
+                <span>Start Your Journey With Us</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
             </div>
 
           </div>

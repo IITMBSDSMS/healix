@@ -29,6 +29,7 @@ export default function UserDashboardPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [customPhotoUrl, setCustomPhotoUrl] = useState<string | null>(null);
   const [profileImageBase64, setProfileImageBase64] = useState<string>("");
+  const [biolabsLogoBase64, setBiolabsLogoBase64] = useState<string>("");
 
   // Personalization States
   const [cardName, setCardName] = useState("");
@@ -76,6 +77,22 @@ export default function UserDashboardPage() {
       }
     };
     img.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop";
+  }, []);
+
+  // Pre-load BioLabs Logo to Base64
+  useEffect(() => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        setBiolabsLogoBase64(canvas.toDataURL("image/png"));
+      }
+    };
+    img.src = "/biolabs-logo.png";
   }, []);
 
   useEffect(() => {
@@ -290,15 +307,20 @@ export default function UserDashboardPage() {
     doc.setFontSize(3.5);
     doc.text(`PROFILE: healix-nu.vercel.app/verify/${uniqueId}`, fieldsX + 1.5, frontY + 52.2);
 
-    // Gold Emblem
+    // Gold Emblem - BioLabs Round Circle Logo Seal
+    doc.setFillColor(10, 10, 12);
     doc.setDrawColor(234, 179, 8);
     doc.setLineWidth(0.15);
-    doc.circle(cardX + 80.5, frontY + 45.5, 2.8, "S");
-    doc.line(cardX + 78.5, frontY + 45.5, 79.5, frontY + 45.5);
-    doc.line(79.5 + cardX, frontY + 45.5, 80.2 + cardX, frontY + 43.5);
-    doc.line(80.2 + cardX, frontY + 43.5, 80.8 + cardX, frontY + 47.5);
-    doc.line(80.8 + cardX, frontY + 47.5, 81.5 + cardX, frontY + 45.5);
-    doc.line(81.5 + cardX, frontY + 45.5, 82.5 + cardX, frontY + 45.5);
+    doc.circle(cardX + 80.5, frontY + 45.5, 2.8, "FD");
+
+    if (biolabsLogoBase64) {
+      try {
+        // Draw BioLabs Logo in the center of the seal
+        doc.addImage(biolabsLogoBase64, "PNG", cardX + 78.7, frontY + 43.7, 3.6, 3.6);
+      } catch (err) {
+        console.error("Error drawing BioLabs Logo in PDF:", err);
+      }
+    }
 
 
     // DRAW BACK OF CARD
@@ -859,14 +881,14 @@ export default function UserDashboardPage() {
                               
                             </div>
 
-                            {/* Static Corporate Emblem Gold Seal Bottom Right */}
+                            {/* Static Corporate Emblem BioLabs Seal Bottom Right */}
                             <div className="absolute right-2.5 bottom-2.5 sm:right-5 sm:bottom-5 pointer-events-none select-none z-20">
                               <div className="w-[45px] h-[45px] sm:w-[72px] sm:h-[72px] rounded-full border border-zinc-800/80 p-0.5 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm shadow-md">
-                                <div className="bg-black/90 w-full h-full rounded-full flex flex-col items-center justify-center border border-[#eab308]/40 shadow-inner relative">
-                                  <div className="absolute inset-0.5 rounded-full border border-[#eab308]/15" />
-                                  <svg className="w-5.5 h-5.5 sm:w-9 sm:h-9 text-[#eab308]/75" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                  </svg>
+                                <div className="bg-black/90 w-full h-full rounded-full flex items-center justify-center border border-[#eab308]/40 shadow-inner relative overflow-hidden p-1.5 sm:p-2.5">
+                                  <div className="absolute inset-0.5 rounded-full border border-[#eab308]/15 pointer-events-none z-10" />
+                                  <div className="w-full h-full relative">
+                                    <Image src="/biolabs-logo.png" alt="BioLabs Logo" fill className="object-contain" />
+                                  </div>
                                 </div>
                               </div>
                             </div>

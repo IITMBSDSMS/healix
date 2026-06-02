@@ -18,7 +18,7 @@ import {
   GraduationCap, PlayCircle, Eye, EyeOff, Edit3, X, Check, Upload, Loader2, ArrowUpRight, 
   DollarSign, BookOpen, Star, Book, UserPlus, Code2, Link2, MessageCircle, RefreshCw, 
   Battery, Signal, Zap, ShieldAlert, Play, Square, ExternalLink, Copy, Smartphone,
-  ChevronUp, ChevronDown
+  ChevronUp, ChevronDown, Quote
 } from "lucide-react";
 
 import { 
@@ -98,11 +98,22 @@ const EMPTY_BRAND = {
   active: true,
 };
 
+const EMPTY_FOUNDER = {
+  name: "",
+  role: "",
+  quote: "",
+  photo_url: "",
+  display_order: 0,
+  active: true,
+};
+
+
 export default function UnifiedAdminDashboard() {
   const router = useRouter();
   
   // Master active tab state
-  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "suraksha" | "academy" | "mentors" | "team" | "podcasts" | "branding" | "reels" | "system">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "suraksha" | "academy" | "mentors" | "team" | "founders" | "podcasts" | "branding" | "reels" | "system">("overview");
+
   
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -172,6 +183,16 @@ export default function UnifiedAdminDashboard() {
   const [brandForm, setBrandForm] = useState(EMPTY_BRAND);
   const [brandSubmitting, setBrandSubmitting] = useState(false);
   const [brandUploadingFor, setBrandUploadingFor] = useState<string | null>(null);
+
+  // ─── 3.8 FOUNDERS CRUD STATES ───
+  const [foundersList, setFoundersList] = useState<any[]>([]);
+  const [showFounderForm, setShowFounderForm] = useState(false);
+  const [editingFounderId, setEditingFounderId] = useState<string | null>(null);
+  const [founderForm, setFounderForm] = useState(EMPTY_FOUNDER);
+  const [founderSubmitting, setFounderSubmitting] = useState(false);
+  const [founderUploadingFor, setFounderUploadingFor] = useState<string | null>(null);
+  const [founderDbAlert, setFounderDbAlert] = useState(false);
+
 
   // ─── 4. BRANDING PHOTO DRAG-DROP STATES ───
   const [brandingActiveSubTab, setBrandingActiveSubTab] = useState<"assets" | "gallery" | "brands">("assets");
@@ -257,6 +278,12 @@ export default function UnifiedAdminDashboard() {
       const brandsRes = await fetch("/api/brands?all=true");
       const brandsData = await brandsRes.json();
       setBrandsList(Array.isArray(brandsData) ? brandsData : []);
+
+      // Load founders
+      const foundersRes = await fetch("/api/founders?all=true");
+      const foundersData = await foundersRes.json();
+      setFoundersList(Array.isArray(foundersData) ? foundersData : []);
+
 
     } catch (e: any) {
       setError("Failed to fetch administrative data.");
@@ -1138,7 +1165,210 @@ export default function UnifiedAdminDashboard() {
     }
   };
 
+  // ─── FOUNDERS CRUD HANDLERS ───
+  const openFounderAddForm = () => {
+    setEditingFounderId(null);
+    setFounderForm({ ...EMPTY_FOUNDER, display_order: foundersList.length });
+    setShowFounderForm(true);
+    setFounderDbAlert(false);
+  };
+
+  const openFounderEditForm = (f: any) => {
+    setEditingFounderId(f.id);
+    setFounderForm({
+      name: f.name,
+      role: f.role,
+      quote: f.quote || "",
+      photo_url: f.photo_url || "",
+      display_order: f.display_order ?? 0,
+      active: f.active ?? true
+    });
+    setShowFounderForm(true);
+    setFounderDbAlert(false);
+  };
+
+  const handleFounderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFounderSubmitting(true);
+    try {
+      const method = editingFounderId ? "PUT" : "POST";
+      const url = editingFounderId ? `/api/founders/${editingFounderId}` : "/api/founders";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(founderForm),
+      });
+      
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          setFounderDbAlert(true);
+          throw new Error(resData.message || "Founder table does not exist.");
+        }
+        throw new Error(resData.error || "Failed to save founder details");
+      }
+      
+      showToast(editingFounderId ? "Founder details updated!" : "New founder registered!");
+      setShowFounderForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save founder details", "err");
+    } finally {
+      setFounderSubmitting(false);
+    }
+  };
+
+  const handleFounderDelete = async (id: string, name: string) => {
+    if (id.startsWith("f")) {
+      showToast("Cannot delete default founders from static fallback. Run SQL schema to enable database edits.", "err");
+      return;
+    }
+    if (!confirm(`Delete founder "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/founders/${id}`, { method: "DELETE" });
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          showToast("Founder table does not exist. Run supabase_founders_schema.sql first.", "err");
+          return;
+        }
+        throw new Error(resData.error || "Failed to delete founder");
+      }
+      showToast(`"${name}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleFounderActive = async (f: any) => {
+    if (f.id.startsWith("f")) {
+      showToast("Cannot toggle fallback founders. Run SQL schema to enable database updates.", "err");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/founders/${f.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !f.active }),
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        throw new Error(resData.error || "Failed to toggle active status");
+      }
+      showToast(`Founder ${f.active ? "hidden" : "activated"} on home page.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to toggle status", "err");
+    }
+  };
+
+  const handleFounderPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    if (id.startsWith("f")) {
+      showToast("Cannot upload photos for static fallback founders. Run SQL schema first.", "err");
+      return;
+    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFounderUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("founderId", id);
+      const res = await fetch("/api/founders/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Founder photo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setFounderUploadingFor(null);
+    }
+  };
+
+  const handleFounderPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    if (id.startsWith("f")) {
+      showToast("Cannot drop photos for fallback founders. Run SQL schema first.", "err");
+      return;
+    }
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setFounderUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("founderId", id);
+      const res = await fetch("/api/founders/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Founder photo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setFounderUploadingFor(null);
+    }
+  };
+
+  const handleFounderFormPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFounderSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("founderId", editingFounderId || "temp");
+      const res = await fetch("/api/founders/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setFounderForm((f: any) => ({ ...f, photo_url: data.url }));
+        showToast("Founder photo uploaded successfully!");
+        if (editingFounderId && !editingFounderId.startsWith("f")) {
+          fetchData();
+        }
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setFounderSubmitting(false);
+    }
+  };
+
+  const moveFounderOrder = async (f: any, dir: "up" | "down") => {
+    if (f.id.startsWith("f")) {
+      showToast("Reordering is only enabled for database records. Run SQL schema first.", "err");
+      return;
+    }
+    const newOrder = dir === "up" ? f.display_order - 1 : f.display_order + 1;
+    try {
+      const res = await fetch(`/api/founders/${f.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
   // ─── STANDARD CONSOLE EVENT HANDLERS ───
+
   const handleAppStatus = async (id: string, status: 'accepted' | 'rejected') => {
     const res = await updateApplicationStatus(id, status);
     if (res.error) alert(res.error);
@@ -1243,6 +1473,7 @@ export default function UnifiedAdminDashboard() {
     { id: "academy", label: "Academy CRM", icon: GraduationCap, color: "text-[#eab308]", bg: "bg-yellow-500/10" },
     { id: "mentors", label: "Corporate Mentors", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { id: "team", label: "Engineering Team", icon: Code2, color: "text-[#ea580c]", bg: "bg-orange-500/10" },
+    { id: "founders", label: "Founders Corner", icon: ShieldAlert, color: "text-amber-500", bg: "bg-amber-500/10" },
     { id: "podcasts", label: "Podcasts Manager", icon: Play, color: "text-red-400", bg: "bg-red-500/10" },
     { id: "branding", label: "Branding Manager", icon: ImageIcon, color: "text-indigo-400", bg: "bg-indigo-500/10" },
     { id: "reels", label: "Comm. Reels", icon: PlayCircle, color: "text-pink-400", bg: "bg-pink-500/10" },
@@ -2144,6 +2375,91 @@ export default function UnifiedAdminDashboard() {
                       </div>
                     </GlassCard>
                   ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* FOUNDERS CORNER TAB */}
+            {activeTab === "founders" && (
+              <motion.div key="founders" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Founders Corner</h2>
+                    <p className="text-white/50 text-sm">Manage the founders appearing in the Founder's Corner on the homepage.</p>
+                  </div>
+                  <button onClick={openFounderAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                    <Plus className="w-4 h-4" /> Add Founder
+                  </button>
+                </div>
+
+                {foundersList.some(f => String(f.id).startsWith("f")) && (
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                      <p>Currently showing static fallback founders. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_founders_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management (including custom photo uploading, reordering, and permanent deletion).</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {foundersList.map((f) => {
+                    const isFallback = String(f.id).startsWith("f");
+                    return (
+                      <GlassCard key={f.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${f.active ? "opacity-100" : "opacity-55"}`}>
+                        <div className="space-y-4">
+                          <div className="flex gap-4">
+                            <div 
+                              className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                                founderUploadingFor === f.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                              }`}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => handleFounderPhotoDrop(e, f.id)}
+                            >
+                              {f.photo_url ? (
+                                <Image src={f.photo_url} alt={f.name} fill className="object-cover object-top" unoptimized />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{f.name?.[0]}</div>
+                              )}
+                              {!isFallback && (
+                                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                  <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFounderPhotoUpload(e, f.id)} />
+                                </label>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{f.role}</p>
+                              <h3 className="text-base font-bold text-white truncate">{f.name || "Unnamed"}</h3>
+                              <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                                {isFallback ? "Static Fallback" : "Live DB"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative">
+                            <Quote className="absolute top-1 right-2 w-4 h-4 text-white/10 rotate-180" />
+                            <p className="text-xs text-gray-400 italic line-clamp-3 font-mono">
+                              "{f.quote || "No quote provided."}"
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                          <div className="flex gap-1">
+                            <button disabled={isFallback} onClick={() => moveFounderOrder(f, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                            <button disabled={isFallback} onClick={() => moveFounderOrder(f, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button disabled={isFallback} onClick={() => toggleFounderActive(f)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${f.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                              {f.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            </button>
+                            <button onClick={() => openFounderEditForm(f)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                            <button disabled={isFallback} onClick={() => handleFounderDelete(f.id, f.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                          </div>
+                        </div>
+                      </GlassCard>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -3054,6 +3370,125 @@ export default function UnifiedAdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Founders Modal */}
+      <AnimatePresence>
+        {showFounderForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowFounderForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingFounderId ? "Edit Founder" : "Add Founder"}</h2>
+                <button onClick={() => setShowFounderForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              {founderDbAlert && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-red-200 text-xs leading-relaxed font-mono">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold uppercase mb-1">Database Table Missing</p>
+                    <p>The database table 'founders' is missing in Supabase. You must run `supabase_founders_schema.sql` in your Supabase SQL editor to create the table and enable dynamic database changes.</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleFounderSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Founder Name *</label>
+                    <input required value={founderForm.name} onChange={e => setFounderForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Role / Designation *</label>
+                    <input required value={founderForm.role} onChange={e => setFounderForm(f => ({ ...f, role: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo URL</label>
+                  <input value={founderForm.photo_url} onChange={e => setFounderForm(f => ({ ...f, photo_url: e.target.value }))} placeholder="https://..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div 
+                  className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-8 flex flex-col items-center justify-center relative transition-all duration-300"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      const id = editingFounderId || "temp";
+                      if (String(id).startsWith("f")) {
+                        showToast("Cannot upload photo for static fallback founder. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("founderId", id);
+                      fetch("/api/founders/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setFounderForm((f: any) => ({ ...f, photo_url: data.url }));
+                            showToast("Founder photo uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const id = editingFounderId || "temp";
+                      if (String(id).startsWith("f")) {
+                        showToast("Cannot upload photo for static fallback founder. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("founderId", id);
+                      fetch("/api/founders/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setFounderForm((f: any) => ({ ...f, photo_url: data.url }));
+                            showToast("Founder photo uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Founder's Message / Quote *</label>
+                  <textarea rows={4} required value={founderForm.quote} onChange={e => setFounderForm(f => ({ ...f, quote: e.target.value }))} placeholder="Share a message or quote with the community..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowFounderForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={founderSubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {founderSubmitting ? "Saving..." : editingFounderId ? "Save Changes" : "Register Founder"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
     </div>
   );

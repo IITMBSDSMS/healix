@@ -18,12 +18,12 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://avatars.githubusercontent.com https://*.basemaps.cartocdn.com https://unpkg.com https://api.qrserver.com https://*.supabase.co https://i.ytimg.com",
       "media-src 'self' data: blob: https://www.w3schools.com https://*.supabase.co",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://healix-biolabs.onrender.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://healix-biolabs.onrender.com https://biomedical-network.vercel.app",
       // Allow YouTube embeds in the podcast modal player
       "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://biomedical-network.vercel.app",
     ].join("; "),
   },
 ];

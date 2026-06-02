@@ -26,10 +26,14 @@ export function SplashScreen() {
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 1, pointerEvents: "all" }}
+          exit={{ opacity: 0, pointerEvents: "none" }}
           transition={{ duration: 0.7, ease: "easeInOut" }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050505]"
+          onClick={() => {
+            setShow(false);
+            sessionStorage.setItem("healix_splash_shown", "true");
+          }}
         >
           {/* Radial glow behind logo matching new yellow brand */}
           <motion.div

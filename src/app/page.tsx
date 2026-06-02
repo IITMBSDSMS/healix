@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
@@ -66,15 +66,58 @@ const STATIC_BRANDS = [
   }
 ];
 
+const DEFAULT_FOUNDERS = [
+  {
+    id: "f1",
+    name: "Avnish",
+    role: "Founder & CEO",
+    quote: "Precision health data infrastructure is the foundation of modern clinical safety and AI diagnostics. At Healix, we are commoditizing the complex engineering required to unify fragmented health datasets so innovators can build clinical products at scale.",
+    photo_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    display_order: 0,
+    active: true
+  },
+  {
+    id: "f2",
+    name: "Debraghya Bag",
+    role: "Co-Founder & Chief Medical Officer (CMO)",
+    quote: "Precision medicine starts with precise data engineering. Ensuring scientific credibility, medical correctness, and healthcare system reliability is not a post-hoc check—it is built into every telemetry model we run at Healix.",
+    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+    display_order: 1,
+    active: true
+  },
+  {
+    id: "f3",
+    name: "Mahima Sharma",
+    role: "COO",
+    quote: "Reliability is not a feature; it is the core foundation. Scaling operations, securing strategic partnerships, and building sustainable ecosystem networks are key to translating Healix's clinical tech into tangible community outcomes.",
+    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+    display_order: 2,
+    active: true
+  },
+  {
+    id: "f4",
+    name: "Sudiksha Sharma",
+    role: "Behavioral Psychology & Human Systems Strategist",
+    quote: "Technology must serve the human experience. Designing healthcare systems that people emotionally trust, feel safe using, and find reassuring is critical for securing widespread public health adoption.",
+    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    display_order: 3,
+    active: true
+  }
+];
+
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<{ url: string, title: string } | null>(null);
 
-  // Podcasts and Brands states
+  // Podcasts, Brands, and Founders states
   const [podcasts, setPodcasts] = useState<any[]>([]);
   const [activePodcast, setActivePodcast] = useState<{ youtube_url: string, title: string } | null>(null);
   const [activeBrandIndex, setActiveBrandIndex] = useState(0);
   const [brands, setBrands] = useState<any[]>(STATIC_BRANDS);
+  const [founders, setFounders] = useState<any[]>(DEFAULT_FOUNDERS);
+  const [activeFounderIndex, setActiveFounderIndex] = useState(0);
+  const [selectedFounderForMsg, setSelectedFounderForMsg] = useState<any | null>(null);
+
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -149,9 +192,24 @@ export default function Home() {
       }
     };
 
+    const fetchFounders = async () => {
+      try {
+        const res = await fetch("/api/founders");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setFounders(data);
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching founders:", err);
+      }
+    };
+
     fetchReels();
     fetchPodcasts();
     fetchBrands();
+    fetchFounders();
   }, []);
 
   useEffect(() => {
@@ -161,6 +219,14 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, [brands.length]);
+
+  useEffect(() => {
+    if (founders.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveFounderIndex((prev) => (prev + 1) % founders.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [founders.length]);
 
   const getEmbedUrl = (url: string) => {
     if (!url) return "";
@@ -243,29 +309,90 @@ export default function Home() {
           </div>
 
           {/* Right: Leader's Corner */}
-          <div className="lg:col-span-5 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden min-h-[360px]">
             <div>
-              <h2 className="text-2xl font-black text-black tracking-tight mb-2 uppercase border-b-2 border-zinc-100 pb-3">
-                Founder's <span className="text-[#ea580c]">Corner</span>
-              </h2>
-              <div className="flex flex-col sm:flex-row gap-4 items-start mt-6">
-                <div className="w-28 h-28 bg-zinc-100 border border-zinc-200 shrink-0 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-xs uppercase">
-                    Healix Team
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-2">
+                <h2 className="text-2xl font-black text-black tracking-tight uppercase">
+                  Founder's <span className="text-[#ea580c]">Corner</span>
+                </h2>
+                {founders.length > 1 && (
+                  <div className="flex gap-1.5 items-center">
+                    <button 
+                      onClick={() => setActiveFounderIndex((prev) => (prev - 1 + founders.length) % founders.length)}
+                      className="p-1 rounded-full border border-zinc-200 hover:border-black hover:bg-zinc-50 text-zinc-600 hover:text-black transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => setActiveFounderIndex((prev) => (prev + 1) % founders.length)}
+                      className="p-1 rounded-full border border-zinc-200 hover:border-black hover:bg-zinc-50 text-zinc-600 hover:text-black transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
+                )}
+              </div>
+
+              {founders.length > 0 && (
+                <div className="relative h-[180px] mt-4">
+                  <AnimatePresence mode="wait">
+                    {founders.map((f, idx) => idx === activeFounderIndex && (
+                      <motion.div
+                        key={f.id || idx}
+                        initial={{ opacity: 0, x: 15 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -15 }}
+                        transition={{ duration: 0.3 }}
+                        className="absolute inset-0 flex flex-col sm:flex-row gap-4 items-start"
+                      >
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
+                          {f.photo_url ? (
+                            <img 
+                              src={f.photo_url} 
+                              alt={f.name} 
+                              className="w-full h-full object-cover object-top"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-lg uppercase font-mono">
+                              {f.name?.[0]}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-extrabold text-base text-zinc-950 truncate font-mono uppercase tracking-tight">{f.name}</p>
+                          <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{f.role}</p>
+                          <p className="text-xs text-zinc-750 leading-relaxed mt-2.5 line-clamp-3 italic font-sans">
+                            "{f.quote}"
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
-                <div>
-                  <p className="font-extrabold text-base text-zinc-950">Healix Board of Directors</p>
-                  <p className="text-xs text-[#ea580c] font-bold uppercase mt-1">Research & Technical Council</p>
-                  <p className="text-xs text-zinc-700 leading-relaxed mt-3 italic">
-                    "Our mission is to establish indigenous, failsafe computing parameters that bridge the gap between AI clinical sequence analysis and real-time community safety infrastructure."
-                  </p>
+              )}
+            </div>
+
+            {founders.length > 0 && (
+              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 mt-6">
+                <button 
+                  onClick={() => setSelectedFounderForMsg(founders[activeFounderIndex])}
+                  className="h-10 px-6 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors w-fit font-mono"
+                >
+                  Read Message
+                </button>
+                <div className="flex gap-1">
+                  {founders.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveFounderIndex(i)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                        i === activeFounderIndex ? "bg-[#ea580c] w-3" : "bg-zinc-200 hover:bg-zinc-400"
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
-            </div>
-            <Link href="/academy/mentors" className="h-10 px-6 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors w-fit mt-6">
-              Read Message
-            </Link>
+            )}
           </div>
         </div>
 
@@ -647,6 +774,81 @@ export default function Home() {
 
                 <div className="p-4 bg-zinc-900/35">
                   <h3 className="font-extrabold text-sm text-white font-mono uppercase tracking-wide">{activePodcast.title}</h3>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- FOUNDER MESSAGE ENVELOPE MODAL --- */}
+        <AnimatePresence>
+          {selectedFounderForMsg && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+              onClick={() => setSelectedFounderForMsg(null)}
+            >
+              <motion.div 
+                initial={{ scale: 0.95, y: 15 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 15 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-lg bg-white border border-zinc-200 rounded-none shadow-2xl relative p-6 md:p-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button 
+                  onClick={() => setSelectedFounderForMsg(null)}
+                  className="absolute top-4 right-4 p-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                {/* Message Header */}
+                <div className="flex items-center gap-4 mb-6 border-b border-zinc-100 pb-5 mt-2">
+                  <div className="w-16 h-16 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
+                    {selectedFounderForMsg.photo_url ? (
+                      <img 
+                        src={selectedFounderForMsg.photo_url} 
+                        alt={selectedFounderForMsg.name} 
+                        className="w-full h-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-sm uppercase font-mono">
+                        {selectedFounderForMsg.name?.[0]}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-black font-mono uppercase tracking-tight">{selectedFounderForMsg.name}</h3>
+                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{selectedFounderForMsg.role}</p>
+                    <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">Healix Technologies Pvt. Ltd.</p>
+                  </div>
+                </div>
+
+                {/* Letter Body */}
+                <div className="relative font-serif text-zinc-800 text-sm leading-relaxed whitespace-pre-line py-2">
+                  <Quote className="absolute -top-1 -left-2 w-8 h-8 text-orange-100 -z-10 rotate-180" />
+                  <p className="italic font-medium text-zinc-900 text-base mb-4">"Greetings from the Leadership Team,"</p>
+                  <p className="font-medium text-zinc-700 leading-relaxed font-sans">{selectedFounderForMsg.quote}</p>
+                </div>
+
+                {/* Signature/Footer */}
+                <div className="mt-8 border-t border-zinc-100 pt-5 flex items-center justify-between text-xs font-mono">
+                  <div>
+                    <p className="text-zinc-400 uppercase">Status</p>
+                    <p className="text-emerald-600 font-bold uppercase flex items-center gap-1.5 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Verified Leadership
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedFounderForMsg(null)}
+                    className="px-4 py-2 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+                  >
+                    Close
+                  </button>
                 </div>
               </motion.div>
             </motion.div>

@@ -102,12 +102,16 @@ export function Navbar() {
           </Link>
 
           {/* Right Location Box */}
-          <div className="hidden md:flex items-center gap-4 text-right">
-            <div className="flex items-start gap-2 text-zinc-650 text-xs sm:text-sm">
-              <MapPin className="w-4.5 h-4.5 text-[#ea580c] shrink-0 mt-0.5" />
-              <div>
-                <p className="font-extrabold text-zinc-900 leading-none">HEALIX RESEARCH HQ</p>
-                <p className="text-zinc-500 text-xs mt-1">IIT Madras Campus, Chennai - 600036, India</p>
+          <div className="hidden md:flex items-center text-left">
+            <div className="flex items-center gap-2.5">
+              <MapPin className="w-5 h-5 text-[#ea580c] shrink-0" />
+              <div className="flex flex-col">
+                <p className="font-black text-zinc-950 text-[13px] tracking-tight uppercase leading-none">
+                  HEALIX RESEARCH HQ
+                </p>
+                <p className="text-zinc-500 text-[11px] font-semibold mt-1 leading-none">
+                  IIT Madras Campus, Chennai - 600036, India
+                </p>
               </div>
             </div>
           </div>
