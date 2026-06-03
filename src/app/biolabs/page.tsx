@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   ChevronLeft, ChevronRight, Activity, Cpu, Shield, Database, 
-  Microscope, BookOpen, GraduationCap, Users, Network, Dna
+  Microscope, BookOpen, GraduationCap, Users, Network, Dna,
+  Play, Pause, Plus, X, Lightbulb, Upload
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -26,9 +27,93 @@ const facilities = [
   "Bio-Informatics Data Center", "Secure Cloud Interoperability Node"
 ];
 
+const defaultInnovators = [
+  {
+    id: "1",
+    name: "Priya Sharma",
+    projectTitle: "Real-time CRISPR Off-Target Prediction Pipeline",
+    description: "Developed a low-latency machine learning algorithm that predicts off-target genetic modifications with 99.4% precision. The pipeline reduces sequence verification times from weeks to hours using distributed GPU arrays.",
+    collegeName: "IIT Madras",
+    image: "/biolabs/member_priya.png",
+    collegeLogo: "iitm",
+    year: "2026"
+  },
+  {
+    id: "2",
+    name: "Rahul Verma",
+    projectTitle: "Decentralized Edge Telemetry SOS Failsafes",
+    description: "Engineered a distributed telemetry buffer for low-bandwidth IoT safety systems. The framework ensures panic signals are broadcasted across local mesh nodes even in cellular blackouts.",
+    collegeName: "IISc Bangalore",
+    image: "/biolabs/member_rahul.png",
+    collegeLogo: "iisc",
+    year: "2025"
+  },
+  {
+    id: "3",
+    name: "Ananya Iyer",
+    projectTitle: "Genomic Sequence Cancer Diagnostic Pipeline",
+    description: "Constructed an explainable neural network pipeline identifying early-stage oncological anomalies in BRCA1 gene variants. The model overlays activation maps to assist clinical triaging teams.",
+    collegeName: "IIT Bombay",
+    image: "/biolabs/member_ananya.png",
+    collegeLogo: "iitb",
+    year: "2026"
+  }
+];
+
+function renderCollegeLogo(logoKey: string) {
+  if (logoKey === "iitm") {
+    return (
+      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+        <circle cx="50" cy="50" r="44" strokeWidth="4" fill="none" />
+        <circle cx="50" cy="50" r="38" strokeWidth="2" strokeDasharray="4,4" fill="none" />
+        <path d="M50 25 L50 75 M25 50 L75 50 M32 32 L68 68 M32 68 L68 32" strokeWidth="2" />
+        <circle cx="50" cy="50" r="12" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (logoKey === "iisc") {
+    return (
+      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+        <path d="M50 15 L80 30 L80 65 C80 80 50 90 50 90 C50 90 20 80 20 65 L20 30 Z" fill="none" />
+        <path d="M35 45 L50 35 L65 45 L50 75 Z" fill="currentColor" opacity="0.8" />
+        <path d="M50 35 L50 75" stroke="white" strokeWidth="2" />
+      </svg>
+    );
+  }
+  if (logoKey === "iitb") {
+    return (
+      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+        <circle cx="50" cy="50" r="44" fill="none" />
+        <path d="M30 65 C35 55 45 50 50 50 C55 50 65 55 70 65" strokeWidth="3" strokeLinecap="round" />
+        <path d="M50 25 C45 35 45 45 50 55 C55 45 55 35 50 25" fill="currentColor" />
+        <path d="M38 35 C42 42 48 45 50 55 C52 45 58 42 62 35" fill="currentColor" opacity="0.7" />
+      </svg>
+    );
+  }
+  return (
+    <div className="w-8 h-8 rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0">
+      <img src={logoKey} alt="Logo" className="w-full h-full object-contain" />
+    </div>
+  );
+}
+
 export default function BioLabsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentEvent, setCurrentEvent] = useState(0);
+  const [currentInnovator, setCurrentInnovator] = useState(0);
+  const [isAutoplay, setIsAutoplay] = useState(true);
+  const [innovators, setInnovators] = useState<any[]>(defaultInnovators);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Form state
+  const [newName, setNewName] = useState("");
+  const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newCollegeName, setNewCollegeName] = useState("");
+  const [newYear, setNewYear] = useState("2026");
+  const [logoType, setLogoType] = useState("iitm");
+  const [customLogoFile, setCustomLogoFile] = useState<File | null>(null);
+  const [portraitFile, setPortraitFile] = useState<File | null>(null);
 
   // Dynamic Data State
   const [dynamicAnnouncements, setDynamicAnnouncements] = useState<any[]>([]);
@@ -68,6 +153,83 @@ export default function BioLabsPage() {
     }, 6000);
     return () => clearInterval(slideInterval);
   }, [dynamicPhotos]);
+
+  // Load innovators from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('healix_innovators');
+      if (stored) {
+        setInnovators(JSON.parse(stored));
+      }
+    }
+  }, []);
+
+  // Autoplay cycle for innovators carousel
+  useEffect(() => {
+    if (!isAutoplay || innovators.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentInnovator(prev => (prev + 1) % innovators.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isAutoplay, innovators]);
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleInnovatorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName || !newProjectTitle || !newDescription || !newCollegeName) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    let resolvedLogo = logoType;
+    if (logoType === "custom" && customLogoFile) {
+      resolvedLogo = await fileToBase64(customLogoFile);
+    }
+
+    let resolvedPortrait = "/placeholder.png";
+    if (portraitFile) {
+      resolvedPortrait = await fileToBase64(portraitFile);
+    }
+
+    const newInnovator = {
+      id: Date.now().toString(),
+      name: newName,
+      projectTitle: newProjectTitle,
+      description: newDescription,
+      collegeName: newCollegeName,
+      image: resolvedPortrait,
+      collegeLogo: resolvedLogo,
+      year: newYear
+    };
+
+    const updated = [newInnovator, ...innovators];
+    setInnovators(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('healix_innovators', JSON.stringify(updated));
+    }
+
+    // Reset fields
+    setNewName("");
+    setNewProjectTitle("");
+    setNewDescription("");
+    setNewCollegeName("");
+    setNewYear("2026");
+    setLogoType("iitm");
+    setCustomLogoFile(null);
+    setPortraitFile(null);
+    setIsModalOpen(false);
+    
+    // Switch immediately to the newly added innovator slide
+    setCurrentInnovator(0);
+  };
 
   return (
     <div className="relative min-h-screen bg-white text-zinc-900 font-sans pb-24 selection:bg-yellow-500/20">
@@ -186,6 +348,19 @@ export default function BioLabsPage() {
             @keyframes orbitDot {
               0%   { transform: translate(-50%, -50%) rotate(0deg)   translateX(88px) rotate(0deg); }
               100% { transform: translate(-50%, -50%) rotate(360deg) translateX(88px) rotate(-360deg); }
+            }
+            @keyframes progressFill {
+              from { width: 0%; }
+              to { width: 100%; }
+            }
+            @keyframes scanner {
+              0% { top: 0%; opacity: 0; }
+              10% { opacity: 0.8; }
+              90% { opacity: 0.8; }
+              100% { top: 100%; opacity: 0; }
+            }
+            .laser-line {
+              animation: scanner 3.5s ease-in-out infinite;
             }
           `}</style>
 
@@ -322,6 +497,199 @@ export default function BioLabsPage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Research & Innovation Section */}
+            <section className="relative">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-black tracking-tight text-zinc-950 font-mono uppercase flex items-center gap-2">
+                    <span className="w-1.5 h-4.5 bg-[#ea580c] inline-block" />
+                    Research & Innovation
+                  </h2>
+                  <div className="w-16 h-1 bg-[#ea580c] mt-2 rounded-full" />
+                </div>
+                
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  className="h-8 px-3.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-white rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Submit Research
+                </button>
+              </div>
+
+              {innovators.length > 0 && (
+                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-8 relative shadow-sm hover:shadow-md transition-shadow duration-300">
+                  {/* Subtle top indicator badge */}
+                  <div className="absolute top-4 right-4 z-20 px-2 py-0.5 border border-[#ea580c]/20 bg-[#ea580c]/5 text-[#ea580c] text-[8px] font-mono font-bold uppercase tracking-widest rounded">
+                    Innovation Lab
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 items-stretch min-h-[340px]">
+                    {/* Portrait Column */}
+                    <div className="md:col-span-4 bg-zinc-50 border-r border-zinc-200 flex items-center justify-center p-6 relative overflow-hidden group/portrait">
+                      {/* Grid overlay */}
+                      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
+                      
+                      {/* Cinematic scanner line */}
+                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#ea580c]/50 to-transparent pointer-events-none laser-line z-10" />
+
+                      <div className="w-48 h-48 rounded-xl border border-zinc-200 bg-white relative overflow-hidden shadow-sm shrink-0 group-hover/portrait:border-[#ea580c]/30 group-hover/portrait:shadow-md transition-all duration-300">
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={currentInnovator}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.5 }}
+                            className="absolute inset-0"
+                          >
+                            <img 
+                              src={innovators[currentInnovator]?.image} 
+                              alt={innovators[currentInnovator]?.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    {/* Details Column */}
+                    <div className="md:col-span-8 p-6 flex flex-col justify-between relative bg-white">
+                      <div className="space-y-4">
+                        {/* College Crest & Name */}
+                        <div className="flex items-center gap-2.5">
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={currentInnovator}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -10 }}
+                              transition={{ duration: 0.4 }}
+                              className="shrink-0"
+                            >
+                              {renderCollegeLogo(innovators[currentInnovator]?.collegeLogo)}
+                            </motion.div>
+                          </AnimatePresence>
+                          <AnimatePresence mode="wait">
+                            <motion.span
+                              key={currentInnovator}
+                              initial={{ opacity: 0, x: 10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 10 }}
+                              transition={{ duration: 0.4 }}
+                              className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase"
+                            >
+                              {innovators[currentInnovator]?.collegeName}
+                            </motion.span>
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Project / Research Details */}
+                        <div className="space-y-2">
+                          <AnimatePresence mode="wait">
+                            <motion.h3
+                              key={currentInnovator}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 15 }}
+                              transition={{ duration: 0.5, delay: 0.1 }}
+                              className="text-base font-black tracking-tight text-zinc-950 font-mono uppercase leading-snug"
+                            >
+                              {innovators[currentInnovator]?.projectTitle}
+                            </motion.h3>
+                          </AnimatePresence>
+
+                          <AnimatePresence mode="wait">
+                            <motion.p
+                              key={currentInnovator}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 10 }}
+                              transition={{ duration: 0.5, delay: 0.2 }}
+                              className="text-[11px] text-zinc-500 font-mono"
+                            >
+                              Scholar: <span className="text-[#ea580c] font-bold">{innovators[currentInnovator]?.name}</span> • Class of {innovators[currentInnovator]?.year}
+                            </motion.p>
+                          </AnimatePresence>
+
+                          <AnimatePresence mode="wait">
+                            <motion.p
+                              key={currentInnovator}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 15 }}
+                              transition={{ duration: 0.5, delay: 0.3 }}
+                              className="text-xs text-zinc-700 leading-relaxed text-justify mt-2.5"
+                            >
+                              {innovators[currentInnovator]?.description}
+                            </motion.p>
+                          </AnimatePresence>
+                        </div>
+                      </div>
+
+                      {/* Navigation Controls & Progress Timeline */}
+                      <div className="mt-8 border-t border-zinc-100 pt-5">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                          {/* Left Navigation Dots & Play/Pause */}
+                          <div className="flex items-center gap-4">
+                            <div className="flex gap-1.5">
+                              {innovators.map((_, idx) => (
+                                <button 
+                                  key={idx} 
+                                  onClick={() => setCurrentInnovator(idx)} 
+                                  className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === currentInnovator ? 'bg-[#ea580c] w-5' : 'bg-zinc-200 hover:bg-zinc-300'}`} 
+                                />
+                              ))}
+                            </div>
+                            
+                            <button
+                              type="button"
+                              onClick={() => setIsAutoplay(prev => !prev)}
+                              className="p-1 rounded-md border border-zinc-200 hover:border-zinc-350 hover:bg-zinc-50 text-zinc-500 hover:text-zinc-800 transition-all cursor-pointer flex items-center justify-center h-6 w-6"
+                            >
+                              {isAutoplay ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                            </button>
+                          </div>
+
+                          {/* Manual Arrow Controls */}
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setCurrentInnovator(prev => (prev === 0 ? innovators.length - 1 : prev - 1))}
+                              className="w-8 h-8 rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-50 transition-colors flex items-center justify-center cursor-pointer"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCurrentInnovator(prev => (prev + 1) % innovators.length)}
+                              className="w-8 h-8 rounded-lg border border-zinc-300 text-zinc-500 hover:bg-zinc-50 transition-colors flex items-center justify-center cursor-pointer"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Slide Timer Progress Bar */}
+                        <div className="w-full h-[3px] bg-zinc-150 rounded-full overflow-hidden mt-4 relative">
+                          {isAutoplay && (
+                            <div 
+                              key={currentInnovator}
+                              className="h-full bg-gradient-to-r from-[#ea580c] to-yellow-500 rounded-full"
+                              style={{
+                                animation: "progressFill 6s linear forwards"
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Outreach & Training */}
@@ -642,6 +1010,160 @@ export default function BioLabsPage() {
           );
         })()}
       </div>
+
+      {/* Upload Innovator Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white border border-zinc-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-zinc-150 flex items-center justify-between bg-zinc-50">
+                <h3 className="text-sm font-black font-mono text-zinc-950 uppercase flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-[#ea580c]" /> Submit Research & Innovation
+                </h3>
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Modal Form */}
+              <form onSubmit={handleInnovatorSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
+                {/* Scholar Name */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Scholar Name *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={newName} 
+                    onChange={e => setNewName(e.target.value)} 
+                    placeholder="e.g. Priya Sharma" 
+                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
+                  />
+                </div>
+
+                {/* Project Title */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Project / Research Title *</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={newProjectTitle} 
+                    onChange={e => setNewProjectTitle(e.target.value)} 
+                    placeholder="e.g. CRISPR Off-Target Prediction" 
+                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
+                  />
+                </div>
+
+                {/* College Name & Class Year */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">College / Institution *</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={newCollegeName} 
+                      onChange={e => setNewCollegeName(e.target.value)} 
+                      placeholder="e.g. IIT Madras" 
+                      className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Class Year *</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={newYear} 
+                      onChange={e => setNewYear(e.target.value)} 
+                      placeholder="e.g. 2026" 
+                      className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Research Description & Impact *</label>
+                  <textarea 
+                    required 
+                    rows={3} 
+                    value={newDescription} 
+                    onChange={e => setNewDescription(e.target.value)} 
+                    placeholder="Describe the innovation, methodologies, and key clinical/computational results." 
+                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors resize-none"
+                  />
+                </div>
+
+                {/* College Logo Select */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">College Crest / Logo *</label>
+                  <select 
+                    value={logoType} 
+                    onChange={e => setLogoType(e.target.value)} 
+                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] bg-white transition-colors"
+                  >
+                    <option value="iitm">Predefined IIT Madras Emblem (Circular Crest)</option>
+                    <option value="iisc">Predefined IISc Bangalore Emblem (Shield Crest)</option>
+                    <option value="iitb">Predefined IIT Bombay Emblem (Lotus Crest)</option>
+                    <option value="custom">Upload Custom Logo / Icon</option>
+                  </select>
+                </div>
+
+                {/* Custom Logo File Upload */}
+                {logoType === "custom" && (
+                  <div className="p-3 bg-zinc-50 border border-dashed border-zinc-200 rounded-lg space-y-2">
+                    <label className="text-[9px] font-mono font-bold tracking-wider text-zinc-500 uppercase block">Upload College Logo (PNG/JPG/SVG)</label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      required 
+                      onChange={e => setCustomLogoFile(e?.target?.files?.[0] || null)}
+                      className="text-xs text-zinc-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-mono file:font-bold file:bg-[#ea580c]/10 file:text-[#ea580c] hover:file:bg-[#ea580c]/20"
+                    />
+                  </div>
+                )}
+
+                {/* Portrait Photo Upload */}
+                <div className="p-3 bg-zinc-50 border border-dashed border-zinc-200 rounded-lg space-y-2">
+                  <label className="text-[9px] font-mono font-bold tracking-wider text-zinc-500 uppercase block">Scholar's Portrait Photo *</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    required 
+                    onChange={e => setPortraitFile(e?.target?.files?.[0] || null)}
+                    className="text-xs text-zinc-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-mono file:font-bold file:bg-[#ea580c]/10 file:text-[#ea580c] hover:file:bg-[#ea580c]/20"
+                  />
+                </div>
+
+                {/* Submit Actions */}
+                <div className="flex gap-3 justify-end pt-2 border-t border-zinc-100">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="h-9 px-4 border border-zinc-200 rounded-lg text-xs font-mono uppercase font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="h-9 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-mono uppercase font-bold tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" /> Submit & Deploy
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
