@@ -43,7 +43,12 @@ function normaliseInnovator(raw: any) {
 
 function renderCollegeLogo(logoKey: string, large = false) {
   if (!logoKey) return null;
-  const sz = large ? "w-10 h-10" : "w-8 h-8";
+  if (large) {
+    return (
+      <img src={logoKey} alt="Logo" className="w-full h-full object-contain p-1.5 animate-fade-in" />
+    );
+  }
+  const sz = "w-8 h-8";
   return (
     <div className={`${sz} rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0`}>
       <img src={logoKey} alt="Logo" className="w-full h-full object-contain p-1" />
@@ -543,7 +548,6 @@ export default function BioLabsPage() {
                       <div className="space-y-5">
                         {/* College Crest & Animated Name */}
                         <div className="flex items-center gap-4">
-                          {/* Big animated college logo */}
                           <AnimatePresence mode="wait">
                             <motion.div
                               key={currentInnovator + "-logo"}
@@ -551,7 +555,7 @@ export default function BioLabsPage() {
                               animate={{ opacity: 1, rotate: 0, scale: 1 }}
                               exit={{ opacity: 0, rotate: 15, scale: 0.7 }}
                               transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-                              className="shrink-0 w-16 h-16 rounded-xl border border-zinc-100 bg-zinc-50 flex items-center justify-center shadow-sm"
+                              className="shrink-0 w-16 h-16 rounded-xl border border-zinc-150 bg-white flex items-center justify-center shadow-sm overflow-hidden"
                             >
                               {renderCollegeLogo(innovators[currentInnovator]?.collegeLogo, true)}
                             </motion.div>
@@ -564,12 +568,11 @@ export default function BioLabsPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.45 }}
-                                className="text-sm font-black font-mono tracking-widest text-zinc-900 uppercase"
+                                className="text-base font-black font-mono tracking-wide text-zinc-900 uppercase"
                               >
                                 {innovators[currentInnovator]?.collegeName}
                               </motion.p>
                             </AnimatePresence>
-                            <p className="text-[9px] text-[#ea580c] font-mono uppercase tracking-widest font-bold mt-0.5">Partner Institution</p>
                           </div>
                         </div>
 
@@ -597,7 +600,7 @@ export default function BioLabsPage() {
                               transition={{ duration: 0.5, delay: 0.2 }}
                               className="text-[11px] text-zinc-500 font-mono"
                             >
-                              Scholar: <span className="text-[#ea580c] font-bold">{innovators[currentInnovator]?.name}</span> • Class of {innovators[currentInnovator]?.year}
+                              <span className="text-[#ea580c] font-bold">{innovators[currentInnovator]?.name}</span> • Class of {innovators[currentInnovator]?.year}
                             </motion.p>
                           </AnimatePresence>
 
