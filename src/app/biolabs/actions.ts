@@ -234,8 +234,41 @@ export async function getBiolabsContent() {
     }
   ];
 
+  const defaultInnovatorsData = [
+    {
+      id: "1",
+      name: "Priya Sharma",
+      project_title: "Real-time CRISPR Off-Target Prediction Pipeline",
+      description: "Developed a low-latency machine learning algorithm that predicts off-target genetic modifications with 99.4% precision. The pipeline reduces sequence verification times from weeks to hours using distributed GPU arrays.",
+      college_name: "IIT Madras",
+      image_url: "/biolabs/member_priya.png",
+      college_logo: "iitm",
+      year: "2026"
+    },
+    {
+      id: "2",
+      name: "Rahul Verma",
+      project_title: "Decentralized Edge Telemetry SOS Failsafes",
+      description: "Engineered a distributed telemetry buffer for low-bandwidth IoT safety systems. The framework ensures panic signals are broadcasted across local mesh nodes even in cellular blackouts.",
+      college_name: "IISc Bangalore",
+      image_url: "/biolabs/member_rahul.png",
+      college_logo: "iisc",
+      year: "2025"
+    },
+    {
+      id: "3",
+      name: "Ananya Iyer",
+      project_title: "Genomic Sequence Cancer Diagnostic Pipeline",
+      description: "Constructed an explainable neural network pipeline identifying early-stage oncological anomalies in BRCA1 gene variants. The model overlays activation maps to assist clinical triaging teams.",
+      college_name: "IIT Bombay",
+      image_url: "/biolabs/member_ananya.png",
+      college_logo: "iitb",
+      year: "2026"
+    }
+  ];
+
   if (isMock) {
-    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms, publications: defaultPublications };
+    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms, publications: defaultPublications, innovators: defaultInnovatorsData };
   }
 
   // Fetch real content
@@ -245,14 +278,16 @@ export async function getBiolabsContent() {
     { data: news },
     { data: photos },
     { data: programs },
-    { data: publications }
+    { data: publications },
+    { data: innovators }
   ] = await Promise.all([
     supabase.from("biolab_announcements").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_events").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_news").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_photos").select("*").eq("is_active", true).order("created_at", { ascending: false }),
     supabase.from("biolab_programs").select("*").eq("is_active", true).order("created_at", { ascending: true }),
-    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false })
+    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false }),
+    supabase.from("biolab_innovators").select("*").order("created_at", { ascending: false })
   ]);
 
   return {
@@ -261,6 +296,7 @@ export async function getBiolabsContent() {
     news: news?.length ? news : defaultNews,
     photos: photos?.length ? photos : defaultPhotos,
     programs: programs?.length ? programs : defaultPrograms,
-    publications: publications?.length ? publications : defaultPublications
+    publications: publications?.length ? publications : defaultPublications,
+    innovators: innovators?.length ? innovators : defaultInnovatorsData
   };
 }

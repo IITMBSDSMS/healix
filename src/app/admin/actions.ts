@@ -28,7 +28,7 @@ export async function getAdminData() {
   const [
     appsRes, projRes, vehRes, tripRes, 
     annRes, evtRes, newsRes, photoRes, 
-    progRes, reelsRes, evidenceRes, sosRes, sessionRes, pubsRes
+    progRes, reelsRes, evidenceRes, sosRes, sessionRes, pubsRes, innovatorsRes
   ] = await Promise.all([
     supabase.from("biolab_applications").select("*").order("created_at", { ascending: false }),
     supabase.from("biolab_projects").select("*").order("created_at", { ascending: false }),
@@ -43,7 +43,8 @@ export async function getAdminData() {
     supabase.from("evidence_logs").select("*, trips(user_id)").order("created_at", { ascending: false }).limit(10),
     supabase.from("sos_alerts").select("*").order("created_at", { ascending: false }).limit(10),
     supabase.from("shesecure_session_photos").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false })
+    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false }),
+    supabase.from("biolab_innovators").select("*").order("created_at", { ascending: false })
   ]);
 
   return {
@@ -60,7 +61,8 @@ export async function getAdminData() {
     evidence: evidenceRes.data || [],
     sos_alerts: sosRes.data || [],
     session_photos: sessionRes.data || [],
-    publications: pubsRes.data || []
+    publications: pubsRes.data || [],
+    innovators: innovatorsRes.data || []
   };
 }
 
@@ -409,5 +411,53 @@ export async function deleteSessionPhoto(id: string) {
   if (error) return { error: error.message };
   revalidatePath("/admin");
   revalidatePath("/shesecure");
+  return { success: true };
+}
+
+// === Research & Innovation Scholars Actions ===
+export async function addBiolabInnovator(formData: FormData) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+
+  const name = formData.get("name") as string;
+  const projectTitle = formData.get("projectTitle") as string;
+  const description = formData.get("description") as string;
+  const collegeName = formData.get("collegeName") as string;
+  const year = (formData.get("year") as string) || "2026";
+  const image = formData.get("image") as string;
+  const collegeLogo = formData.get("collegeLogo") as string;
+
+  if (!name || !projectTitle || !description || !collegeName) {
+    return { error: "All required fields must be filled." };
+  }
+
+  const record = {
+    name,
+    project_title: projectTitle,
+    description,
+    college_name: collegeName,
+    year,
+    image_url: image || null,
+    college_logo: collegeLogo || "custom",
+  };
+
+  const { data, error } = await supabase.from("biolab_innovators").insert(record).select().single();
+  if (error) {
+    // Return local fallback data so the client can persist to localStorage
+    return { error: error.message, localFallback: true, data: { id: Date.now().toString(), ...record } };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/biolabs");
+  return { success: true, data };
+}
+
+export async function deleteBiolabInnovator(id: string) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("biolab_innovators").delete().eq("id", id);
+  if (error) return { error: error.message, localFallback: true };
+  revalidatePath("/admin");
+  revalidatePath("/biolabs");
   return { success: true };
 }

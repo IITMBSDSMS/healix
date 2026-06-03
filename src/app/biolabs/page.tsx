@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { 
   ChevronLeft, ChevronRight, Activity, Cpu, Shield, Database, 
   Microscope, BookOpen, GraduationCap, Users, Network, Dna,
-  Play, Pause, Plus, X, Lightbulb, Upload
+  Play, Pause, Plus, X, Lightbulb, Upload, ImageIcon, Building2, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -27,43 +27,25 @@ const facilities = [
   "Bio-Informatics Data Center", "Secure Cloud Interoperability Node"
 ];
 
-const defaultInnovators = [
-  {
-    id: "1",
-    name: "Priya Sharma",
-    projectTitle: "Real-time CRISPR Off-Target Prediction Pipeline",
-    description: "Developed a low-latency machine learning algorithm that predicts off-target genetic modifications with 99.4% precision. The pipeline reduces sequence verification times from weeks to hours using distributed GPU arrays.",
-    collegeName: "IIT Madras",
-    image: "/biolabs/member_priya.png",
-    collegeLogo: "iitm",
-    year: "2026"
-  },
-  {
-    id: "2",
-    name: "Rahul Verma",
-    projectTitle: "Decentralized Edge Telemetry SOS Failsafes",
-    description: "Engineered a distributed telemetry buffer for low-bandwidth IoT safety systems. The framework ensures panic signals are broadcasted across local mesh nodes even in cellular blackouts.",
-    collegeName: "IISc Bangalore",
-    image: "/biolabs/member_rahul.png",
-    collegeLogo: "iisc",
-    year: "2025"
-  },
-  {
-    id: "3",
-    name: "Ananya Iyer",
-    projectTitle: "Genomic Sequence Cancer Diagnostic Pipeline",
-    description: "Constructed an explainable neural network pipeline identifying early-stage oncological anomalies in BRCA1 gene variants. The model overlays activation maps to assist clinical triaging teams.",
-    collegeName: "IIT Bombay",
-    image: "/biolabs/member_ananya.png",
-    collegeLogo: "iitb",
-    year: "2026"
-  }
-];
+// Normalise DB rows → unified shape for the carousel
+function normaliseInnovator(raw: any) {
+  return {
+    id: raw.id,
+    name: raw.name,
+    projectTitle: raw.project_title || raw.projectTitle || "",
+    description: raw.description || "",
+    collegeName: raw.college_name || raw.collegeName || "",
+    image: raw.image_url || raw.image || "/biolabs/member_priya.png",
+    collegeLogo: raw.college_logo || raw.collegeLogo || "custom",
+    year: raw.year || "2026"
+  };
+}
 
-function renderCollegeLogo(logoKey: string) {
+function renderCollegeLogo(logoKey: string, large = false) {
+  const sz = large ? "w-10 h-10" : "w-8 h-8";
   if (logoKey === "iitm") {
     return (
-      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
         <circle cx="50" cy="50" r="44" strokeWidth="4" fill="none" />
         <circle cx="50" cy="50" r="38" strokeWidth="2" strokeDasharray="4,4" fill="none" />
         <path d="M50 25 L50 75 M25 50 L75 50 M32 32 L68 68 M32 68 L68 32" strokeWidth="2" />
@@ -73,7 +55,7 @@ function renderCollegeLogo(logoKey: string) {
   }
   if (logoKey === "iisc") {
     return (
-      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
         <path d="M50 15 L80 30 L80 65 C80 80 50 90 50 90 C50 90 20 80 20 65 L20 30 Z" fill="none" />
         <path d="M35 45 L50 35 L65 45 L50 75 Z" fill="currentColor" opacity="0.8" />
         <path d="M50 35 L50 75" stroke="white" strokeWidth="2" />
@@ -82,7 +64,7 @@ function renderCollegeLogo(logoKey: string) {
   }
   if (logoKey === "iitb") {
     return (
-      <svg className="w-8 h-8 text-[#ea580c]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
+      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
         <circle cx="50" cy="50" r="44" fill="none" />
         <path d="M30 65 C35 55 45 50 50 50 C55 50 65 55 70 65" strokeWidth="3" strokeLinecap="round" />
         <path d="M50 25 C45 35 45 45 50 55 C55 45 55 35 50 25" fill="currentColor" />
@@ -90,8 +72,9 @@ function renderCollegeLogo(logoKey: string) {
       </svg>
     );
   }
+  // custom logo — URL or base64
   return (
-    <div className="w-8 h-8 rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0">
+    <div className={`${large ? 'w-10 h-10' : 'w-8 h-8'} rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0`}>
       <img src={logoKey} alt="Logo" className="w-full h-full object-contain" />
     </div>
   );
@@ -102,18 +85,24 @@ export default function BioLabsPage() {
   const [currentEvent, setCurrentEvent] = useState(0);
   const [currentInnovator, setCurrentInnovator] = useState(0);
   const [isAutoplay, setIsAutoplay] = useState(true);
-  const [innovators, setInnovators] = useState<any[]>(defaultInnovators);
+  const [innovators, setInnovators] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Form state
+  // Modal form state
   const [newName, setNewName] = useState("");
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCollegeName, setNewCollegeName] = useState("");
   const [newYear, setNewYear] = useState("2026");
   const [logoType, setLogoType] = useState("iitm");
-  const [customLogoFile, setCustomLogoFile] = useState<File | null>(null);
-  const [portraitFile, setPortraitFile] = useState<File | null>(null);
+
+  // Drag-and-drop state
+  const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [portraitDragOver, setPortraitDragOver] = useState(false);
+  const [logoDragOver, setLogoDragOver] = useState(false);
+  const portraitInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Dynamic Data State
   const [dynamicAnnouncements, setDynamicAnnouncements] = useState<any[]>([]);
@@ -135,11 +124,21 @@ export default function BioLabsPage() {
       const serverPubs = (content as any).publications || [];
       let finalPubs = serverPubs;
       
+      // Merge server innovators with any locally-added ones
+      const serverInnovators = ((content as any).innovators || []).map(normaliseInnovator);
+      
       if (typeof window !== 'undefined') {
         const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
-        if (localPubs.length > 0) {
-          finalPubs = [...localPubs, ...serverPubs];
-        }
+        if (localPubs.length > 0) finalPubs = [...localPubs, ...serverPubs];
+        
+        const localInnovators = JSON.parse(localStorage.getItem('healix_innovators') || '[]');
+        const merged = [
+          ...localInnovators,
+          ...serverInnovators.filter((si: any) => !localInnovators.find((li: any) => li.id === si.id))
+        ];
+        setInnovators(merged.length ? merged : serverInnovators);
+      } else {
+        setInnovators(serverInnovators);
       }
       setDynamicPublications(finalPubs);
     }
@@ -154,14 +153,19 @@ export default function BioLabsPage() {
     return () => clearInterval(slideInterval);
   }, [dynamicPhotos]);
 
-  // Load innovators from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('healix_innovators');
-      if (stored) {
-        setInnovators(JSON.parse(stored));
-      }
-    }
+  // Handle portrait file from drag or click
+  const handlePortraitFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => setPortraitPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Handle logo file from drag or click
+  const handleLogoFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    setLogoType("custom");
   }, []);
 
   // Autoplay cycle for innovators carousel
@@ -173,14 +177,7 @@ export default function BioLabsPage() {
     return () => clearInterval(interval);
   }, [isAutoplay, innovators]);
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
+
 
   const handleInnovatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,16 +185,14 @@ export default function BioLabsPage() {
       alert("Please fill in all required fields.");
       return;
     }
-
-    let resolvedLogo = logoType;
-    if (logoType === "custom" && customLogoFile) {
-      resolvedLogo = await fileToBase64(customLogoFile);
+    if (!portraitPreview) {
+      alert("Please upload a portrait photo.");
+      return;
     }
 
-    let resolvedPortrait = "/placeholder.png";
-    if (portraitFile) {
-      resolvedPortrait = await fileToBase64(portraitFile);
-    }
+    // Resolve logo: use custom image preview if uploaded, else use preset key
+    const resolvedLogo = logoPreview || logoType;
+    const resolvedPortrait = portraitPreview;
 
     const newInnovator = {
       id: Date.now().toString(),
@@ -216,15 +211,15 @@ export default function BioLabsPage() {
       localStorage.setItem('healix_innovators', JSON.stringify(updated));
     }
 
-    // Reset fields
+    // Reset all form + preview state
     setNewName("");
     setNewProjectTitle("");
     setNewDescription("");
     setNewCollegeName("");
     setNewYear("2026");
     setLogoType("iitm");
-    setCustomLogoFile(null);
-    setPortraitFile(null);
+    setPortraitPreview(null);
+    setLogoPreview(null);
     setIsModalOpen(false);
     
     // Switch immediately to the newly added innovator slide
@@ -526,64 +521,84 @@ export default function BioLabsPage() {
                     Innovation Lab
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 items-stretch min-h-[340px]">
-                    {/* Portrait Column */}
-                    <div className="md:col-span-4 bg-zinc-50 border-r border-zinc-200 flex items-center justify-center p-6 relative overflow-hidden group/portrait">
+                  <div className="grid grid-cols-1 md:grid-cols-12 items-stretch min-h-[460px]">
+                    {/* Portrait Column — full-height cinematic */}
+                    <div className="md:col-span-5 relative overflow-hidden group/portrait" style={{ minHeight: 460 }}>
                       {/* Grid overlay */}
-                      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
-                      
+                      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none z-0" />
                       {/* Cinematic scanner line */}
-                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#ea580c]/50 to-transparent pointer-events-none laser-line z-10" />
+                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#ea580c]/60 to-transparent pointer-events-none laser-line z-20" />
+                      {/* Gradient overlay at bottom for text legibility */}
+                      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none" />
 
-                      <div className="w-48 h-48 rounded-xl border border-zinc-200 bg-white relative overflow-hidden shadow-sm shrink-0 group-hover/portrait:border-[#ea580c]/30 group-hover/portrait:shadow-md transition-all duration-300">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentInnovator}
+                          initial={{ opacity: 0, scale: 1.04 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 1.04 }}
+                          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+                          className="absolute inset-0"
+                        >
+                          <img 
+                            src={innovators[currentInnovator]?.image} 
+                            alt={innovators[currentInnovator]?.name} 
+                            className="w-full h-full object-cover"
+                            style={{ minHeight: 460 }}
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+
+                      {/* Bottom name badge on portrait */}
+                      <div className="absolute bottom-0 left-0 right-0 z-20 p-5">
                         <AnimatePresence mode="wait">
                           <motion.div
                             key={currentInnovator}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.5 }}
-                            className="absolute inset-0"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.4 }}
                           >
-                            <img 
-                              src={innovators[currentInnovator]?.image} 
-                              alt={innovators[currentInnovator]?.name} 
-                              className="w-full h-full object-cover"
-                            />
+                            <p className="text-white font-black text-lg font-mono tracking-tight leading-none">{innovators[currentInnovator]?.name}</p>
+                            <p className="text-white/60 text-[10px] font-mono uppercase tracking-widest mt-0.5">{innovators[currentInnovator]?.collegeName} · {innovators[currentInnovator]?.year}</p>
                           </motion.div>
                         </AnimatePresence>
                       </div>
                     </div>
 
                     {/* Details Column */}
-                    <div className="md:col-span-8 p-6 flex flex-col justify-between relative bg-white">
-                      <div className="space-y-4">
-                        {/* College Crest & Name */}
-                        <div className="flex items-center gap-2.5">
+                    <div className="md:col-span-7 p-7 flex flex-col justify-between relative bg-white">
+                      <div className="space-y-5">
+                        {/* College Crest & Animated Name */}
+                        <div className="flex items-center gap-4">
+                          {/* Big animated college logo */}
                           <AnimatePresence mode="wait">
                             <motion.div
-                              key={currentInnovator}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -10 }}
-                              transition={{ duration: 0.4 }}
-                              className="shrink-0"
+                              key={currentInnovator + "-logo"}
+                              initial={{ opacity: 0, rotate: -15, scale: 0.7 }}
+                              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                              exit={{ opacity: 0, rotate: 15, scale: 0.7 }}
+                              transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+                              className="shrink-0 w-16 h-16 rounded-xl border border-zinc-100 bg-zinc-50 flex items-center justify-center shadow-sm"
                             >
-                              {renderCollegeLogo(innovators[currentInnovator]?.collegeLogo)}
+                              {renderCollegeLogo(innovators[currentInnovator]?.collegeLogo, true)}
                             </motion.div>
                           </AnimatePresence>
-                          <AnimatePresence mode="wait">
-                            <motion.span
-                              key={currentInnovator}
-                              initial={{ opacity: 0, x: 10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: 10 }}
-                              transition={{ duration: 0.4 }}
-                              className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase"
-                            >
-                              {innovators[currentInnovator]?.collegeName}
-                            </motion.span>
-                          </AnimatePresence>
+                          <div>
+                            <AnimatePresence mode="wait">
+                              <motion.p
+                                key={currentInnovator + "-college"}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.45 }}
+                                className="text-sm font-black font-mono tracking-widest text-zinc-900 uppercase"
+                              >
+                                {innovators[currentInnovator]?.collegeName}
+                              </motion.p>
+                            </AnimatePresence>
+                            <p className="text-[9px] text-[#ea580c] font-mono uppercase tracking-widest font-bold mt-0.5">Partner Institution</p>
+                          </div>
                         </div>
 
                         {/* Project / Research Details */}
@@ -726,7 +741,7 @@ export default function BioLabsPage() {
             <div className="bg-white border border-zinc-200 p-6 rounded-xl relative overflow-hidden shadow-sm">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-[#ea580c]" />
               <h3 className="font-bold text-xs text-zinc-950 mb-4 flex items-center gap-2 font-mono uppercase tracking-wider">
-                <Users className="h-4.5 w-4.5 text-[#ea580c]" /> Director's Message
+                <Users className="h-4.5 w-4.5 text-[#ea580c]" /> Director&apos;s Message
               </h3>
               <div className="flex gap-4 mb-4 items-center">
                 <div className="w-11 h-11 bg-zinc-100 rounded-lg border border-zinc-200 shrink-0 flex items-center justify-center text-zinc-400">
@@ -738,7 +753,7 @@ export default function BioLabsPage() {
                 </div>
               </div>
               <p className="text-[11px] text-zinc-700 italic leading-relaxed text-justify mb-4">
-                "With experience in the field of AI-driven science, Healix BioLabs has earned its reputation of excellence. Our primary objective is to establish world-class facilities for accelerator-based research, promoting group activities and human research development."
+                &quot;With experience in the field of AI-driven science, Healix BioLabs has earned its reputation of excellence. Our primary objective is to establish world-class facilities for accelerator-based research, promoting group activities and human research development.&quot;
               </p>
               <Link href="/about" className="h-8 text-[10px] text-[#ea580c] hover:text-[#c2410c] font-bold uppercase tracking-wider inline-flex items-center gap-1 font-mono">
                 Read Full Message <ChevronRight className="w-3.5 h-3.5" />
@@ -1011,153 +1026,214 @@ export default function BioLabsPage() {
         })()}
       </div>
 
-      {/* Upload Innovator Modal */}
+      {/* Upload Innovator Modal — Premium Drag & Drop */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.93, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white border border-zinc-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+              exit={{ opacity: 0, scale: 0.93, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="bg-white border border-zinc-200 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
             >
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-zinc-150 flex items-center justify-between bg-zinc-50">
-                <h3 className="text-sm font-black font-mono text-zinc-950 uppercase flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-[#ea580c]" /> Submit Research & Innovation
-                </h3>
+              {/* Header */}
+              <div className="px-7 py-5 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-zinc-950 to-zinc-900">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#ea580c]/20 border border-[#ea580c]/30">
+                    <Lightbulb className="w-4 h-4 text-[#ea580c]" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black font-mono text-white uppercase tracking-wider">Submit Research Scholar</h3>
+                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">Add to the Research & Innovation carousel</p>
+                  </div>
+                </div>
                 <button 
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-colors"
+                  onClick={() => { setIsModalOpen(false); setPortraitPreview(null); setLogoPreview(null); }}
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Modal Form */}
-              <form onSubmit={handleInnovatorSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
-                {/* Scholar Name */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Scholar Name *</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={newName} 
-                    onChange={e => setNewName(e.target.value)} 
-                    placeholder="e.g. Priya Sharma" 
-                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
-                  />
-                </div>
+              <form onSubmit={handleInnovatorSubmit} className="overflow-y-auto flex-1">
+                <div className="p-7 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Project Title */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Project / Research Title *</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={newProjectTitle} 
-                    onChange={e => setNewProjectTitle(e.target.value)} 
-                    placeholder="e.g. CRISPR Off-Target Prediction" 
-                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
-                  />
-                </div>
+                  {/* LEFT — Portrait drag-drop */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-[#ea580c]" /> Scholar Portrait *
+                    </label>
+                    <div
+                      className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden ${
+                        portraitDragOver ? "border-[#ea580c] bg-orange-50" : portraitPreview ? "border-zinc-200" : "border-zinc-200 hover:border-[#ea580c]/40 bg-zinc-50"
+                      }`}
+                      style={{ height: 220 }}
+                      onDragOver={(e) => { e.preventDefault(); setPortraitDragOver(true); }}
+                      onDragLeave={() => setPortraitDragOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setPortraitDragOver(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file && file.type.startsWith("image/")) handlePortraitFile(file);
+                      }}
+                      onClick={() => portraitInputRef.current?.click()}
+                    >
+                      <input
+                        ref={portraitInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePortraitFile(f); }}
+                      />
+                      {portraitPreview ? (
+                        <>
+                          <img src={portraitPreview} alt="Portrait preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all flex items-center justify-center">
+                            <span className="opacity-0 hover:opacity-100 text-[10px] text-white font-mono font-bold bg-black/60 px-2 py-1 rounded transition-opacity">Click to change</span>
+                          </div>
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+                          <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <ImageIcon className="w-6 h-6 text-zinc-300" />
+                          </div>
+                          <p className="text-xs font-mono text-zinc-400 text-center">Drag & drop portrait<br/><span className="text-[#ea580c] font-bold">or click to browse</span></p>
+                          <p className="text-[9px] text-zinc-300 font-mono">PNG, JPG, WEBP · Portrait orientation recommended</p>
+                        </div>
+                      )}
+                    </div>
 
-                {/* College Name & Class Year */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">College / Institution *</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={newCollegeName} 
-                      onChange={e => setNewCollegeName(e.target.value)} 
-                      placeholder="e.g. IIT Madras" 
-                      className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
-                    />
+                    {/* College Logo drag-drop */}
+                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase flex items-center gap-1.5 mt-4">
+                      <Building2 className="w-3.5 h-3.5 text-[#ea580c]" /> College Logo *
+                    </label>
+                    <div className="flex items-center gap-3 mb-2">
+                      {["iitm", "iisc", "iitb"].map((k) => (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => { setLogoType(k); setLogoPreview(null); }}
+                          className={`flex-1 py-2 rounded-lg border text-[9px] font-mono font-bold uppercase tracking-wider transition-all ${
+                            logoType === k && !logoPreview ? "border-[#ea580c] bg-[#ea580c]/5 text-[#ea580c]" : "border-zinc-200 text-zinc-400 hover:border-zinc-300"
+                          }`}
+                        >
+                          {k === "iitm" ? "IITM" : k === "iisc" ? "IISc" : "IITB"}
+                        </button>
+                      ))}
+                    </div>
+                    <div
+                      className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden ${
+                        logoDragOver ? "border-[#ea580c] bg-orange-50" : logoPreview ? "border-zinc-200" : "border-zinc-200 hover:border-[#ea580c]/40 bg-zinc-50"
+                      }`}
+                      style={{ height: 100 }}
+                      onDragOver={(e) => { e.preventDefault(); setLogoDragOver(true); }}
+                      onDragLeave={() => setLogoDragOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setLogoDragOver(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file && file.type.startsWith("image/")) handleLogoFile(file);
+                      }}
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoFile(f); }}
+                      />
+                      {logoPreview ? (
+                        <div className="absolute inset-0 flex items-center justify-center p-3">
+                          <img src={logoPreview} alt="Logo preview" className="max-h-full max-w-full object-contain" />
+                          <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                            <Check className="w-2.5 h-2.5 text-white" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                          <div className="flex items-center justify-center">
+                            {renderCollegeLogo(logoType, false)}
+                          </div>
+                          <p className="text-[9px] font-mono text-zinc-400">Or drag & drop custom logo</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Class Year *</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={newYear} 
-                      onChange={e => setNewYear(e.target.value)} 
-                      placeholder="e.g. 2026" 
-                      className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors"
-                    />
+
+                  {/* RIGHT — Text fields */}
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Scholar Name *</label>
+                      <input 
+                        type="text" required value={newName} onChange={e => setNewName(e.target.value)} 
+                        placeholder="e.g. Priya Sharma" 
+                        className="w-full px-3 py-2.5 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors bg-zinc-50"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Research / Project Title *</label>
+                      <input 
+                        type="text" required value={newProjectTitle} onChange={e => setNewProjectTitle(e.target.value)} 
+                        placeholder="e.g. CRISPR Off-Target Prediction" 
+                        className="w-full px-3 py-2.5 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors bg-zinc-50"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Institution *</label>
+                        <input 
+                          type="text" required value={newCollegeName} onChange={e => setNewCollegeName(e.target.value)} 
+                          placeholder="e.g. IIT Madras" 
+                          className="w-full px-3 py-2.5 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors bg-zinc-50"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Year *</label>
+                        <input 
+                          type="text" required value={newYear} onChange={e => setNewYear(e.target.value)} 
+                          placeholder="2026" 
+                          className="w-full px-3 py-2.5 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors bg-zinc-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Research Description & Impact *</label>
+                      <textarea 
+                        required rows={6} value={newDescription} onChange={e => setNewDescription(e.target.value)} 
+                        placeholder="Describe the innovation, methodologies, and clinical/computational results."
+                        className="w-full px-3 py-2.5 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors resize-none bg-zinc-50"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Description */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">Research Description & Impact *</label>
-                  <textarea 
-                    required 
-                    rows={3} 
-                    value={newDescription} 
-                    onChange={e => setNewDescription(e.target.value)} 
-                    placeholder="Describe the innovation, methodologies, and key clinical/computational results." 
-                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] transition-colors resize-none"
-                  />
-                </div>
-
-                {/* College Logo Select */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">College Crest / Logo *</label>
-                  <select 
-                    value={logoType} 
-                    onChange={e => setLogoType(e.target.value)} 
-                    className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#ea580c] bg-white transition-colors"
-                  >
-                    <option value="iitm">Predefined IIT Madras Emblem (Circular Crest)</option>
-                    <option value="iisc">Predefined IISc Bangalore Emblem (Shield Crest)</option>
-                    <option value="iitb">Predefined IIT Bombay Emblem (Lotus Crest)</option>
-                    <option value="custom">Upload Custom Logo / Icon</option>
-                  </select>
-                </div>
-
-                {/* Custom Logo File Upload */}
-                {logoType === "custom" && (
-                  <div className="p-3 bg-zinc-50 border border-dashed border-zinc-200 rounded-lg space-y-2">
-                    <label className="text-[9px] font-mono font-bold tracking-wider text-zinc-500 uppercase block">Upload College Logo (PNG/JPG/SVG)</label>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      required 
-                      onChange={e => setCustomLogoFile(e?.target?.files?.[0] || null)}
-                      className="text-xs text-zinc-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-mono file:font-bold file:bg-[#ea580c]/10 file:text-[#ea580c] hover:file:bg-[#ea580c]/20"
-                    />
+                {/* Footer Actions */}
+                <div className="px-7 py-5 border-t border-zinc-100 flex items-center justify-between bg-zinc-50">
+                  <p className="text-[10px] text-zinc-400 font-mono">* Required fields. Portrait & logo images are stored locally.</p>
+                  <div className="flex gap-3">
+                    <button 
+                      type="button" 
+                      onClick={() => { setIsModalOpen(false); setPortraitPreview(null); setLogoPreview(null); }}
+                      className="h-9 px-5 border border-zinc-200 rounded-lg text-xs font-mono uppercase font-bold text-zinc-600 hover:bg-zinc-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="h-9 px-6 bg-zinc-950 hover:bg-zinc-900 text-white rounded-lg text-xs font-mono uppercase font-bold tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer border border-zinc-800"
+                    >
+                      <Upload className="w-3.5 h-3.5" /> Add Scholar
+                    </button>
                   </div>
-                )}
-
-                {/* Portrait Photo Upload */}
-                <div className="p-3 bg-zinc-50 border border-dashed border-zinc-200 rounded-lg space-y-2">
-                  <label className="text-[9px] font-mono font-bold tracking-wider text-zinc-500 uppercase block">Scholar's Portrait Photo *</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    required 
-                    onChange={e => setPortraitFile(e?.target?.files?.[0] || null)}
-                    className="text-xs text-zinc-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-mono file:font-bold file:bg-[#ea580c]/10 file:text-[#ea580c] hover:file:bg-[#ea580c]/20"
-                  />
-                </div>
-
-                {/* Submit Actions */}
-                <div className="flex gap-3 justify-end pt-2 border-t border-zinc-100">
-                  <button 
-                    type="button" 
-                    onClick={() => setIsModalOpen(false)}
-                    className="h-9 px-4 border border-zinc-200 rounded-lg text-xs font-mono uppercase font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="h-9 px-5 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-lg text-xs font-mono uppercase font-bold tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" /> Submit & Deploy
-                  </button>
                 </div>
               </form>
             </motion.div>
@@ -1168,11 +1244,4 @@ export default function BioLabsPage() {
   );
 }
 
-function UserAvatarIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-zinc-400">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  );
-}
+
