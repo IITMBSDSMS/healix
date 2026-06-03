@@ -54,43 +54,45 @@ export default function NewsPage() {
 
         {/* Featured Article */}
         <div className="mb-16">
-          <GlassCard className="overflow-hidden border border-zinc-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition-shadow group grid md:grid-cols-12 gap-0">
-            <div className="md:col-span-7 relative aspect-video md:aspect-auto h-full min-h-[300px] overflow-hidden">
-              <img 
-                src={newsArticles[0].img} 
-                alt={newsArticles[0].title}
-                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-750"
-              />
-              <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black border border-zinc-700 text-white rounded text-[10px] font-bold font-mono tracking-wider">
-                FEATURED
-              </div>
-            </div>
-            
-            <div className="md:col-span-5 p-8 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-bold">
-                  <span className="text-[#ea580c]">{newsArticles[0].category}</span>
-                  <span>•</span>
-                  <span>{newsArticles[0].date}</span>
+          <GlassCard variant="light" className="overflow-hidden border border-zinc-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition-shadow group p-0">
+            <div className="grid md:grid-cols-12 gap-0 w-full h-full">
+              <div className="md:col-span-7 relative aspect-video md:aspect-auto h-full min-h-[300px] overflow-hidden">
+                <img 
+                  src={newsArticles[0].img} 
+                  alt={newsArticles[0].title}
+                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-750"
+                />
+                <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black border border-zinc-700 text-white rounded text-[10px] font-bold font-mono tracking-wider">
+                  FEATURED
                 </div>
-                
-                <h2 className="text-xl md:text-2xl font-black font-mono tracking-tight text-zinc-950 uppercase leading-snug group-hover:text-[#ea580c] transition-colors">
-                  {newsArticles[0].title}
-                </h2>
-                
-                <p className="text-xs md:text-sm text-zinc-600 leading-relaxed line-clamp-4">
-                  {newsArticles[0].desc}
-                </p>
               </div>
+              
+              <div className="md:col-span-5 p-8 flex flex-col justify-between h-full">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-bold">
+                    <span className="text-[#ea580c]">{newsArticles[0].category}</span>
+                    <span>•</span>
+                    <span>{newsArticles[0].date}</span>
+                  </div>
+                  
+                  <h2 className="text-xl md:text-2xl font-black font-mono tracking-tight text-zinc-950 uppercase leading-snug group-hover:text-[#ea580c] transition-colors">
+                    {newsArticles[0].title}
+                  </h2>
+                  
+                  <p className="text-xs md:text-sm text-zinc-600 leading-relaxed line-clamp-4">
+                    {newsArticles[0].desc}
+                  </p>
+                </div>
 
-              <div className="pt-6 border-t border-zinc-150 mt-6 flex justify-between items-center">
-                <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1.5 font-bold uppercase">
-                  <User className="w-3.5 h-3.5 text-[#ea580c]" /> {newsArticles[0].author}
-                </span>
-                
-                <span className="text-xs font-bold text-[#ea580c] font-mono uppercase tracking-wider flex items-center gap-1">
-                  Read Article <ArrowRight className="w-3.5 h-3.5" />
-                </span>
+                <div className="pt-6 border-t border-zinc-150 mt-6 flex justify-between items-center">
+                  <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1.5 font-bold uppercase">
+                    <User className="w-3.5 h-3.5 text-[#ea580c]" /> {newsArticles[0].author}
+                  </span>
+                  
+                  <span className="text-xs font-bold text-[#ea580c] font-mono uppercase tracking-wider flex items-center gap-1">
+                    Read Article <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
               </div>
             </div>
           </GlassCard>
@@ -99,7 +101,7 @@ export default function NewsPage() {
         {/* Other articles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {newsArticles.slice(1).map(article => (
-            <GlassCard key={article.id} className="overflow-hidden border border-zinc-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
+            <GlassCard key={article.id} variant="light" className="overflow-hidden border border-zinc-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
               <div>
                 <div className="relative aspect-video w-full overflow-hidden border-b border-zinc-200 bg-zinc-50">
                   <img 
