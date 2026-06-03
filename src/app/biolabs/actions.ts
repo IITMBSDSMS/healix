@@ -268,7 +268,7 @@ export async function getBiolabsContent() {
   ];
 
   if (isMock) {
-    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms, publications: defaultPublications, innovators: defaultInnovatorsData };
+    return { announcements: defaultAnnouncements, events: defaultEvents, news: defaultNews, photos: defaultPhotos, programs: defaultPrograms, publications: defaultPublications, innovators: [] };
   }
 
   // Fetch real content
@@ -297,6 +297,6 @@ export async function getBiolabsContent() {
     photos: photos?.length ? photos : defaultPhotos,
     programs: programs?.length ? programs : defaultPrograms,
     publications: publications?.length ? publications : defaultPublications,
-    innovators: innovators?.length ? innovators : defaultInnovatorsData
+    innovators: innovators || []
   };
 }

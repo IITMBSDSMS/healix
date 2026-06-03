@@ -214,7 +214,6 @@ export default function UnifiedAdminDashboard() {
   const [innovatorLogoPreview, setInnovatorLogoPreview] = useState<string | null>(null);
   const [innovatorPortraitDragOver, setInnovatorPortraitDragOver] = useState(false);
   const [innovatorLogoDragOver, setInnovatorLogoDragOver] = useState(false);
-  const [innovatorLogoType, setInnovatorLogoType] = useState("iitm");
   const [innovatorList, setInnovatorList] = useState<any[]>([]);
   const [innovatorSubmitting, setInnovatorSubmitting] = useState(false);
   const innovatorPortraitRef = React.useRef<HTMLInputElement>(null);
@@ -1893,10 +1892,11 @@ export default function UnifiedAdminDashboard() {
                         onSubmit={async (e) => {
                           e.preventDefault();
                           if (!innovatorPortraitPreview) { alert('Upload a portrait photo first.'); return; }
+                          if (!innovatorLogoPreview) { alert('Upload a college logo first.'); return; }
                           setInnovatorSubmitting(true);
                           const fd = new FormData(e.currentTarget as HTMLFormElement);
                           fd.set('image', innovatorPortraitPreview);
-                          fd.set('collegeLogo', innovatorLogoPreview || innovatorLogoType);
+                          fd.set('collegeLogo', innovatorLogoPreview);
                           const res = await addBiolabInnovator(fd);
                           if (res.localFallback && res.data) {
                             // persist locally
@@ -1924,7 +1924,6 @@ export default function UnifiedAdminDashboard() {
                           }
                           setInnovatorPortraitPreview(null);
                           setInnovatorLogoPreview(null);
-                          setInnovatorLogoType('iitm');
                           (e.currentTarget as HTMLFormElement).reset();
                           setInnovatorSubmitting(false);
                         }}
@@ -1984,18 +1983,6 @@ export default function UnifiedAdminDashboard() {
 
                             {/* College Logo drag-drop */}
                             <label className="text-[10px] font-mono text-white/50 uppercase tracking-wider block mt-4">College Logo *</label>
-                            <div className="flex gap-2 mb-2">
-                              {['iitm', 'iisc', 'iitb'].map((k) => (
-                                <button key={k} type="button"
-                                  onClick={() => { setInnovatorLogoType(k); setInnovatorLogoPreview(null); }}
-                                  className={`flex-1 py-1.5 rounded-lg border text-[9px] font-mono font-bold uppercase tracking-wider transition-all ${
-                                    innovatorLogoType === k && !innovatorLogoPreview ? 'border-purple-500 bg-purple-500/10 text-purple-400' : 'border-white/10 text-white/40 hover:border-white/20'
-                                  }`}
-                                >
-                                  {k === 'iitm' ? 'IITM' : k === 'iisc' ? 'IISc' : 'IITB'}
-                                </button>
-                              ))}
-                            </div>
                             <div
                               className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden ${
                                 innovatorLogoDragOver ? 'border-purple-500 bg-purple-500/10' : innovatorLogoPreview ? 'border-white/20' : 'border-white/10 bg-[#050505] hover:border-purple-500/40'
@@ -2009,7 +1996,7 @@ export default function UnifiedAdminDashboard() {
                                 const file = e.dataTransfer.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
                                   const reader = new FileReader();
-                                  reader.onload = (ev) => { setInnovatorLogoPreview(ev.target?.result as string); setInnovatorLogoType('custom'); };
+                                  reader.onload = (ev) => { setInnovatorLogoPreview(ev.target?.result as string); };
                                   reader.readAsDataURL(file);
                                 }
                               }}
@@ -2020,7 +2007,7 @@ export default function UnifiedAdminDashboard() {
                                   const file = e.target.files?.[0];
                                   if (file) {
                                     const reader = new FileReader();
-                                    reader.onload = (ev) => { setInnovatorLogoPreview(ev.target?.result as string); setInnovatorLogoType('custom'); };
+                                    reader.onload = (ev) => { setInnovatorLogoPreview(ev.target?.result as string); };
                                     reader.readAsDataURL(file);
                                   }
                                 }}
@@ -2028,14 +2015,14 @@ export default function UnifiedAdminDashboard() {
                               {innovatorLogoPreview ? (
                                 <div className="absolute inset-0 flex items-center justify-center p-3">
                                   <img src={innovatorLogoPreview} alt="Logo" className="max-h-full max-w-full object-contain" />
-                                  <button type="button" onClick={(ev) => { ev.stopPropagation(); setInnovatorLogoPreview(null); setInnovatorLogoType('iitm'); }}
+                                  <button type="button" onClick={(ev) => { ev.stopPropagation(); setInnovatorLogoPreview(null); }}
                                     className="absolute top-1 right-1 p-0.5 bg-black/70 text-white rounded-full hover:bg-red-600 transition-colors">
                                     <X className="w-3 h-3" />
                                   </button>
                                 </div>
                               ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-                                  <p className="text-[9px] text-white/30 font-mono">Drag & drop custom logo or use preset above</p>
+                                  <p className="text-[9px] text-white/30 font-mono">Drag & drop college logo or click to browse</p>
                                 </div>
                               )}
                             </div>
@@ -2060,55 +2047,58 @@ export default function UnifiedAdminDashboard() {
                       </form>
 
                       {/* Existing scholars list */}
-                      {innovatorList.length > 0 && (
-                        <div className="mt-6 space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar">
-                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider mb-3">Current Scholars ({innovatorList.length})</p>
-                          {innovatorList.map((inn: any) => (
-                            <div key={inn.id} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-xl group hover:border-white/10 transition-all">
-                              {/* Portrait thumbnail */}
-                              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-black border border-white/10">
-                                <img src={inn.image || inn.image_url} alt={inn.name} className="w-full h-full object-cover" />
-                              </div>
-                              {/* College logo thumbnail */}
-                              <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                                {(inn.collegeLogo || inn.college_logo)?.startsWith('data:') || (inn.collegeLogo || inn.college_logo)?.startsWith('http') ? (
+                      <div className="mt-8 border-t border-white/5 pt-6">
+                        <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider mb-3">Current Scholars ({innovatorList.length})</p>
+                        {innovatorList.length > 0 ? (
+                          <div className="space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar">
+                            {innovatorList.map((inn: any) => (
+                              <div key={inn.id} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-xl group hover:border-white/10 transition-all">
+                                {/* Portrait thumbnail */}
+                                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-black border border-white/10">
+                                  <img src={inn.image || inn.image_url} alt={inn.name} className="w-full h-full object-cover" />
+                                </div>
+                                {/* College logo thumbnail */}
+                                <div className="w-8 h-8 shrink-0 flex items-center justify-center">
                                   <img src={inn.collegeLogo || inn.college_logo} alt="logo" className="w-8 h-8 object-contain rounded" />
-                                ) : (
-                                  <span className="text-[8px] font-mono text-purple-400 font-bold uppercase">{(inn.collegeLogo || inn.college_logo || '').toUpperCase()}</span>
-                                )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-white truncate">{inn.name}</p>
+                                  <p className="text-[10px] text-white/40 font-mono truncate">{inn.projectTitle || inn.project_title}</p>
+                                  <p className="text-[9px] text-purple-400 font-mono">{inn.collegeName || inn.college_name} · {inn.year}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (!confirm('Remove this scholar?')) return;
+                                    const res = await deleteBiolabInnovator(inn.id);
+                                    if (res.localFallback) {
+                                      // Remove from localStorage
+                                      const stored = JSON.parse(localStorage.getItem('healix_innovators') || '[]');
+                                      const filtered = stored.filter((s: any) => s.id !== inn.id);
+                                      localStorage.setItem('healix_innovators', JSON.stringify(filtered));
+                                      setInnovatorList(filtered);
+                                      showToast('Scholar removed locally.', 'ok');
+                                    } else if (res.error) {
+                                      showToast(res.error, 'err');
+                                    } else {
+                                      showToast('Scholar removed!', 'ok');
+                                      fetchData();
+                                    }
+                                  }}
+                                  className="shrink-0 p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-white truncate">{inn.name}</p>
-                                <p className="text-[10px] text-white/40 font-mono truncate">{inn.projectTitle || inn.project_title}</p>
-                                <p className="text-[9px] text-purple-400 font-mono">{inn.collegeName || inn.college_name} · {inn.year}</p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (!confirm('Remove this scholar?')) return;
-                                  const res = await deleteBiolabInnovator(inn.id);
-                                  if (res.localFallback) {
-                                    // Remove from localStorage
-                                    const stored = JSON.parse(localStorage.getItem('healix_innovators') || '[]');
-                                    const filtered = stored.filter((s: any) => s.id !== inn.id);
-                                    localStorage.setItem('healix_innovators', JSON.stringify(filtered));
-                                    setInnovatorList(filtered);
-                                    showToast('Scholar removed locally.', 'ok');
-                                  } else if (res.error) {
-                                    showToast(res.error, 'err');
-                                  } else {
-                                    showToast('Scholar removed!', 'ok');
-                                    fetchData();
-                                  }
-                                }}
-                                className="shrink-0 p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
+                            <GraduationCap className="h-8 w-8 text-white/10 mx-auto mb-2" />
+                            <p className="text-xs text-white/40 font-mono">No scholars added yet. Use the form above to add one.</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Publications */}

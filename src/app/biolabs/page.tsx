@@ -42,40 +42,11 @@ function normaliseInnovator(raw: any) {
 }
 
 function renderCollegeLogo(logoKey: string, large = false) {
+  if (!logoKey) return null;
   const sz = large ? "w-10 h-10" : "w-8 h-8";
-  if (logoKey === "iitm") {
-    return (
-      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
-        <circle cx="50" cy="50" r="44" strokeWidth="4" fill="none" />
-        <circle cx="50" cy="50" r="38" strokeWidth="2" strokeDasharray="4,4" fill="none" />
-        <path d="M50 25 L50 75 M25 50 L75 50 M32 32 L68 68 M32 68 L68 32" strokeWidth="2" />
-        <circle cx="50" cy="50" r="12" fill="currentColor" />
-      </svg>
-    );
-  }
-  if (logoKey === "iisc") {
-    return (
-      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
-        <path d="M50 15 L80 30 L80 65 C80 80 50 90 50 90 C50 90 20 80 20 65 L20 30 Z" fill="none" />
-        <path d="M35 45 L50 35 L65 45 L50 75 Z" fill="currentColor" opacity="0.8" />
-        <path d="M50 35 L50 75" stroke="white" strokeWidth="2" />
-      </svg>
-    );
-  }
-  if (logoKey === "iitb") {
-    return (
-      <svg className={`${sz} text-[#ea580c]`} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4">
-        <circle cx="50" cy="50" r="44" fill="none" />
-        <path d="M30 65 C35 55 45 50 50 50 C55 50 65 55 70 65" strokeWidth="3" strokeLinecap="round" />
-        <path d="M50 25 C45 35 45 45 50 55 C55 45 55 35 50 25" fill="currentColor" />
-        <path d="M38 35 C42 42 48 45 50 55 C52 45 58 42 62 35" fill="currentColor" opacity="0.7" />
-      </svg>
-    );
-  }
-  // custom logo — URL or base64
   return (
-    <div className={`${large ? 'w-10 h-10' : 'w-8 h-8'} rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0`}>
-      <img src={logoKey} alt="Logo" className="w-full h-full object-contain" />
+    <div className={`${sz} rounded border border-zinc-200 overflow-hidden flex items-center justify-center bg-white shadow-sm shrink-0`}>
+      <img src={logoKey} alt="Logo" className="w-full h-full object-contain p-1" />
     </div>
   );
 }
@@ -94,7 +65,6 @@ export default function BioLabsPage() {
   const [newDescription, setNewDescription] = useState("");
   const [newCollegeName, setNewCollegeName] = useState("");
   const [newYear, setNewYear] = useState("2026");
-  const [logoType, setLogoType] = useState("iitm");
 
   // Drag-and-drop state
   const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
@@ -165,7 +135,6 @@ export default function BioLabsPage() {
     const reader = new FileReader();
     reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
-    setLogoType("custom");
   }, []);
 
   // Autoplay cycle for innovators carousel
@@ -190,8 +159,12 @@ export default function BioLabsPage() {
       return;
     }
 
-    // Resolve logo: use custom image preview if uploaded, else use preset key
-    const resolvedLogo = logoPreview || logoType;
+    if (!logoPreview) {
+      alert("Please upload a college logo.");
+      return;
+    }
+
+    const resolvedLogo = logoPreview;
     const resolvedPortrait = portraitPreview;
 
     const newInnovator = {
@@ -217,7 +190,6 @@ export default function BioLabsPage() {
     setNewDescription("");
     setNewCollegeName("");
     setNewYear("2026");
-    setLogoType("iitm");
     setPortraitPreview(null);
     setLogoPreview(null);
     setIsModalOpen(false);
@@ -1112,20 +1084,6 @@ export default function BioLabsPage() {
                     <label className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase flex items-center gap-1.5 mt-4">
                       <Building2 className="w-3.5 h-3.5 text-[#ea580c]" /> College Logo *
                     </label>
-                    <div className="flex items-center gap-3 mb-2">
-                      {["iitm", "iisc", "iitb"].map((k) => (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => { setLogoType(k); setLogoPreview(null); }}
-                          className={`flex-1 py-2 rounded-lg border text-[9px] font-mono font-bold uppercase tracking-wider transition-all ${
-                            logoType === k && !logoPreview ? "border-[#ea580c] bg-[#ea580c]/5 text-[#ea580c]" : "border-zinc-200 text-zinc-400 hover:border-zinc-300"
-                          }`}
-                        >
-                          {k === "iitm" ? "IITM" : k === "iisc" ? "IISc" : "IITB"}
-                        </button>
-                      ))}
-                    </div>
                     <div
                       className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden ${
                         logoDragOver ? "border-[#ea580c] bg-orange-50" : logoPreview ? "border-zinc-200" : "border-zinc-200 hover:border-[#ea580c]/40 bg-zinc-50"
@@ -1156,11 +1114,12 @@ export default function BioLabsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-                          <div className="flex items-center justify-center">
-                            {renderCollegeLogo(logoType, false)}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+                          <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-zinc-400" />
                           </div>
-                          <p className="text-[9px] font-mono text-zinc-400">Or drag & drop custom logo</p>
+                          <p className="text-[10px] font-mono text-zinc-400 text-center">Drag & drop logo<br/><span className="text-[#ea580c] font-bold">or click to browse</span></p>
+                          <p className="text-[8px] text-zinc-300 font-mono">PNG, JPG, WEBP</p>
                         </div>
                       )}
                     </div>
