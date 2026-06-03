@@ -15,6 +15,7 @@ const navLinks = [
   { name: "Healix AI", href: "/ai-check" },
   { name: "Avennix Pharma", href: "/care" },
   { name: "BioLabs", href: "/biolabs" },
+  { name: "Global Network", href: "/global-network" },
   { name: "HSF", href: "#", isPopup: true },
   { name: "Contact", href: "/contact" },
 ];

@@ -43,6 +43,7 @@ export function Footer() {
               <li><Link href="/ai-check" className="hover:text-[#ea580c] transition-colors">Healix AI</Link></li>
               <li><Link href="/care" className="hover:text-[#ea580c] transition-colors">Avennix Pharma</Link></li>
               <li><Link href="/biolabs" className="hover:text-[#ea580c] transition-colors">Healix BioLabs</Link></li>
+              <li><Link href="/global-network" className="hover:text-[#ea580c] transition-colors">Global Network</Link></li>
               <li><Link href="/shesecure" className="hover:text-[#ea580c] transition-colors">HSF</Link></li>
             </ul>
           </div>
