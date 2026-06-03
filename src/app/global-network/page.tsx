@@ -15,7 +15,7 @@ const INSTITUTIONS = [
     name: "AIIMS Delhi",
     city: "New Delhi",
     facility: "Healix Clinical Diagnostics Hub",
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop",
+    image: "https://upload.wikimedia.org/wikipedia/commons/b/b2/AIIMS_DELHI.jpg",
     description: "Serves as the primary clinical validation center. Focuses on real-time telemetry analytics, cardiovascular risk profiling, and patient diagnostics testing workflows.",
     mentors: [
       { name: "Dr. Amitabha Bandyopadhyay", role: "Clinical Genetics Consultant", photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=200&auto=format&fit=crop" },
@@ -28,7 +28,7 @@ const INSTITUTIONS = [
     name: "IIT Delhi",
     city: "New Delhi",
     facility: "Genomics Compute Center",
-    image: "https://images.unsplash.com/photo-1590012314607-cda9d9b6a9a9?q=80&w=1200&auto=format&fit=crop",
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/IIT_Delhi_Main_building.jpg",
     description: "Hosts the distributed genomic sequence compute cluster. Drives explainable machine learning models for risk analysis and DNA sequence validation.",
     mentors: [
       { name: "Prof. James Gomes", role: "Biomedical Engineering Chair", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" },
@@ -41,7 +41,7 @@ const INSTITUTIONS = [
     name: "IIT Madras",
     city: "Chennai",
     facility: "Clinical Systems Research Lab",
-    image: "https://images.unsplash.com/photo-1562774053-4ab90860b27e?q=80&w=1200&auto=format&fit=crop",
+    image: "https://upload.wikimedia.org/wikipedia/commons/2/23/IIT_Madras_campus_main_gate.jpg",
     description: "Specializes in clinical IoT hardware architecture. Integrates hardware sensory fail-safes and edge network coordinates tracking arrays.",
     mentors: [
       { name: "Prof. Guhan Jayaraman", role: "Biotechnology Director", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" },
@@ -54,7 +54,7 @@ const INSTITUTIONS = [
     name: "IIT Bombay",
     city: "Mumbai",
     facility: "Public Health Biosensors Hub",
-    image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1200&auto=format&fit=crop",
+    image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Main_building_in_IIT_Bombay.jpg",
     description: "Develops bio-sensory diagnostic hardware. Specializes in low-cost paper diagnostic sensors and secure telemetry transmitters.",
     mentors: [
       { name: "Prof. Rohit Srivastava", role: "Biosensors Innovation Chair", photo: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop" },
@@ -67,7 +67,7 @@ const INSTITUTIONS = [
     name: "IISc Bangalore",
     city: "Bengaluru",
     facility: "Molecular Dynamics & Biochemistry Hub",
-    image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1200&auto=format&fit=crop",
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/IISc_main_building.jpg",
     description: "Focuses on advanced biochemical dynamics, CRISPR off-target mutation models, and high-reliability data integration failsafes.",
     mentors: [
       { name: "Prof. Sandeep Verma", role: "Chemical Biology Lead", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop" },
@@ -108,6 +108,28 @@ const ENGINEERING_INSTITUTIONS = [
     specialization: "Molecular Modeling & Failsafe DBs"
   }
 ];
+
+function EngineeringLogo({ eng }: { eng: typeof ENGINEERING_INSTITUTIONS[0] }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="w-16 h-16 border border-zinc-850 bg-white flex flex-col items-center justify-center rounded-xl shadow-sm relative group overflow-hidden mb-5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
+      {eng.logo && !failed ? (
+        <img 
+          src={eng.logo} 
+          alt={eng.name} 
+          referrerPolicy="no-referrer"
+          className="w-11 h-11 object-contain p-1 relative z-10"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-orange-600 text-white font-mono font-black text-xs uppercase">
+          {eng.fallbackText}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function GlobalNetworkPage() {
   const [professionals, setProfessionals] = useState<any[]>([]);
@@ -325,14 +347,16 @@ export default function GlobalNetworkPage() {
               {/* Institution Backdrop Image with Zoom transition (Ken Burns effect) */}
               <div className="absolute inset-0 z-0">
                 <AnimatePresence mode="wait">
-                  <motion.div
+                  <motion.img
                     key={currentInstitution.id}
+                    src={currentInstitution.image}
+                    alt={currentInstitution.name}
+                    referrerPolicy="no-referrer"
                     initial={{ opacity: 0, scale: 1.08 }}
-                    animate={{ opacity: 0.35, scale: 1.02 }}
+                    animate={{ opacity: 0.55, scale: 1.02 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1.2, ease: "easeOut" }}
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${currentInstitution.image})` }}
+                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
                   />
                 </AnimatePresence>
                 {/* Visual grid backdrop & dark gradient scanlines overlay */}
@@ -408,26 +432,7 @@ export default function GlobalNetworkPage() {
                 key={idx} 
                 className="p-6 bg-zinc-950/40 border border-zinc-800/80 rounded-2xl flex flex-col justify-between min-h-[220px] hover:border-zinc-700 transition-colors group cursor-pointer"
               >
-                {/* Logo Frame rendering online logos with fallback */}
-                <div className="w-16 h-16 border border-zinc-850 bg-white flex flex-col items-center justify-center rounded-xl shadow-sm relative group overflow-hidden mb-5">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
-                  {eng.logo ? (
-                    <img 
-                      src={eng.logo} 
-                      alt={eng.name} 
-                      className="w-11 h-11 object-contain p-1"
-                      onError={(e) => {
-                        // Image load fallback helper
-                        e.currentTarget.style.display = "none";
-                        const sib = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (sib) sib.style.display = "flex";
-                      }}
-                    />
-                  ) : null}
-                  <div className="absolute inset-0 hidden items-center justify-center bg-orange-600 text-white font-mono font-black text-sm uppercase">
-                    {eng.fallbackText}
-                  </div>
-                </div>
+                <EngineeringLogo eng={eng} />
 
                 <div>
                   <h3 className="font-mono text-sm font-bold uppercase text-white group-hover:text-[#ea580c] transition-colors">{eng.name}</h3>
