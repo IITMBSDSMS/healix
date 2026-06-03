@@ -13,7 +13,7 @@ const newsArticles = [
     date: "May 28, 2026",
     author: "Dr. A. C. Research Director",
     desc: "Healix BioLabs has officially inaugurated its new distributed genomic diagnostic compute cluster. The facility integrates real-time DNA sequencing workflows with explainable machine learning models to accelerate personal safety telemetry and cardiovascular disease risk profiling.",
-    img: "https://images.unsplash.com/photo-1579152167368-f96c2db507f9?q=80&w=600&auto=format&fit=crop"
+    img: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=600&auto=format&fit=crop"
   },
   {
     id: "2",
