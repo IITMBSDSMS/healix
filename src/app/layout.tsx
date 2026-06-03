@@ -82,8 +82,8 @@ export const metadata: Metadata = {
     description:
       "Scan QR, start tracking, stay protected. SheSecure by Healix Technologies.",
     images: ["/og-image.png"],
-    creator: "@HealixTech",
-    site: "@HealixTech",
+    creator: "@HealixTechqouc",
+    site: "@HealixTechqouc",
   },
   alternates: {
     canonical: siteUrl,
@@ -118,7 +118,7 @@ const jsonLdOrg = {
   description:
     "An intelligent human-care platform combining AI healthcare, BioLabs research, and SheSecure women's safety systems.",
   sameAs: [
-    "https://twitter.com/HealixTech",
+    "https://x.com/HealixTechqouc",
     "https://www.linkedin.com/company/quick-healix/",
   ],
   contactPoint: {
