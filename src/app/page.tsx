@@ -131,6 +131,11 @@ export default function Home() {
   const [founders, setFounders] = useState<any[]>(DEFAULT_FOUNDERS);
   const [activeFounderIndex, setActiveFounderIndex] = useState(0);
   const [selectedFounderForMsg, setSelectedFounderForMsg] = useState<any | null>(null);
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([
+    { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
+    { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
+    { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
+  ]);
 
 
   useEffect(() => {
@@ -220,10 +225,51 @@ export default function Home() {
       }
     };
 
+    const fetchEvents = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("biolab_events")
+          .select("*")
+          .eq("is_active", true)
+          .order("start_date", { ascending: true })
+          .limit(3);
+        if (data && data.length > 0) {
+          const mapped = data.map(e => {
+            let speaker = "Research Fellow";
+            try {
+              if (e.description.startsWith("{") && e.description.endsWith("}")) {
+                const parsed = JSON.parse(e.description);
+                speaker = parsed.speaker || speaker;
+              }
+            } catch (err) {}
+            
+            const d = new Date(e.start_date);
+            const formattedDate = d.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+            });
+            
+            return {
+              id: e.id,
+              title: e.title,
+              speaker: speaker,
+              date: formattedDate
+            };
+          });
+          setUpcomingEvents(mapped);
+        }
+      } catch (err) {
+        console.warn("Error fetching events:", err);
+      }
+    };
+
     fetchReels();
     fetchPodcasts();
     fetchBrands();
     fetchFounders();
+    fetchEvents();
   }, []);
 
   useEffect(() => {
@@ -567,13 +613,12 @@ export default function Home() {
                 Upcoming <span className="text-[#ea580c]">Events</span>
               </h2>
               <div className="space-y-4">
-                {[
-                  { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
-                  { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
-                  { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
-                ].map((sem, idx) => (
+                {upcomingEvents.map((sem, idx) => (
                   <div key={idx} className="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
-                    <Link href="/events" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block">
+                    <Link 
+                      href={`/events?search=${encodeURIComponent(sem.title)}`} 
+                      className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block"
+                    >
                       {sem.title}
                     </Link>
                     <div className="flex justify-between items-center mt-2 text-xs text-zinc-650 font-mono">

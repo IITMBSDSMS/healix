@@ -38,6 +38,20 @@ export default function EventsPage() {
   const [submittingReg, setSubmittingReg] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("search");
+      if (query) {
+        setSearchQuery(query);
+      }
+      const cat = params.get("category");
+      if (cat) {
+        setSelectedCategory(cat);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     async function loadEvents() {
       try {
         const content = await getBiolabsContent();
