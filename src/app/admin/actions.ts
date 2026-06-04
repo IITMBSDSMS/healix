@@ -170,13 +170,26 @@ export async function addBiolabEvent(formData: FormData) {
   if (!(await checkIsAdmin())) return { error: "Unauthorized" };
   const supabase = createAdminClient();
   const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
+  const rawDescription = formData.get("description") as string;
   const image_url = formData.get("image_url") as string;
   const start_date = formData.get("start_date") as string;
   const end_date = formData.get("end_date") as string;
+  const category = formData.get("category") as string || "Academic Workshops";
+  const speaker = formData.get("speaker") as string || "Research Fellow";
+  const speaker_role = formData.get("speaker_role") as string || "BioLabs Faculty Advisor";
+  const seats_left = parseInt(formData.get("seats_left") as string || "15", 10);
   
-  if (!title || !description || !image_url || !start_date || !end_date) 
+  if (!title || !rawDescription || !image_url || !start_date || !end_date) 
     return { error: "All fields required" };
+    
+  const descObj = {
+    description: rawDescription,
+    category,
+    speaker,
+    speaker_role,
+    seats_left
+  };
+  const description = JSON.stringify(descObj);
     
   const { error } = await supabase.from("biolab_events").insert({ 
     title, description, image_url, 
@@ -186,6 +199,7 @@ export async function addBiolabEvent(formData: FormData) {
   if (error) return { error: error.message };
   revalidatePath("/admin");
   revalidatePath("/biolabs");
+  revalidatePath("/events");
   return { success: true };
 }
 
@@ -196,6 +210,7 @@ export async function deleteBiolabEvent(id: string) {
   if (error) return { error: error.message };
   revalidatePath("/admin");
   revalidatePath("/biolabs");
+  revalidatePath("/events");
   return { success: true };
 }
 

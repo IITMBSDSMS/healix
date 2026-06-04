@@ -9,58 +9,6 @@ import {
 import { GlassCard } from "@/components/ui/GlassCard";
 import { getBiolabsContent } from "@/app/biolabs/actions";
 
-// Static Events Catalog representing rich clinical & medical workshops
-const STATIC_SEMINARS = [
-  {
-    id: "sem-1",
-    title: "Explainable AI in Clinical Diagnostics & Triaging",
-    description: "An intensive seminar discussing the validation of convolutional neural networks and transformer structures in radiological diagnostics. Learn how activation mapping aids pathologists in early triaging.",
-    image_url: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop",
-    category: "Healthcare AI",
-    speaker: "Dr. Sarah Chen",
-    speaker_role: "Director of Diagnostic Imaging at BioLabs",
-    start_date: "2026-06-18T10:00:00+05:30",
-    end_date: "2026-06-18T14:30:00+05:30",
-    seats_left: 14
-  },
-  {
-    id: "sem-2",
-    title: "Distributed Audio Failsafe Networks & Hardware Telemetry",
-    description: "Deep dive into low-latency mesh radio networking, hardware beacon encryption, and multi-channel telemetry streams used to build resilient community safety devices under SheSecure systems.",
-    image_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop",
-    category: "Edge Telemetry",
-    speaker: "Prof. R. Sharma",
-    speaker_role: "Lead Systems Architect, IIT Madras",
-    start_date: "2026-06-10T11:00:00+05:30",
-    end_date: "2026-06-10T16:00:00+05:30",
-    seats_left: 8
-  },
-  {
-    id: "sem-3",
-    title: "High-Performance Computing Genomic Sequence Workshop",
-    description: "Practical workshop focused on molecular alignment algorithm deployment across parallel GPU compute clusters. Map off-target CRISPR outcomes with confidence scoring pipelines.",
-    image_url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=600&auto=format&fit=crop",
-    category: "Academic Workshops",
-    speaker: "Dr. Priya Sharma",
-    speaker_role: "Genomics Research Lead, AIIMS Delhi",
-    start_date: "2026-07-10T09:30:00+05:30",
-    end_date: "2026-07-12T17:00:00+05:30",
-    seats_left: 22
-  },
-  {
-    id: "sem-4",
-    title: "Summer Mentorship Training in Systems Architecture",
-    description: "A comprehensive 4-week introductory course for students covering microservice architectures, high-concurrency databases, failsafe telemetry buffers, and responsive frontends.",
-    image_url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop",
-    category: "Academic Workshops",
-    speaker: "Healix Academy Mentors",
-    speaker_role: "Senior Engineering Staff, Healix Technologies",
-    start_date: "2026-07-01T10:00:00+05:30",
-    end_date: "2026-07-31T16:00:00+05:30",
-    seats_left: 45
-  }
-];
-
 const CATEGORIES = ["All Seminars", "Healthcare AI", "Edge Telemetry", "Academic Workshops"];
 
 const cardVariants = {
@@ -93,24 +41,43 @@ export default function EventsPage() {
     async function loadEvents() {
       try {
         const content = await getBiolabsContent();
-        const serverEvents = (content.events || []).map((e: any, idx: number) => ({
-          id: e.id || `server-ev-${idx}`,
-          title: e.title,
-          description: e.description,
-          image_url: e.image_url.startsWith("/") ? e.image_url : e.image_url,
-          category: e.title.toLowerCase().includes("ai") || e.title.toLowerCase().includes("clinical") ? "Healthcare AI" : "Academic Workshops",
-          speaker: e.speaker || "Research Fellow",
-          speaker_role: e.speaker_role || "BioLabs Faculty Advisor",
-          start_date: e.start_date,
-          end_date: e.end_date,
-          seats_left: 15
-        }));
+        const serverEvents = (content.events || []).map((e: any, idx: number) => {
+          let description = e.description;
+          let category = "Academic Workshops";
+          let speaker = "Research Fellow";
+          let speaker_role = "BioLabs Faculty Advisor";
+          let seats_left = 15;
+
+          try {
+            if (e.description.startsWith("{") && e.description.endsWith("}")) {
+              const parsed = JSON.parse(e.description);
+              description = parsed.description;
+              category = parsed.category || "Academic Workshops";
+              speaker = parsed.speaker || "Research Fellow";
+              speaker_role = parsed.speaker_role || "BioLabs Faculty Advisor";
+              seats_left = parsed.seats_left !== undefined ? parsed.seats_left : 15;
+            } else {
+              category = e.title.toLowerCase().includes("ai") || e.title.toLowerCase().includes("clinical") ? "Healthcare AI" : "Academic Workshops";
+            }
+          } catch (err) {}
+
+          return {
+            id: e.id || `server-ev-${idx}`,
+            title: e.title,
+            description,
+            image_url: e.image_url,
+            category,
+            speaker,
+            speaker_role,
+            start_date: e.start_date,
+            end_date: e.end_date,
+            seats_left
+          };
+        });
         
-        // Merge server-driven events with our statically designed catalog
-        setEvents([...STATIC_SEMINARS, ...serverEvents]);
+        setEvents(serverEvents);
       } catch (err) {
-        console.warn("Failed to load biolabs events, falling back to static:", err);
-        setEvents(STATIC_SEMINARS);
+        console.warn("Failed to load biolabs events:", err);
       } finally {
         setLoading(false);
       }
@@ -176,9 +143,6 @@ export default function EventsPage() {
         
         {/* Header Hero Typographic Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full text-[#ea580c] text-[10px] font-mono tracking-wider uppercase font-bold">
-            <Sparkles className="w-3.5 h-3.5" /> Events & Seminars Catalog
-          </div>
           <h1 className="text-3xl md:text-5xl font-black font-mono uppercase tracking-tight text-slate-900">
             Healix <span className="text-[#ea580c]">Knowledge Hub</span>
           </h1>

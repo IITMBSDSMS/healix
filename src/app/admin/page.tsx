@@ -2025,6 +2025,19 @@ export default function UnifiedAdminDashboard() {
     }
   };
 
+  const handleAddEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const res = await addBiolabEvent(formData) as any;
+    if (res.error) {
+      alert('Event error: ' + res.error);
+    } else {
+      form.reset();
+      fetchData();
+    }
+  };
+
   if (loading && !data) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505]">
       <div className="w-16 h-16 border-4 border-orange-500/30 border-t-[#ea580c] rounded-full animate-spin mb-4" />
@@ -2677,6 +2690,69 @@ export default function UnifiedAdminDashboard() {
                             <button onClick={() => handleDeleteContent(pub.id, deleteBiolabPublication)} className="text-white/30 hover:text-red-400 p-2"><Trash2 className="h-4 w-4"/></button>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Events & Seminars */}
+                    <div className="border-t border-white/5 pt-8">
+                      <h4 className="font-semibold flex items-center gap-2 mb-3 text-white/80"><Calendar className="h-4 w-4 text-[#ea580c]"/> Events & Seminars</h4>
+                      <form onSubmit={handleAddEvent} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <input name="title" required placeholder="Event Title *" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                          <select name="category" required className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500">
+                            <option value="Healthcare AI">Healthcare AI</option>
+                            <option value="Edge Telemetry">Edge Telemetry</option>
+                            <option value="Academic Workshops">Academic Workshops</option>
+                          </select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[9px] font-mono text-white/40 uppercase mb-1">Start Date & Time *</label>
+                            <input type="datetime-local" name="start_date" required className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-mono text-white/40 uppercase mb-1">End Date & Time *</label>
+                            <input type="datetime-local" name="end_date" required className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <input name="speaker" required placeholder="Speaker Name *" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                          <input name="speaker_role" placeholder="Speaker Role / Affiliation" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <input name="image_url" required placeholder="Image URL (Unsplash or local path) *" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                          <input type="number" name="seats_left" defaultValue="15" placeholder="Seats Left" className="bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-500" />
+                        </div>
+                        <textarea name="description" required placeholder="Event Description *" className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-20 focus:outline-none focus:border-orange-500" />
+                        <button type="submit" className="px-6 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold text-xs uppercase tracking-wider font-mono transition-colors">Add Event</button>
+                      </form>
+                      
+                      <div className="space-y-2 mt-4 max-h-[200px] overflow-y-auto custom-scrollbar">
+                        {data.events?.map((evt: any) => {
+                          let displayDesc = evt.description;
+                          let displayCategory = "Academic Workshops";
+                          try {
+                            if (evt.description.startsWith("{") && evt.description.endsWith("}")) {
+                              const parsed = JSON.parse(evt.description);
+                              displayDesc = parsed.description;
+                              displayCategory = parsed.category || "Academic Workshops";
+                            }
+                          } catch (e) {}
+                          
+                          return (
+                            <div key={evt.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-white truncate">{evt.title}</p>
+                                <p className="text-[10px] text-white/40 font-mono truncate">{displayDesc}</p>
+                                <p className="text-[9px] text-[#ea580c] font-mono mt-0.5">{displayCategory} · {new Date(evt.start_date).toLocaleDateString()}</p>
+                              </div>
+                              <button onClick={() => handleDeleteContent(evt.id, deleteBiolabEvent)} className="text-white/30 hover:text-red-400 p-2 shrink-0"><Trash2 className="h-4 w-4"/></button>
+                            </div>
+                          );
+                        })}
+                        {(!data.events || data.events.length === 0) && (
+                          <p className="text-xs text-white/30 italic text-center py-4">No events found in database.</p>
+                        )}
                       </div>
                     </div>
 
