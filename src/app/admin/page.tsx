@@ -32,7 +32,7 @@ import {
 } from "./actions";
 
 import { getCourses, getMentors } from "@/lib/academy/db";
-import { addMentor, deleteMentor, addCourse, deleteCourse } from "./academy/actions";
+import { addMentor, deleteMentor, updateMentor, addCourse, deleteCourse } from "./academy/actions";
 import { getSurakshaData, createVirtualDevice, triggerSimulationEvent } from "./suraksha/actions";
 import { generateInitialState, generateNextState, TelemetryState } from "@/lib/suraksha/simulator";
 
@@ -184,6 +184,18 @@ export default function UnifiedAdminDashboard() {
   const [academySearchTerm, setAcademySearchTerm] = useState("");
   const [isUploadingAcademy, setIsUploadingAcademy] = useState<string | null>(null); 
   const [newAcademyMentorPhotoUrl, setNewAcademyMentorPhotoUrl] = useState("");
+  const [editingAcademyMentorId, setEditingAcademyMentorId] = useState<string | null>(null);
+  const [academyMentorForm, setAcademyMentorForm] = useState({
+    name: "",
+    role: "",
+    institution: "",
+    specialization: "",
+    experience: "",
+    photoUrl: "",
+    linkedinUrl: "",
+    companies: "",
+    bio: ""
+  });
 
   // ─── 3. CORPORATE MENTORS CRUD STATES ───
   const [corpMentors, setCorpMentors] = useState<any[]>([]);
@@ -522,13 +534,39 @@ export default function UnifiedAdminDashboard() {
   const handleAddAcademyMentor = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const res = await addMentor(formData);
+    formData.set("photoUrl", newAcademyMentorPhotoUrl);
+    
+    let res;
+    if (editingAcademyMentorId) {
+      res = await updateMentor(editingAcademyMentorId, formData);
+    } else {
+      res = await addMentor(formData);
+    }
+
     if (res && 'error' in res && res.error) {
       alert(res.error);
     } else {
       setShowAcademyMentorModal(false);
+      setEditingAcademyMentorId(null);
       fetchData();
     }
+  };
+
+  const handleOpenEditAcademyMentor = (mentor: any) => {
+    setEditingAcademyMentorId(mentor.id);
+    setNewAcademyMentorPhotoUrl(mentor.photoUrl || "");
+    setAcademyMentorForm({
+      name: mentor.name || "",
+      role: mentor.role || "",
+      institution: mentor.institution || "",
+      specialization: mentor.specialization || "",
+      experience: mentor.experience || "",
+      photoUrl: mentor.photoUrl || "",
+      linkedinUrl: mentor.linkedinUrl || "",
+      companies: Array.isArray(mentor.companies) ? mentor.companies.join(", ") : (mentor.companies || ""),
+      bio: mentor.bio || ""
+    });
+    setShowAcademyMentorModal(true);
   };
 
   const handleDeleteAcademyMentor = async (id: string) => {
@@ -2966,7 +3004,7 @@ export default function UnifiedAdminDashboard() {
             {activeTab === "academy" && (
               <motion.div key="academy" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
                 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-white/10 pb-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4 border-b border-white/10 pb-6">
                   <div>
                     <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Academy Control Center</h2>
                     <p className="text-white/50 text-sm">Manage student cohorts, active courses, and instructor portals.</p>
@@ -2978,11 +3016,42 @@ export default function UnifiedAdminDashboard() {
                       </Button>
                     )}
                     {academyActiveTab === "mentors" && (
-                      <Button onClick={() => { setNewAcademyMentorPhotoUrl(""); setShowAcademyMentorModal(true); }} className="flex items-center gap-2 px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider">
+                      <Button onClick={() => {
+                        setEditingAcademyMentorId(null);
+                        setNewAcademyMentorPhotoUrl("");
+                        setAcademyMentorForm({
+                          name: "",
+                          role: "",
+                          institution: "",
+                          specialization: "",
+                          experience: "",
+                          photoUrl: "",
+                          linkedinUrl: "",
+                          companies: "",
+                          bio: ""
+                        });
+                        setShowAcademyMentorModal(true);
+                      }} className="flex items-center gap-2 px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider">
                         <UserPlus className="w-4 h-4" /> Add Instructor
                       </Button>
                     )}
                   </div>
+                </div>
+
+                {/* Supabase Status Alert Banner */}
+                <div className="p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs mb-8">
+                  <div className="space-y-1">
+                    <p className="font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                      Supabase Schema Status Check
+                    </p>
+                    <p className="text-white/60">
+                      Instructors and courses will load from local static fallback data if the tables do not exist in Supabase. Run the DDL SQL in your dashboard to enable full database sync.
+                    </p>
+                  </div>
+                  <a href="/supabase_academy_schema.sql" target="_blank" className="px-4 py-2 border border-white/10 hover:border-white/20 rounded-lg text-white font-mono uppercase font-bold shrink-0 transition-colors">
+                    View DDL SQL
+                  </a>
                 </div>
 
                 {/* Sub-tabs */}
@@ -3116,10 +3185,17 @@ export default function UnifiedAdminDashboard() {
                         </div>
                         <h3 className="font-bold text-sm">{mentor.name}</h3>
                         <p className="text-xs text-[#eab308] font-mono mt-1">{mentor.role}</p>
+                        {mentor.specialization && <p className="text-[10px] text-zinc-400 font-mono mt-0.5">{mentor.specialization}</p>}
                         <p className="text-[10px] text-white/40 mt-2 line-clamp-2">{mentor.bio}</p>
-                        <button onClick={() => handleDeleteAcademyMentor(mentor.id)} className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        
+                        <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleOpenEditAcademyMentor(mentor)} className="p-2 bg-yellow-500/10 hover:bg-yellow-500/25 text-[#eab308] rounded-lg transition-colors" title="Edit Instructor">
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleDeleteAcademyMentor(mentor.id)} className="p-2 bg-red-500/10 hover:bg-red-500/25 text-red-500 rounded-lg transition-colors" title="Delete Instructor">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </GlassCard>
                     ))}
                   </div>
@@ -4458,40 +4534,80 @@ export default function UnifiedAdminDashboard() {
               className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider mb-6">Create Academy Instructor</h2>
-              <form onSubmit={handleAddAcademyMentor} className="space-y-4">
+              <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider mb-6">
+                {editingAcademyMentorId ? "Edit Academy Instructor" : "Create Academy Instructor"}
+              </h2>
+              <form onSubmit={handleAddAcademyMentor} key={editingAcademyMentorId || "new"} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <input name="name" required placeholder="Full Name" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
-                  <input name="role" required placeholder="Role (e.g. Lead Educator)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <input name="institution" required placeholder="Company / Institution" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
-                  <input name="experience" required placeholder="Experience (e.g. 8+ Years)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Full Name</label>
+                    <input name="name" required defaultValue={academyMentorForm.name} placeholder="Full Name" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Role / Designation</label>
+                    <input name="role" required defaultValue={academyMentorForm.role} placeholder="Role (e.g. Lead Educator)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                  </div>
                 </div>
                 
-                <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
-                  <div className="w-20 h-20 rounded-xl border border-white/10 bg-white/5 relative overflow-hidden flex items-center justify-center">
-                    {isUploadingAcademy === 'new' ? (
-                      <Loader2 className="w-5 h-5 text-[#eab308] animate-spin" />
-                    ) : newAcademyMentorPhotoUrl ? (
-                      <Image src={newAcademyMentorPhotoUrl} alt="Preview" fill className="object-cover" />
-                    ) : (
-                      <span className="text-[9px] font-mono text-white/30 text-center">No Photo</span>
-                    )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Company / Institution</label>
+                    <input name="institution" required defaultValue={academyMentorForm.institution} placeholder="Company / Institution" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
                   </div>
-                  <div className="flex gap-2">
-                    <input name="photoUrl" value={newAcademyMentorPhotoUrl} onChange={(e) => setNewAcademyMentorPhotoUrl(e.target.value)} required placeholder="Or paste direct Image URL..." className="flex-1 bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
-                    <label className="px-3 py-3 bg-[#eab308] text-black rounded-lg font-bold text-[9px] flex items-center gap-1 cursor-pointer uppercase tracking-wider shrink-0 font-mono">
-                      <Upload className="w-3.5 h-3.5" /> Upload File
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAcademyPhotoUpload(e)} />
-                    </label>
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Experience</label>
+                    <input name="experience" required defaultValue={academyMentorForm.experience} placeholder="Experience (e.g. 8+ Years)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
                   </div>
                 </div>
 
-                <textarea name="bio" rows={3} required placeholder="Instructor Biography..." className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Specialization Area</label>
+                    <input name="specialization" required defaultValue={academyMentorForm.specialization} placeholder="Specialization (e.g. Genomic AI)" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">LinkedIn URL</label>
+                    <input name="linkedinUrl" required defaultValue={academyMentorForm.linkedinUrl} placeholder="LinkedIn URL" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Partner Companies / Affiliations (comma separated)</label>
+                  <input name="companies" defaultValue={academyMentorForm.companies} placeholder="Google, DeepMind, Healix" className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                </div>
+                
+                <div>
+                  <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Instructor Photo</label>
+                  <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
+                    <div className="w-20 h-20 rounded-xl border border-white/10 bg-white/5 relative overflow-hidden flex items-center justify-center">
+                      {isUploadingAcademy === 'new' ? (
+                        <Loader2 className="w-5 h-5 text-[#eab308] animate-spin" />
+                      ) : newAcademyMentorPhotoUrl ? (
+                        <Image src={newAcademyMentorPhotoUrl} alt="Preview" fill className="object-cover" />
+                      ) : (
+                        <span className="text-[9px] font-mono text-white/30 text-center">No Photo</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <input name="photoUrl" value={newAcademyMentorPhotoUrl} onChange={(e) => setNewAcademyMentorPhotoUrl(e.target.value)} required placeholder="Or paste direct Image URL..." className="flex-1 bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                      <label className="px-3 py-3 bg-[#eab308] text-black rounded-lg font-bold text-[9px] flex items-center gap-1 cursor-pointer uppercase tracking-wider shrink-0 font-mono items-center justify-center">
+                        <Upload className="w-3.5 h-3.5" /> Upload File
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAcademyPhotoUpload(e)} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-white/40 uppercase tracking-wider mb-1">Biography / Overview</label>
+                  <textarea name="bio" rows={3} required defaultValue={academyMentorForm.bio} placeholder="Instructor Biography..." className="w-full bg-[#050505] border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-500/50" />
+                </div>
+
                 <div className="flex gap-3 pt-4 border-t border-white/5">
-                  <button type="button" onClick={() => setShowAcademyMentorModal(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
-                  <button type="submit" className="flex-1 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold font-mono text-sm uppercase tracking-wider">Save Instructor</button>
+                  <button type="button" onClick={() => { setShowAcademyMentorModal(false); setEditingAcademyMentorId(null); }} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" className="flex-1 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold font-mono text-sm uppercase tracking-wider">
+                    {editingAcademyMentorId ? "Update Instructor" : "Save Instructor"}
+                  </button>
                 </div>
               </form>
             </motion.div>

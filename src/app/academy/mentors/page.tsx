@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { MentorCard } from "@/components/academy/MentorCard";
 import { getMentors } from "@/lib/academy/db";
 import { Button } from "@/components/ui/Button";
 import { ScientistReaction3D } from "@/components/ui/ScientistReaction3D";
 import { 
   Users, Search, Filter, Sparkles, 
-  Globe, ArrowRight 
+  Globe, ArrowRight, X 
 } from "lucide-react";
 
 export default function MentorsPage() {
@@ -16,6 +16,7 @@ export default function MentorsPage() {
   const [filteredMentors, setFilteredMentors] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDirectoryOpen, setIsDirectoryOpen] = useState(false);
 
   useEffect(() => {
     getMentors().then(data => {
@@ -90,8 +91,8 @@ export default function MentorsPage() {
                     <Button variant="outline" className="px-6 rounded-2xl border-zinc-250 hover:bg-[#ea580c]/5 hover:border-[#ea580c]/30 hover:text-[#ea580c] flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider">
                       <Filter className="w-3.5 h-3.5" /> Filter
                     </Button>
-                    <Button className="px-6 rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5" /> Recommended
+                    <Button onClick={() => setIsDirectoryOpen(true)} className="px-6 rounded-2xl bg-[#ea580c] hover:bg-[#c2410c] text-white flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider shadow-lg shadow-orange-500/10">
+                      <Sparkles className="w-3.5 h-3.5" /> Launch Directory
                     </Button>
                   </div>
                 </div>
@@ -162,6 +163,57 @@ export default function MentorsPage() {
         </section>
 
       </div>
+
+      {/* Interactive Faculty Directory Modal */}
+      <AnimatePresence>
+        {isDirectoryOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDirectoryOpen(false)}
+              className="absolute inset-0 bg-[#050505]/85 backdrop-blur-md cursor-pointer"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", bounce: 0.05, duration: 0.4 }}
+              className="relative z-10 w-full max-w-7xl bg-white border border-zinc-200 rounded-[2rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar text-zinc-900"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsDirectoryOpen(false)}
+                className="absolute top-6 right-6 bg-zinc-950 hover:bg-[#ea580c] hover:scale-105 active:scale-95 text-white rounded-full p-2.5 transition-all shadow-md flex items-center justify-center"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+
+              {/* Modal Header */}
+              <div className="mb-10">
+                <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-zinc-950 leading-none">Active Faculty Directory</h2>
+                <p className="text-zinc-500 text-xs font-mono mt-2 uppercase tracking-widest">{filteredMentors.length} mentors matching search</p>
+              </div>
+
+              {/* Mentors Grid inside Modal */}
+              {filteredMentors.length === 0 ? (
+                <div className="text-center py-20 text-zinc-500 font-mono text-sm border border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50">
+                  No mentors match your search query. Try broadening your terms.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {filteredMentors.map((mentor) => (
+                    <MentorCard key={mentor.id} mentor={mentor} />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

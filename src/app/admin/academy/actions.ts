@@ -63,6 +63,20 @@ export async function addMentor(formData: FormData) {
 
   const supabase = await createClient();
 
+  let companies: string[] = ["Healix"];
+  const companiesRaw = formData.get("companies")?.toString();
+  if (companiesRaw) {
+    try {
+      if (companiesRaw.trim().startsWith("[")) {
+        companies = JSON.parse(companiesRaw);
+      } else {
+        companies = companiesRaw.split(",").map(c => c.trim()).filter(Boolean);
+      }
+    } catch {
+      companies = [companiesRaw];
+    }
+  }
+
   const mentor = {
     id: "m" + Math.floor(Math.random() * 1000000),
     name: formData.get("name")?.toString() || "Unknown Instructor",
@@ -72,7 +86,7 @@ export async function addMentor(formData: FormData) {
     experience: formData.get("experience")?.toString() || "5+ Years",
     photoUrl: formData.get("photoUrl")?.toString() || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80",
     linkedinUrl: formData.get("linkedinUrl")?.toString() || "https://linkedin.com",
-    companies: JSON.parse(formData.get("companies")?.toString() || '["Healix"]'),
+    companies,
     bio: formData.get("bio")?.toString() || "Expert systems architect and educator.",
   };
 
@@ -81,6 +95,50 @@ export async function addMentor(formData: FormData) {
   if (error) {
     console.error("Supabase Error:", error);
     return { error: "Failed to add mentor. Please ensure the 'academy_mentors' table exists in Supabase." };
+  }
+
+  revalidatePath("/academy/mentors");
+  revalidatePath("/admin/academy");
+  return { success: true };
+}
+
+export async function updateMentor(id: string, formData: FormData) {
+  const isAdmin = await checkIsAdmin();
+  if (!isAdmin) return { error: "Unauthorized" };
+
+  const supabase = await createClient();
+
+  let companies: string[] = ["Healix"];
+  const companiesRaw = formData.get("companies")?.toString();
+  if (companiesRaw) {
+    try {
+      if (companiesRaw.trim().startsWith("[")) {
+        companies = JSON.parse(companiesRaw);
+      } else {
+        companies = companiesRaw.split(",").map(c => c.trim()).filter(Boolean);
+      }
+    } catch {
+      companies = [companiesRaw];
+    }
+  }
+
+  const mentor = {
+    name: formData.get("name")?.toString() || "Unknown Instructor",
+    role: formData.get("role")?.toString() || "Instructor",
+    institution: formData.get("institution")?.toString() || "Healix Academy",
+    specialization: formData.get("specialization")?.toString() || "Engineering & Instruction",
+    experience: formData.get("experience")?.toString() || "5+ Years",
+    photoUrl: formData.get("photoUrl")?.toString() || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80",
+    linkedinUrl: formData.get("linkedinUrl")?.toString() || "https://linkedin.com",
+    companies,
+    bio: formData.get("bio")?.toString() || "Expert systems architect and educator.",
+  };
+
+  const { error } = await supabase.from('academy_mentors').update(mentor).eq('id', id);
+  
+  if (error) {
+    console.error("Supabase Error:", error);
+    return { error: "Failed to update mentor: " + error.message };
   }
 
   revalidatePath("/academy/mentors");

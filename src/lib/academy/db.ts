@@ -12,6 +12,10 @@ export async function getCourses() {
     
     return data.map(course => ({
       ...course,
+      shortDescription: course.shortDescription || course.short_description || "",
+      longDescription: course.longDescription || course.long_description || "",
+      originalPrice: course.originalPrice !== undefined ? course.originalPrice : course.original_price,
+      seatsRemaining: course.seatsRemaining !== undefined ? course.seatsRemaining : course.seats_remaining,
       modules: typeof course.modules === 'string' ? JSON.parse(course.modules) : course.modules,
       projects: typeof course.projects === 'string' ? JSON.parse(course.projects) : course.projects,
     }));
@@ -29,7 +33,11 @@ export async function getMentors() {
       return defaultMentors;
     }
     
-    return data;
+    return data.map(mentor => ({
+      ...mentor,
+      photoUrl: mentor.photoUrl || mentor.photo_url || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80",
+      linkedinUrl: mentor.linkedinUrl || mentor.linkedin_url || "https://linkedin.com",
+    }));
   } catch (err) {
     return defaultMentors;
   }

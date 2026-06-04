@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Mail, MapPin, Phone, Send, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { ContactIllustration } from "@/components/ui/ContactIllustration";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -98,6 +99,8 @@ export default function ContactPage() {
               </p>
             </div>
           </GlassCard>
+          
+          <ContactIllustration className="mt-8 w-full max-w-[380px] mx-auto opacity-95 hover:opacity-100 transition-all duration-500 scale-100 hover:scale-[1.02] filter saturate-[0.9] hover:saturate-100" />
         </div>
 
         {/* Contact Form */}
