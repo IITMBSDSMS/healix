@@ -561,26 +561,37 @@ export default function Home() {
           </div>
 
           {/* Right Column: Events */}
-          <div id="events" className="lg:col-span-4 bg-white border border-zinc-200 p-6 scroll-mt-20">
-            <h2 className="text-xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
-              Upcoming <span className="text-[#ea580c]">Events</span>
-            </h2>
-            <div className="space-y-4">
-              {[
-                { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
-                { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
-                { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
-              ].map((sem, idx) => (
-                <div key={idx} className="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
-                  <Link href="/academy" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block">
-                    {sem.title}
-                  </Link>
-                  <div className="flex justify-between items-center mt-2 text-xs text-zinc-650 font-mono">
-                    <span>{sem.speaker}</span>
-                    <span>{sem.date}</span>
+          <div id="events" className="lg:col-span-4 bg-white border border-zinc-200 p-6 scroll-mt-20 flex flex-col justify-between">
+            <div>
+              <h2 className="text-xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
+                Upcoming <span className="text-[#ea580c]">Events</span>
+              </h2>
+              <div className="space-y-4">
+                {[
+                  { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
+                  { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
+                  { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
+                ].map((sem, idx) => (
+                  <div key={idx} className="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
+                    <Link href="/events" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block">
+                      {sem.title}
+                    </Link>
+                    <div className="flex justify-between items-center mt-2 text-xs text-zinc-650 font-mono">
+                      <span>{sem.speaker}</span>
+                      <span>{sem.date}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <Link 
+                href="/events" 
+                className="w-full py-3 bg-zinc-900 hover:bg-[#ea580c] text-white text-center text-xs font-bold uppercase tracking-wider block transition-colors duration-300 rounded-none shadow-sm"
+              >
+                View All Events
+              </Link>
             </div>
           </div>
         </div>
