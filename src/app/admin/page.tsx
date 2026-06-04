@@ -387,7 +387,8 @@ export default function UnifiedAdminDashboard() {
 
 
     } catch (e: any) {
-      setError("Failed to fetch administrative data.");
+      console.error("Admin data fetch error details:", e);
+      setError("Failed to fetch administrative data. Detail: " + (e.message || String(e)));
     } finally {
       setLoading(false);
     }
