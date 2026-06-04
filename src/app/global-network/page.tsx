@@ -436,6 +436,20 @@ function EngineeringLogo({ eng }: { eng: any }) {
   );
 }
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.96 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.55,
+      ease: [0.21, 1.02, 0.43, 1.01] as [number, number, number, number]
+    }
+  })
+};
+
 export default function GlobalNetworkPage() {
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [loadingProfs, setLoadingProfs] = useState(true);
@@ -637,53 +651,62 @@ export default function GlobalNetworkPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {professionals.map((p, idx) => (
-                <GlassCard 
-                  variant="light"
-                  key={p.id || idx} 
-                  className="p-6 flex flex-col justify-between border border-slate-250/60 bg-white/70 backdrop-blur-md rounded-2xl shadow-md hover:border-[#ea580c]/30 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group duration-300"
+                <motion.div
+                  key={p.id || idx}
+                  custom={idx}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  variants={cardVariants}
+                  className="h-full"
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-5">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl border-2 border-slate-200 bg-white overflow-hidden relative shrink-0 shadow-md group-hover:shadow-xl group-hover:border-[#ea580c]/50 transition-all duration-350">
-                        {p.photo_url ? (
-                          <img 
-                            src={p.photo_url} 
-                            alt={p.name} 
-                            className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-out" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#ea580c] font-black text-2xl md:text-3xl bg-orange-500/5 font-mono">{p.name?.[0]}</div>
-                        )}
+                  <GlassCard 
+                    variant="light"
+                    className="p-6 flex flex-col justify-between border border-slate-250/60 bg-white/70 backdrop-blur-md rounded-2xl shadow-md hover:border-[#ea580c]/30 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group duration-300 h-full"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-5">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl border-2 border-slate-200 bg-white overflow-hidden relative shrink-0 shadow-md group-hover:shadow-xl group-hover:border-[#ea580c]/50 transition-all duration-350">
+                          {p.photo_url ? (
+                            <img 
+                              src={p.photo_url} 
+                              alt={p.name} 
+                              className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-out" 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#ea580c] font-black text-2xl md:text-3xl bg-orange-500/5 font-mono">{p.name?.[0]}</div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] sm:text-xs font-mono text-[#ea580c] uppercase font-bold tracking-wider">{p.role}</p>
+                          <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase truncate font-mono mt-1">{p.name}</h3>
+                          <p className="text-[10px] sm:text-xs font-mono text-slate-400 uppercase tracking-wide truncate flex items-center gap-1 mt-1">
+                            <MapPin className="w-3 h-3 text-[#ea580c] shrink-0" /> {p.institution}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[10px] sm:text-xs font-mono text-[#ea580c] uppercase font-bold tracking-wider">{p.role}</p>
-                        <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase truncate font-mono mt-1">{p.name}</h3>
-                        <p className="text-[10px] sm:text-xs font-mono text-slate-400 uppercase tracking-wide truncate flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3 text-[#ea580c] shrink-0" /> {p.institution}
+                      <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-xs text-slate-600 leading-relaxed font-sans line-clamp-4">
+                          {p.description}
                         </p>
                       </div>
                     </div>
-                    <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                      <p className="text-xs text-slate-600 leading-relaxed font-sans line-clamp-4">
-                        {p.description}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 text-[10px] font-mono text-slate-450">
-                    <span className="uppercase font-bold tracking-widest flex items-center gap-1 text-emerald-600">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" /> Active Consultant
-                    </span>
-                    <span className="uppercase tracking-wider">Node Verified</span>
-                  </div>
-                </GlassCard>
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 text-[10px] font-mono text-slate-450">
+                      <span className="uppercase font-bold tracking-widest flex items-center gap-1 text-emerald-600">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" /> Active Consultant
+                      </span>
+                      <span className="uppercase tracking-wider">Node Verified</span>
+                    </div>
+                  </GlassCard>
+                </motion.div>
               ))}
             </div>
           )}
         </div>
 
         {/* SECTION 2: BIOLABS RESEARCH FACILITIES (Redesigned as Full Width, Left side removed) */}
-        <div>
+        <div className="content-visibility-auto">
           <div className="flex items-end justify-between border-b border-slate-200 pb-4 mb-10">
             <div>
               <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold flex items-center gap-1.5">
@@ -836,7 +859,7 @@ export default function GlobalNetworkPage() {
         </div>
 
         {/* SECTION 3: ENGINEERS SECTION (Updated with Bright Mode styles) */}
-        <div>
+        <div className="content-visibility-auto">
           <div className="flex items-end justify-between border-b border-slate-200 pb-4 mb-10">
             <div>
               <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold flex items-center gap-1.5">
@@ -851,21 +874,30 @@ export default function GlobalNetworkPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {activeEngineers.map((eng, idx) => (
-              <GlassCard 
-                variant="light"
-                key={idx} 
-                className="p-6 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-col justify-between min-h-[220px] hover:border-indigo-400 hover:shadow-lg hover:shadow-slate-200/40 transition-all group cursor-pointer"
+              <motion.div
+                key={idx}
+                custom={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={cardVariants}
+                className="h-full"
               >
-                <EngineeringLogo eng={eng} />
+                <GlassCard 
+                  variant="light"
+                  className="p-6 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-col justify-between min-h-[220px] hover:border-indigo-400 hover:shadow-lg hover:shadow-slate-200/40 transition-all group cursor-pointer h-full"
+                >
+                  <EngineeringLogo eng={eng} />
 
-                <div>
-                  <h3 className="font-mono text-sm font-bold uppercase text-slate-800 group-hover:text-[#ea580c] transition-colors">{eng.name}</h3>
-                  <p className="text-xs text-[#ea580c] font-mono uppercase font-bold mt-1 tracking-wider">{eng.team_name || eng.teamName}</p>
-                  <p className="text-[10px] text-slate-500 leading-relaxed mt-2.5 font-sans">
-                    {eng.specialization}
-                  </p>
-                </div>
-              </GlassCard>
+                  <div>
+                    <h3 className="font-mono text-sm font-bold uppercase text-slate-800 group-hover:text-[#ea580c] transition-colors">{eng.name}</h3>
+                    <p className="text-xs text-[#ea580c] font-mono uppercase font-bold mt-1 tracking-wider">{eng.team_name || eng.teamName}</p>
+                    <p className="text-[10px] text-slate-500 leading-relaxed mt-2.5 font-sans">
+                      {eng.specialization}
+                    </p>
+                  </div>
+                </GlassCard>
+              </motion.div>
             ))}
           </div>
         </div>

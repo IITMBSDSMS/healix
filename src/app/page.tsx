@@ -105,6 +105,20 @@ const DEFAULT_FOUNDERS = [
   }
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.96 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.55,
+      ease: [0.21, 1.02, 0.43, 1.01] as [number, number, number, number]
+    }
+  })
+};
+
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
   const [activeVideo, setActiveVideo] = useState<{ url: string, title: string } | null>(null);
@@ -412,19 +426,28 @@ export default function Home() {
               { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo.png", href: "/biolabs" },
               { title: "Healix AI Check", subtitle: "Symptom Triaging Portal", logo: "/ai-logo.jpg", href: "/ai-check" }
             ].map((unit, i) => (
-              <Link 
-                key={i} 
-                href={unit.href}
-                className="bg-white border border-zinc-200 p-6 flex flex-col justify-between min-h-[160px] hover:border-[#ea580c] transition-all group cursor-pointer"
+              <motion.div
+                key={i}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={cardVariants}
+                className="h-full"
               >
-                <div className="w-10 h-10 border border-zinc-200/60 bg-white flex items-center justify-center mb-4 overflow-hidden rounded-lg shadow-sm">
-                  <img src={unit.logo} alt={unit.title} className="w-full h-full object-contain p-1" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm sm:text-base text-zinc-950 group-hover:text-[#ea580c] transition-colors">{unit.title}</h3>
-                  <p className="text-[10px] sm:text-xs text-zinc-500 font-mono mt-1 uppercase tracking-wider">{unit.subtitle}</p>
-                </div>
-              </Link>
+                <Link 
+                  href={unit.href}
+                  className="bg-white border border-zinc-200 p-6 flex flex-col justify-between min-h-[160px] hover:border-[#ea580c] transition-all group cursor-pointer h-full"
+                >
+                  <div className="w-10 h-10 border border-zinc-200/60 bg-white flex items-center justify-center mb-4 overflow-hidden rounded-lg shadow-sm">
+                    <img src={unit.logo} alt={unit.title} className="w-full h-full object-contain p-1" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm sm:text-base text-zinc-950 group-hover:text-[#ea580c] transition-colors">{unit.title}</h3>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-mono mt-1 uppercase tracking-wider">{unit.subtitle}</p>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -461,20 +484,30 @@ export default function Home() {
                 href: "/ai-check"
               }
             ].map((start, idx) => (
-              <div key={idx} className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group">
-                <div className="h-44 bg-zinc-150 relative overflow-hidden">
-                  <img src={start.src} alt={start.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" />
-                </div>
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-extrabold text-base text-zinc-950 mb-2">{start.title}</h4>
-                    <p className="text-xs text-zinc-700 leading-relaxed mb-4">{start.desc}</p>
+              <motion.div
+                key={idx}
+                custom={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={cardVariants}
+                className="h-full"
+              >
+                <div className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group h-full">
+                  <div className="h-44 bg-zinc-150 relative overflow-hidden">
+                    <img src={start.src} alt={start.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" />
                   </div>
-                  <Link href={start.href} className="h-8 px-4 border border-zinc-300 hover:border-[#ea580c] hover:bg-orange-50/20 text-zinc-800 hover:text-[#ea580c] text-[10px] font-bold uppercase tracking-wider w-fit flex items-center justify-center transition-all">
-                    Read More
-                  </Link>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-base text-zinc-950 mb-2">{start.title}</h4>
+                      <p className="text-xs text-zinc-700 leading-relaxed mb-4">{start.desc}</p>
+                    </div>
+                    <Link href={start.href} className="h-8 px-4 border border-zinc-300 hover:border-[#ea580c] hover:bg-orange-50/20 text-zinc-800 hover:text-[#ea580c] text-[10px] font-bold uppercase tracking-wider w-fit flex items-center justify-center transition-all">
+                      Read More
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -499,20 +532,30 @@ export default function Home() {
                   src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400"
                 }
               ].map((res, idx) => (
-                <div key={idx} className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group">
-                  <div className="h-36 bg-zinc-150 relative">
-                    <img src={res.src} alt={res.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-extrabold text-sm text-zinc-950 mb-2 leading-snug">{res.title}</h4>
-                      <p className="text-xs text-zinc-700 leading-relaxed mb-4">{res.desc}</p>
+                <motion.div
+                  key={idx}
+                  custom={idx}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  variants={cardVariants}
+                  className="h-full"
+                >
+                  <div className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group h-full">
+                    <div className="h-36 bg-zinc-150 relative">
+                      <img src={res.src} alt={res.title} className="w-full h-full object-cover" />
                     </div>
-                    <Link href="/news" className="h-7 px-3 border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-[10px] font-bold uppercase tracking-wider w-fit flex items-center transition-colors">
-                      Details
-                    </Link>
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-extrabold text-sm text-zinc-950 mb-2 leading-snug">{res.title}</h4>
+                        <p className="text-xs text-zinc-700 leading-relaxed mb-4">{res.desc}</p>
+                      </div>
+                      <Link href="/news" className="h-7 px-3 border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-[10px] font-bold uppercase tracking-wider w-fit flex items-center transition-colors">
+                        Details
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -543,7 +586,7 @@ export default function Home() {
         </div>
 
         {/* --- SECTION 6: OUR BRANDS (Cinematic Slideshow) --- */}
-        <div className="border-t border-zinc-200 pt-16">
+        <div className="border-t border-zinc-200 pt-16 content-visibility-auto">
           <div className="text-center mb-10">
             <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
               Our <span className="text-[#ea580c]">Brands</span>
@@ -634,7 +677,7 @@ export default function Home() {
         </div>
 
         {/* --- SECTION 7: PODCASTS (Animated dynamic list) --- */}
-        <div className="border-t border-zinc-200 pt-16">
+        <div className="border-t border-zinc-200 pt-16 content-visibility-auto">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-10 border-b border-zinc-200 pb-4 w-full">
             <div className="flex items-center gap-3">
               {/* Dancing soundwave animation */}
@@ -670,64 +713,73 @@ export default function Home() {
 
           {/* Grid list of podcasts */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {podcasts.map((pod) => (
-              <div 
-                key={pod.id} 
-                className="bg-white border border-zinc-200 rounded-none overflow-hidden hover:border-black transition-all group flex flex-col justify-between"
+            {podcasts.map((pod, idx) => (
+              <motion.div
+                key={pod.id}
+                custom={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={cardVariants}
+                className="h-full"
               >
-                {/* Thumbnail with overlay play trigger */}
                 <div 
-                  className="aspect-video bg-zinc-150 relative overflow-hidden cursor-pointer"
-                  onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                  className="bg-white border border-zinc-200 rounded-none overflow-hidden hover:border-black transition-all group flex flex-col justify-between h-full"
                 >
-                  {pod.thumbnail_url ? (
-                    <img 
-                      src={pod.thumbnail_url} 
-                      alt={pod.title} 
-                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-white/30 text-xs font-mono">
-                      No Thumbnail
-                    </div>
-                  )}
+                  {/* Thumbnail with overlay play trigger */}
+                  <div 
+                    className="aspect-video bg-zinc-150 relative overflow-hidden cursor-pointer"
+                    onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                  >
+                    {pod.thumbnail_url ? (
+                      <img 
+                        src={pod.thumbnail_url} 
+                        alt={pod.title} 
+                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-white/30 text-xs font-mono">
+                        No Thumbnail
+                      </div>
+                    )}
 
-                  {/* Play badge overlays */}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-white bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:scale-110 transition-transform duration-300 shadow-md">
-                      <Play className="w-5 h-5 text-white fill-white translate-x-0.5" />
+                    {/* Play badge overlays */}
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full border-2 border-white bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:scale-110 transition-transform duration-300 shadow-md">
+                        <Play className="w-5 h-5 text-white fill-white translate-x-0.5" />
+                      </div>
                     </div>
+
+                    {/* Duration label */}
+                    {pod.duration && (
+                      <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-mono font-bold tracking-wider">
+                        {pod.duration}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Duration label */}
-                  {pod.duration && (
-                    <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-mono font-bold tracking-wider">
-                      {pod.duration}
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-widest">Episode Broadcast</p>
+                      <h4 className="font-extrabold text-base text-zinc-950 mb-2 group-hover:text-[#ea580c] transition-colors leading-snug">
+                        {pod.title}
+                      </h4>
+                      <p className="text-xs text-zinc-650 leading-relaxed font-sans line-clamp-3">
+                        {pod.description}
+                      </p>
                     </div>
-                  )}
+
+                    <div className="pt-6">
+                      <button 
+                        onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                        className="h-8 px-4 bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 hover:bg-[#ea580c] hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300"
+                      >
+                        Watch Episode
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <p className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-widest">Episode Broadcast</p>
-                    <h4 className="font-extrabold text-base text-zinc-950 mb-2 group-hover:text-[#ea580c] transition-colors leading-snug">
-                      {pod.title}
-                    </h4>
-                    <p className="text-xs text-zinc-650 leading-relaxed font-sans line-clamp-3">
-                      {pod.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-6">
-                    <button 
-                      onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
-                      className="h-8 px-4 bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 hover:bg-[#ea580c] hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300"
-                    >
-                      Watch Episode
-                    </button>
-                  </div>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

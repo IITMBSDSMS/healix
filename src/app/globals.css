@@ -1213,4 +1213,10 @@ button, a {
   transform: translateY(-1px) !important;
 }
 
+/* --- Speed Optimization Utility --- */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
+}
+
 
