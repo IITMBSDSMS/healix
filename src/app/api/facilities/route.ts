@@ -101,6 +101,17 @@ export async function GET(req: Request) {
   }
 
   if (!data || data.length === 0) {
+    try {
+      const { data: seeded, error: seedError } = await supabase
+        .from("global_facilities")
+        .insert(DEFAULT_FACILITIES.map(({ id, ...rest }) => rest))
+        .select();
+      if (!seedError && seeded && seeded.length > 0) {
+        return NextResponse.json(seeded);
+      }
+    } catch (e) {
+      console.warn("Auto-seeding facilities failed:", e);
+    }
     return NextResponse.json(DEFAULT_FACILITIES);
   }
 

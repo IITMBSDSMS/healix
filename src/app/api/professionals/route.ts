@@ -56,6 +56,17 @@ export async function GET(req: Request) {
   }
 
   if (!data || data.length === 0) {
+    try {
+      const { data: seeded, error: seedError } = await supabase
+        .from("global_professionals")
+        .insert(DEFAULT_PROFESSIONALS.map(({ id, ...rest }) => rest))
+        .select();
+      if (!seedError && seeded && seeded.length > 0) {
+        return NextResponse.json(seeded);
+      }
+    } catch (e) {
+      console.warn("Auto-seeding professionals failed:", e);
+    }
     return NextResponse.json(DEFAULT_PROFESSIONALS);
   }
 

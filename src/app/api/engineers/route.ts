@@ -6,7 +6,7 @@ export const DEFAULT_ENGINEERS = [
   {
     id: "e1",
     name: "IIT Delhi",
-    logo_url: "https://upload.wikimedia.org/wikipedia/en/f/fd/IIT_Delhi_Logo.svg",
+    logo_url: "https://logo.clearbit.com/iitd.ac.in",
     fallback_text: "IITD",
     team_name: "Genomics Systems Group",
     specialization: "AI Diagnostics & Genomics Arrays",
@@ -16,7 +16,7 @@ export const DEFAULT_ENGINEERS = [
   {
     id: "e2",
     name: "IIT Bombay",
-    logo_url: "https://upload.wikimedia.org/wikipedia/en/1/1d/Indian_Institute_of_Technology_Bombay_Logo.svg",
+    logo_url: "https://logo.clearbit.com/iitb.ac.in",
     fallback_text: "IITB",
     team_name: "Sensors & Telemetry Labs",
     specialization: "IoT Systems & Emergency Telemetry",
@@ -26,7 +26,7 @@ export const DEFAULT_ENGINEERS = [
   {
     id: "e3",
     name: "IIT Madras",
-    logo_url: "https://upload.wikimedia.org/wikipedia/en/8/81/Indian_Institute_of_Technology_Madras_Logo.svg",
+    logo_url: "https://logo.clearbit.com/iitm.ac.in",
     fallback_text: "IITM",
     team_name: "Distributed Hardware Unit",
     specialization: "Edge Node Security & Socket Protocols",
@@ -36,7 +36,7 @@ export const DEFAULT_ENGINEERS = [
   {
     id: "e4",
     name: "IISc Bangalore",
-    logo_url: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f9/Indian_Science_logo.svg/440px-Indian_Science_logo.svg.png",
+    logo_url: "https://logo.clearbit.com/iisc.ac.in",
     fallback_text: "IISc",
     team_name: "Bio-Computation Center",
     specialization: "Molecular Modeling & Failsafe DBs",
@@ -66,6 +66,17 @@ export async function GET(req: Request) {
   }
 
   if (!data || data.length === 0) {
+    try {
+      const { data: seeded, error: seedError } = await supabase
+        .from("global_engineers")
+        .insert(DEFAULT_ENGINEERS.map(({ id, ...rest }) => rest))
+        .select();
+      if (!seedError && seeded && seeded.length > 0) {
+        return NextResponse.json(seeded);
+      }
+    } catch (e) {
+      console.warn("Auto-seeding engineers failed:", e);
+    }
     return NextResponse.json(DEFAULT_ENGINEERS);
   }
 

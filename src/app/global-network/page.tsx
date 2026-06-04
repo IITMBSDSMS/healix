@@ -81,28 +81,28 @@ const INSTITUTIONS = [
 const ENGINEERING_INSTITUTIONS = [
   {
     name: "IIT Delhi",
-    logo: "https://upload.wikimedia.org/wikipedia/en/f/fd/IIT_Delhi_Logo.svg",
+    logo: "https://logo.clearbit.com/iitd.ac.in",
     fallbackText: "IITD",
     teamName: "Genomics Systems Group",
     specialization: "AI Diagnostics & Genomics Arrays"
   },
   {
     name: "IIT Bombay",
-    logo: "https://upload.wikimedia.org/wikipedia/en/1/1d/Indian_Institute_of_Technology_Bombay_Logo.svg",
+    logo: "https://logo.clearbit.com/iitb.ac.in",
     fallbackText: "IITB",
     teamName: "Sensors & Telemetry Labs",
     specialization: "IoT Systems & Emergency Telemetry"
   },
   {
     name: "IIT Madras",
-    logo: "https://upload.wikimedia.org/wikipedia/en/8/81/Indian_Institute_of_Technology_Madras_Logo.svg",
+    logo: "https://logo.clearbit.com/iitm.ac.in",
     fallbackText: "IITM",
     teamName: "Distributed Hardware Unit",
     specialization: "Edge Node Security & Socket Protocols"
   },
   {
     name: "IISc Bangalore",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f9/Indian_Institute_of_Science_logo.svg/440px-Indian_Institute_of_Science_logo.svg.png",
+    logo: "https://logo.clearbit.com/iisc.ac.in",
     fallbackText: "IISc",
     teamName: "Bio-Computation Center",
     specialization: "Molecular Modeling & Failsafe DBs"
@@ -638,6 +638,7 @@ export default function GlobalNetworkPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {professionals.map((p, idx) => (
                 <GlassCard 
+                  variant="light"
                   key={p.id || idx} 
                   className="p-6 flex flex-col justify-between border border-slate-250/60 bg-white/70 backdrop-blur-md rounded-2xl shadow-md hover:border-[#ea580c]/30 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group duration-300"
                 >
@@ -847,6 +848,7 @@ export default function GlobalNetworkPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {activeEngineers.map((eng, idx) => (
               <GlassCard 
+                variant="light"
                 key={idx} 
                 className="p-6 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-col justify-between min-h-[220px] hover:border-indigo-400 hover:shadow-lg hover:shadow-slate-200/40 transition-all group cursor-pointer"
               >
