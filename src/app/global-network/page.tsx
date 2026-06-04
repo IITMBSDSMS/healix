@@ -643,19 +643,23 @@ export default function GlobalNetworkPage() {
                   className="p-6 flex flex-col justify-between border border-slate-250/60 bg-white/70 backdrop-blur-md rounded-2xl shadow-md hover:border-[#ea580c]/30 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-1 transition-all group duration-300"
                 >
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white overflow-hidden relative shrink-0 shadow-inner">
+                    <div className="flex items-center gap-5">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl border-2 border-slate-200 bg-white overflow-hidden relative shrink-0 shadow-md group-hover:shadow-xl group-hover:border-[#ea580c]/50 transition-all duration-350">
                         {p.photo_url ? (
-                          <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
+                          <img 
+                            src={p.photo_url} 
+                            alt={p.name} 
+                            className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-out" 
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#ea580c] font-black text-xl bg-orange-500/5">{p.name?.[0]}</div>
+                          <div className="w-full h-full flex items-center justify-center text-[#ea580c] font-black text-2xl md:text-3xl bg-orange-500/5 font-mono">{p.name?.[0]}</div>
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-mono text-[#ea580c] uppercase font-bold tracking-wider">{p.role}</p>
-                        <h3 className="text-base font-bold text-slate-800 uppercase truncate font-mono mt-0.5">{p.name}</h3>
-                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-[#ea580c]" /> {p.institution}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] sm:text-xs font-mono text-[#ea580c] uppercase font-bold tracking-wider">{p.role}</p>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase truncate font-mono mt-1">{p.name}</h3>
+                        <p className="text-[10px] sm:text-xs font-mono text-slate-400 uppercase tracking-wide truncate flex items-center gap-1 mt-1">
+                          <MapPin className="w-3 h-3 text-[#ea580c] shrink-0" /> {p.institution}
                         </p>
                       </div>
                     </div>

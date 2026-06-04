@@ -20,7 +20,7 @@ export const DEFAULT_PROFESSIONALS = [
     name: "Dr. Priya Sharma",
     role: "Professor of Genomics",
     institution: "IIT Madras Research Park",
-    photo_url: "https://images.unsplash.com/photo-1594824813573-246434de83fb?q=80&w=400&auto=format&fit=crop",
+    photo_url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
     description: "Academic researcher specializing in CRISPR gene drive modeling and distributed laboratory sequence analysis frameworks for predicting genetic mutation metrics.",
     display_order: 1,
     active: true
