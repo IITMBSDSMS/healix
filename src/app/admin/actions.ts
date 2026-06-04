@@ -7,63 +7,73 @@ import QRCode from "qrcode";
 import { recordAuditLog } from "@/lib/infrastructure/audit";
 
 export async function checkIsAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  
-  // In a real production app, check against an 'admins' table or a custom claim.
-  // For now, we'll use an environment variable for the primary admin.
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (adminEmail && user.email !== adminEmail) return false;
-  
-  return true;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    
+    // In a real production app, check against an 'admins' table or a custom claim.
+    // For now, we'll use an environment variable for the primary admin.
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail && user.email !== adminEmail) return false;
+    
+    return true;
+  } catch (err) {
+    console.error("Exception in checkIsAdmin:", err);
+    return false;
+  }
 }
 
 export async function getAdminData() {
-  const isAdmin = await checkIsAdmin();
-  if (!isAdmin) return { error: "Unauthorized" };
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  const [
-    appsRes, projRes, vehRes, tripRes, 
-    annRes, evtRes, newsRes, photoRes, 
-    progRes, reelsRes, evidenceRes, sosRes, sessionRes, pubsRes, innovatorsRes
-  ] = await Promise.all([
-    supabase.from("biolab_applications").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_projects").select("*").order("created_at", { ascending: false }),
-    supabase.from("vehicles").select("*").order("created_at", { ascending: false }),
-    supabase.from("trips").select("*, vehicles(vehicle_number)").order("created_at", { ascending: false }).limit(20),
-    supabase.from("biolab_announcements").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_events").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_news").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_photos").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_programs").select("*").order("created_at", { ascending: true }),
-    supabase.from("community_reels").select("*").order("created_at", { ascending: false }),
-    supabase.from("evidence_logs").select("*, trips(user_id)").order("created_at", { ascending: false }).limit(10),
-    supabase.from("sos_alerts").select("*").order("created_at", { ascending: false }).limit(10),
-    supabase.from("shesecure_session_photos").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_publications").select("*").order("created_at", { ascending: false }),
-    supabase.from("biolab_innovators").select("*").order("created_at", { ascending: false })
-  ]);
+    const [
+      appsRes, projRes, vehRes, tripRes, 
+      annRes, evtRes, newsRes, photoRes, 
+      progRes, reelsRes, evidenceRes, sosRes, sessionRes, pubsRes, innovatorsRes
+    ] = await Promise.all([
+      supabase.from("biolab_applications").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_projects").select("*").order("created_at", { ascending: false }),
+      supabase.from("vehicles").select("*").order("created_at", { ascending: false }),
+      supabase.from("trips").select("*, vehicles(vehicle_number)").order("created_at", { ascending: false }).limit(20),
+      supabase.from("biolab_announcements").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_events").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_news").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_photos").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_programs").select("*").order("created_at", { ascending: true }),
+      supabase.from("community_reels").select("*").order("created_at", { ascending: false }),
+      supabase.from("evidence_logs").select("*, trips(user_id)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("sos_alerts").select("*").order("created_at", { ascending: false }).limit(10),
+      supabase.from("shesecure_session_photos").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_publications").select("*").order("created_at", { ascending: false }),
+      supabase.from("biolab_innovators").select("*").order("created_at", { ascending: false })
+    ]);
 
-  return {
-    applications: appsRes.data || [],
-    projects: projRes.data || [],
-    vehicles: vehRes.data || [],
-    trips: tripRes.data || [],
-    announcements: annRes.data || [],
-    events: evtRes.data || [],
-    news: newsRes.data || [],
-    photos: photoRes.data || [],
-    programs: progRes.data || [],
-    reels: reelsRes.data || [],
-    evidence: evidenceRes.data || [],
-    sos_alerts: sosRes.data || [],
-    session_photos: sessionRes.data || [],
-    publications: pubsRes.data || [],
-    innovators: innovatorsRes.data || []
-  };
+    return {
+      applications: appsRes.data || [],
+      projects: projRes.data || [],
+      vehicles: vehRes.data || [],
+      trips: tripRes.data || [],
+      announcements: annRes.data || [],
+      events: evtRes.data || [],
+      news: newsRes.data || [],
+      photos: photoRes.data || [],
+      programs: progRes.data || [],
+      reels: reelsRes.data || [],
+      evidence: evidenceRes.data || [],
+      sos_alerts: sosRes.data || [],
+      session_photos: sessionRes.data || [],
+      publications: pubsRes.data || [],
+      innovators: innovatorsRes.data || []
+    };
+  } catch (err: any) {
+    console.error("Exception in getAdminData:", err);
+    return { error: `Server error: ${err.message || String(err)}` };
+  }
 }
 
 // === BioLabs Admin Actions ===

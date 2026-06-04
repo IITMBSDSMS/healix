@@ -344,45 +344,42 @@ export default function UnifiedAdminDashboard() {
         setSurakshaData(surakshaRes);
       }
 
+      // Safe helper to fetch JSON lists
+      const fetchSafeList = async (url: string) => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+          const json = await res.json();
+          return Array.isArray(json) ? json : [];
+        } catch (err) {
+          console.warn(`Failed to load data from ${url}:`, err);
+          return [];
+        }
+      };
+
       // Load corporate advisors/mentors
-      const corpRes = await fetch("/api/mentors?all=true");
-      const corpData = await corpRes.json();
-      setCorpMentors(Array.isArray(corpData) ? corpData : []);
+      setCorpMentors(await fetchSafeList("/api/mentors?all=true"));
 
       // Load engineering team
-      const teamRes = await fetch("/api/team?all=true");
-      const teamData = await teamRes.json();
-      setTeamMembers(Array.isArray(teamData) ? teamData : []);
+      setTeamMembers(await fetchSafeList("/api/team?all=true"));
 
       // Load podcasts
-      const podcastRes = await fetch("/api/podcasts?all=true");
-      const podcastData = await podcastRes.json();
-      setPodcasts(Array.isArray(podcastData) ? podcastData : []);
+      setPodcasts(await fetchSafeList("/api/podcasts?all=true"));
 
       // Load brands
-      const brandsRes = await fetch("/api/brands?all=true");
-      const brandsData = await brandsRes.json();
-      setBrandsList(Array.isArray(brandsData) ? brandsData : []);
+      setBrandsList(await fetchSafeList("/api/brands?all=true"));
 
       // Load founders
-      const foundersRes = await fetch("/api/founders?all=true");
-      const foundersData = await foundersRes.json();
-      setFoundersList(Array.isArray(foundersData) ? foundersData : []);
+      setFoundersList(await fetchSafeList("/api/founders?all=true"));
 
       // Load global professionals
-      const professionalsRes = await fetch("/api/professionals?all=true");
-      const professionalsData = await professionalsRes.json();
-      setProfessionalsList(Array.isArray(professionalsData) ? professionalsData : []);
+      setProfessionalsList(await fetchSafeList("/api/professionals?all=true"));
 
       // Load global facilities
-      const facilitiesRes = await fetch("/api/facilities?all=true");
-      const facilitiesData = await facilitiesRes.json();
-      setFacilitiesList(Array.isArray(facilitiesData) ? facilitiesData : []);
+      setFacilitiesList(await fetchSafeList("/api/facilities?all=true"));
 
       // Load global engineers
-      const engineersRes = await fetch("/api/engineers?all=true");
-      const engineersData = await engineersRes.json();
-      setEngineersList(Array.isArray(engineersData) ? engineersData : []);
+      setEngineersList(await fetchSafeList("/api/engineers?all=true"));
 
 
 

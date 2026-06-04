@@ -7,26 +7,31 @@ import QRCode from "qrcode";
 import { Resend } from "resend";
 
 export async function getSurakshaData() {
-  const isAdmin = await checkIsAdmin();
-  if (!isAdmin) return { error: "Unauthorized" };
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  const [devicesRes, telemetryRes, failsafeRes, tamperRes, incidentsRes] = await Promise.all([
-    supabase.from("iot_devices").select("*").order("created_at", { ascending: false }),
-    supabase.from("iot_telemetry").select("*").order("timestamp", { ascending: false }).limit(50),
-    supabase.from("failsafe_events").select("*").order("timestamp", { ascending: false }).limit(20),
-    supabase.from("tamper_logs").select("*").order("timestamp", { ascending: false }).limit(20),
-    supabase.from("incident_reports").select("*").order("timestamp", { ascending: false }).limit(20),
-  ]);
+    const [devicesRes, telemetryRes, failsafeRes, tamperRes, incidentsRes] = await Promise.all([
+      supabase.from("iot_devices").select("*").order("created_at", { ascending: false }),
+      supabase.from("iot_telemetry").select("*").order("timestamp", { ascending: false }).limit(50),
+      supabase.from("failsafe_events").select("*").order("timestamp", { ascending: false }).limit(20),
+      supabase.from("tamper_logs").select("*").order("timestamp", { ascending: false }).limit(20),
+      supabase.from("incident_reports").select("*").order("timestamp", { ascending: false }).limit(20),
+    ]);
 
-  return {
-    devices: devicesRes.data || [],
-    telemetry: telemetryRes.data || [],
-    failsafeEvents: failsafeRes.data || [],
-    tamperLogs: tamperRes.data || [],
-    incidents: incidentsRes.data || [],
-  };
+    return {
+      devices: devicesRes.data || [],
+      telemetry: telemetryRes.data || [],
+      failsafeEvents: failsafeRes.data || [],
+      tamperLogs: tamperRes.data || [],
+      incidents: incidentsRes.data || [],
+    };
+  } catch (err: any) {
+    console.error("Exception in getSurakshaData:", err);
+    return { error: `Suraksha server error: ${err.message || String(err)}` };
+  }
 }
 
 export async function createVirtualDevice(formData: FormData) {
