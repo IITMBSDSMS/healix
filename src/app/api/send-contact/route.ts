@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
     // Sender is official@healix-technologies.com
     const SENDER_EMAIL = 'Healix Technologies <official@healix-technologies.com>';
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'official@healix-technologies.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
 
     console.log(`[EMAIL SENDING] Initiating concurrent email dispatch. From: ${SENDER_EMAIL}, Admin To: ${ADMIN_EMAIL}, User To: ${email}`);
 
