@@ -118,6 +118,29 @@ const EMPTY_PROFESSIONAL = {
   active: true,
 };
 
+const EMPTY_FACILITY = {
+  name: "",
+  city: "",
+  facility: "",
+  image_url: "",
+  description: "",
+  mentors: [] as any[],
+  projects: [] as string[],
+  display_order: 0,
+  active: true,
+};
+
+const EMPTY_ENGINEER = {
+  name: "",
+  logo_url: "",
+  fallback_text: "",
+  team_name: "",
+  specialization: "",
+  display_order: 0,
+  active: true,
+};
+
+
 
 export default function UnifiedAdminDashboard() {
   const router = useRouter();
@@ -212,6 +235,28 @@ export default function UnifiedAdminDashboard() {
   const [professionalSubmitting, setProfessionalSubmitting] = useState(false);
   const [professionalUploadingFor, setProfessionalUploadingFor] = useState<string | null>(null);
   const [professionalDbAlert, setProfessionalDbAlert] = useState(false);
+
+  // ─── 3.10 GLOBAL NETWORK FACILITIES & ENGINEERS CRUD STATES ───
+  const [facilitiesList, setFacilitiesList] = useState<any[]>([]);
+  const [showFacilityForm, setShowFacilityForm] = useState(false);
+  const [editingFacilityId, setEditingFacilityId] = useState<string | null>(null);
+  const [facilityForm, setFacilityForm] = useState<any>(EMPTY_FACILITY);
+  const [facilitySubmitting, setFacilitySubmitting] = useState(false);
+  const [facilityUploadingFor, setFacilityUploadingFor] = useState<string | null>(null);
+  const [mentorUploadingFor, setMentorUploadingFor] = useState<{facilityId: string, index: number} | null>(null);
+  const [facilityDbAlert, setFacilityDbAlert] = useState(false);
+
+  const [engineersList, setEngineersList] = useState<any[]>([]);
+  const [showEngineerForm, setShowEngineerForm] = useState(false);
+  const [editingEngineerId, setEditingEngineerId] = useState<string | null>(null);
+  const [engineerForm, setEngineerForm] = useState<any>(EMPTY_ENGINEER);
+  const [engineerSubmitting, setEngineerSubmitting] = useState(false);
+  const [engineerUploadingFor, setEngineerUploadingFor] = useState<string | null>(null);
+  const [engineerDbAlert, setEngineerDbAlert] = useState(false);
+
+  // Active sub-tab under network: "professionals" | "facilities" | "engineers"
+  const [networkSubTab, setNetworkSubTab] = useState<"professionals" | "facilities" | "engineers">("professionals");
+
 
 
   // ─── 4. BRANDING PHOTO DRAG-DROP STATES ───
@@ -328,6 +373,17 @@ export default function UnifiedAdminDashboard() {
       const professionalsRes = await fetch("/api/professionals?all=true");
       const professionalsData = await professionalsRes.json();
       setProfessionalsList(Array.isArray(professionalsData) ? professionalsData : []);
+
+      // Load global facilities
+      const facilitiesRes = await fetch("/api/facilities?all=true");
+      const facilitiesData = await facilitiesRes.json();
+      setFacilitiesList(Array.isArray(facilitiesData) ? facilitiesData : []);
+
+      // Load global engineers
+      const engineersRes = await fetch("/api/engineers?all=true");
+      const engineersData = await engineersRes.json();
+      setEngineersList(Array.isArray(engineersData) ? engineersData : []);
+
 
 
     } catch (e: any) {
@@ -1544,6 +1600,329 @@ export default function UnifiedAdminDashboard() {
     const newOrder = dir === "up" ? p.display_order - 1 : p.display_order + 1;
     try {
       const res = await fetch(`/api/professionals/${p.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  // ─── GLOBAL NETWORK FACILITIES CRUD HANDLERS ───
+  const uploadMentorPhotoInForm = async (file: File, index: number) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("facilityId", editingFacilityId || "temp");
+      fd.append("type", "mentor");
+      fd.append("mentorIndex", String(index));
+      const res = await fetch("/api/facilities/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setFacilityForm((f: any) => {
+          const updated = [...(f.mentors || [])];
+          updated[index] = { ...updated[index], photo: data.url, photo_url: data.url };
+          return { ...f, mentors: updated };
+        });
+        showToast("Mentor photo uploaded!");
+      } else {
+        showToast(data.error || "Upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    }
+  };
+
+  const openFacilityAddForm = () => {
+    setEditingFacilityId(null);
+    setFacilityForm({ ...EMPTY_FACILITY, display_order: facilitiesList.length });
+    setShowFacilityForm(true);
+    setFacilityDbAlert(false);
+  };
+
+  const openFacilityEditForm = (f: any) => {
+    setEditingFacilityId(f.id);
+    setFacilityForm({
+      name: f.name || "",
+      city: f.city || "",
+      facility: f.facility || "",
+      image_url: f.image_url || "",
+      description: f.description || "",
+      mentors: Array.isArray(f.mentors) ? f.mentors : [],
+      projects: Array.isArray(f.projects) ? f.projects : [],
+      display_order: f.display_order || 0,
+      active: f.active ?? true
+    });
+    setShowFacilityForm(true);
+    setFacilityDbAlert(false);
+  };
+
+  const handleFacilitySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFacilitySubmitting(true);
+    try {
+      const method = editingFacilityId ? "PUT" : "POST";
+      const url = editingFacilityId ? `/api/facilities/${editingFacilityId}` : "/api/facilities";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(facilityForm),
+      });
+      
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          setFacilityDbAlert(true);
+          throw new Error(resData.message || "Facilities table does not exist.");
+        }
+        throw new Error(resData.error || "Failed to save facility details");
+      }
+      
+      showToast(editingFacilityId ? "Facility updated!" : "New facility registered!");
+      setShowFacilityForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save facility details", "err");
+    } finally {
+      setFacilitySubmitting(false);
+    }
+  };
+
+  const handleFacilityDelete = async (id: string, name: string) => {
+    if (id.startsWith("f")) {
+      showToast("Cannot delete default facilities from static fallback. Run SQL schema first.", "err");
+      return;
+    }
+    if (!confirm(`Delete facility "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/facilities/${id}`, { method: "DELETE" });
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          showToast("Facilities table does not exist. Run extended SQL schema first.", "err");
+          return;
+        }
+        throw new Error(resData.error || "Failed to delete facility");
+      }
+      showToast(`"${name}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleFacilityActive = async (f: any) => {
+    if (f.id.startsWith("f")) {
+      showToast("Cannot toggle fallback facilities. Run SQL schema first.", "err");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/facilities/${f.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !f.active }),
+      });
+      if (!res.ok) throw new Error("Failed to update facility state");
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Toggle failed", "err");
+    }
+  };
+
+  const handleFacilityPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string, type: "campus" | "mentor", mentorIndex?: number) => {
+    e.preventDefault();
+    if (id.startsWith("f")) {
+      showToast("Cannot drop photos for fallback facilities. Run SQL schema first.", "err");
+      return;
+    }
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setFacilityUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("facilityId", id);
+      fd.append("type", type);
+      if (type === "mentor" && mentorIndex !== undefined) {
+        fd.append("mentorIndex", String(mentorIndex));
+      }
+      const res = await fetch("/api/facilities/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Facility photo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setFacilityUploadingFor(null);
+    }
+  };
+
+  const moveFacilityOrder = async (f: any, dir: "up" | "down") => {
+    if (f.id.startsWith("f")) {
+      showToast("Reordering is only enabled for database records. Run SQL schema first.", "err");
+      return;
+    }
+    const newOrder = dir === "up" ? f.display_order - 1 : f.display_order + 1;
+    try {
+      const res = await fetch(`/api/facilities/${f.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+
+  // ─── GLOBAL NETWORK ENGINEERS CRUD HANDLERS ───
+  const openEngineerAddForm = () => {
+    setEditingEngineerId(null);
+    setEngineerForm({ ...EMPTY_ENGINEER, display_order: engineersList.length });
+    setShowEngineerForm(true);
+    setEngineerDbAlert(false);
+  };
+
+  const openEngineerEditForm = (e: any) => {
+    setEditingEngineerId(e.id);
+    setEngineerForm({
+      name: e.name || "",
+      logo_url: e.logo_url || "",
+      fallback_text: e.fallback_text || "",
+      team_name: e.team_name || "",
+      specialization: e.specialization || "",
+      display_order: e.display_order || 0,
+      active: e.active ?? true
+    });
+    setShowEngineerForm(true);
+    setEngineerDbAlert(false);
+  };
+
+  const handleEngineerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEngineerSubmitting(true);
+    try {
+      const method = editingEngineerId ? "PUT" : "POST";
+      const url = editingEngineerId ? `/api/engineers/${editingEngineerId}` : "/api/engineers";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(engineerForm),
+      });
+      
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          setEngineerDbAlert(true);
+          throw new Error(resData.message || "Engineers table does not exist.");
+        }
+        throw new Error(resData.error || "Failed to save engineer details");
+      }
+      
+      showToast(editingEngineerId ? "Engineer node updated!" : "New engineer node registered!");
+      setShowEngineerForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save engineer details", "err");
+    } finally {
+      setEngineerSubmitting(false);
+    }
+  };
+
+  const handleEngineerDelete = async (id: string, name: string) => {
+    if (id.startsWith("e")) {
+      showToast("Cannot delete default engineers from static fallback. Run SQL schema first.", "err");
+      return;
+    }
+    if (!confirm(`Delete engineering node for "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/engineers/${id}`, { method: "DELETE" });
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          showToast("Engineers table does not exist. Run extended SQL schema first.", "err");
+          return;
+        }
+        throw new Error(resData.error || "Failed to delete engineer node");
+      }
+      showToast(`"${name}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleEngineerActive = async (e: any) => {
+    if (e.id.startsWith("e")) {
+      showToast("Cannot toggle fallback engineering nodes. Run SQL schema first.", "err");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/engineers/${e.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !e.active }),
+      });
+      if (!res.ok) throw new Error("Failed to update engineer node state");
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Toggle failed", "err");
+    }
+  };
+
+  const handleEngineerLogoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.preventDefault();
+    if (id.startsWith("e")) {
+      showToast("Cannot drop logos for fallback engineers. Run SQL schema first.", "err");
+      return;
+    }
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    setEngineerUploadingFor(id);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("engineerId", id);
+      const res = await fetch("/api/engineers/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast("Institute logo uploaded and synced!");
+        fetchData();
+      } else {
+        showToast(data.error ?? "Logo upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setEngineerUploadingFor(null);
+    }
+  };
+
+  const moveEngineerOrder = async (eng: any, dir: "up" | "down") => {
+    if (eng.id.startsWith("e")) {
+      showToast("Reordering is only enabled for database records. Run SQL schema first.", "err");
+      return;
+    }
+    const newOrder = dir === "up" ? eng.display_order - 1 : eng.display_order + 1;
+    try {
+      const res = await fetch(`/api/engineers/${eng.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ display_order: newOrder }),
@@ -2880,105 +3259,360 @@ export default function UnifiedAdminDashboard() {
             {/* GLOBAL NETWORK TAB */}
             {activeTab === "network" && (
               <motion.div key="network" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
-                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
                   <div>
                     <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Global Network</h2>
-                    <p className="text-white/50 text-sm">Manage the healthcare professionals appearing on the Global Network page.</p>
+                    <p className="text-white/50 text-sm">Manage dynamic modules appearing on the Global Network page.</p>
                   </div>
-                  <button onClick={openProfessionalAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
-                    <Plus className="w-4 h-4" /> Add Professional
-                  </button>
+                  
+                  {/* Sub-tab selection */}
+                  <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl max-w-fit shrink-0">
+                    <button
+                      onClick={() => setNetworkSubTab("professionals")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
+                        networkSubTab === "professionals" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Professionals
+                    </button>
+                    <button
+                      onClick={() => setNetworkSubTab("facilities")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
+                        networkSubTab === "facilities" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Facilities
+                    </button>
+                    <button
+                      onClick={() => setNetworkSubTab("engineers")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
+                        networkSubTab === "engineers" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Engineers
+                    </button>
+                  </div>
                 </div>
 
-                {professionalsList.some(p => String(p.id).startsWith("p")) && (
-                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
-                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold uppercase mb-1">Database Schema Notice</p>
-                      <p>Currently showing static fallback professionals. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management (including custom photo uploading, reordering, and permanent deletion).</p>
+                {/* Sub Tab Content */}
+                {networkSubTab === "professionals" && (
+                  <>
+                    <div className="flex justify-end mb-4">
+                      <button onClick={openProfessionalAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Professional
+                      </button>
                     </div>
-                  </div>
+
+                    {professionalsList.some(p => String(p.id).startsWith("p")) && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                          <p>Currently showing static fallback professionals. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management (including custom photo uploading, reordering, and permanent deletion).</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {professionalsList.map((p) => {
+                        const isFallback = String(p.id).startsWith("p");
+                        return (
+                          <GlassCard key={p.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${p.active ? "opacity-100" : "opacity-55"}`}>
+                            <div className="space-y-4">
+                              <div className="flex gap-4">
+                                <div 
+                                  className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                                    professionalUploadingFor === p.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                                  }`}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => handleProfessionalPhotoDrop(e, p.id)}
+                                >
+                                  {p.photo_url ? (
+                                    <Image src={p.photo_url} alt={p.name} fill className="object-cover object-top" unoptimized />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{p.name?.[0]}</div>
+                                  )}
+                                  {!isFallback && (
+                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          setProfessionalUploadingFor(p.id);
+                                          const fd = new FormData();
+                                          fd.append("file", file);
+                                          fd.append("professionalId", p.id);
+                                          fetch("/api/professionals/upload", { method: "POST", body: fd })
+                                            .then(r => r.json())
+                                            .then(data => {
+                                              if (data.url) {
+                                                showToast("Professional photo uploaded and synced!");
+                                                fetchData();
+                                              } else {
+                                                showToast(data.error ?? "Photo upload failed", "err");
+                                              }
+                                            })
+                                            .catch(() => showToast("Upload failed", "err"))
+                                            .finally(() => setProfessionalUploadingFor(null));
+                                        }
+                                      }} />
+                                    </label>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{p.role}</p>
+                                  <h3 className="text-base font-bold text-white truncate">{p.name || "Unnamed"}</h3>
+                                  <p className="text-[10px] text-gray-400 font-mono truncate">{p.institution}</p>
+                                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                                    {isFallback ? "Static Fallback" : "Live DB"}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative">
+                                <p className="text-xs text-gray-400 font-sans line-clamp-4">
+                                  {p.description || "No description provided."}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                              <div className="flex gap-1">
+                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                              </div>
+                              <div className="flex gap-1.5">
+                                <button disabled={isFallback} onClick={() => toggleProfessionalActive(p)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${p.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                                  {p.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                </button>
+                                <button onClick={() => openProfessionalEditForm(p)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                                <button disabled={isFallback} onClick={() => handleProfessionalDelete(p.id, p.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                              </div>
+                            </div>
+                          </GlassCard>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {professionalsList.map((p) => {
-                    const isFallback = String(p.id).startsWith("p");
-                    return (
-                      <GlassCard key={p.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${p.active ? "opacity-100" : "opacity-55"}`}>
-                        <div className="space-y-4">
-                          <div className="flex gap-4">
-                            <div 
-                              className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
-                                professionalUploadingFor === p.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
-                              }`}
-                              onDragOver={(e) => e.preventDefault()}
-                              onDrop={(e) => handleProfessionalPhotoDrop(e, p.id)}
-                            >
-                              {p.photo_url ? (
-                                <Image src={p.photo_url} alt={p.name} fill className="object-cover object-top" unoptimized />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{p.name?.[0]}</div>
-                              )}
-                              {!isFallback && (
-                                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
-                                  <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
-                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      setProfessionalUploadingFor(p.id);
-                                      const fd = new FormData();
-                                      fd.append("file", file);
-                                      fd.append("professionalId", p.id);
-                                      fetch("/api/professionals/upload", { method: "POST", body: fd })
-                                        .then(r => r.json())
-                                        .then(data => {
-                                          if (data.url) {
-                                            showToast("Professional photo uploaded and synced!");
-                                            fetchData();
-                                          } else {
-                                            showToast(data.error ?? "Photo upload failed", "err");
-                                          }
-                                        })
-                                        .catch(() => showToast("Upload failed", "err"))
-                                        .finally(() => setProfessionalUploadingFor(null));
-                                    }
-                                  }} />
-                                </label>
+                {networkSubTab === "facilities" && (
+                  <>
+                    <div className="flex justify-end mb-4">
+                      <button onClick={openFacilityAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Facility
+                      </button>
+                    </div>
+
+                    {facilitiesList.some(f => String(f.id).startsWith("f")) && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                          <p>Currently showing static fallback facilities. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_extended_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {facilitiesList.map((f) => {
+                        const isFallback = String(f.id).startsWith("f");
+                        return (
+                          <GlassCard key={f.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${f.active ? "opacity-100" : "opacity-55"}`}>
+                            <div className="space-y-4">
+                              <div className="flex gap-4">
+                                <div 
+                                  className={`w-24 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                                    facilityUploadingFor === f.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                                  }`}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => handleFacilityPhotoDrop(e, f.id, "campus")}
+                                >
+                                  {f.image_url ? (
+                                    <Image src={f.image_url} alt={f.name} fill className="object-cover" unoptimized />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-700 text-xl font-bold bg-[#111]">No Image</div>
+                                  )}
+                                  {!isFallback && (
+                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400" /> Drop Campus Photo
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          setFacilityUploadingFor(f.id);
+                                          const fd = new FormData();
+                                          fd.append("file", file);
+                                          fd.append("facilityId", f.id);
+                                          fd.append("type", "campus");
+                                          fetch("/api/facilities/upload", { method: "POST", body: fd })
+                                            .then(r => r.json())
+                                            .then(data => {
+                                              if (data.url) {
+                                                showToast("Campus image uploaded!");
+                                                fetchData();
+                                              } else {
+                                                showToast(data.error ?? "Upload failed", "err");
+                                              }
+                                            })
+                                            .catch(() => showToast("Upload failed", "err"))
+                                            .finally(() => setFacilityUploadingFor(null));
+                                        }
+                                      }} />
+                                    </label>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{f.city}</p>
+                                  <h3 className="text-base font-bold text-white truncate">{f.name || "Unnamed"}</h3>
+                                  <p className="text-[10px] text-gray-400 font-mono truncate">{f.facility}</p>
+                                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                                    {isFallback ? "Static Fallback" : "Live DB"}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <p className="text-xs text-gray-400 font-sans line-clamp-2">
+                                {f.description}
+                              </p>
+
+                              {/* Mentors small summary */}
+                              {f.mentors && f.mentors.length > 0 && (
+                                <div className="space-y-1.5 border-t border-white/5 pt-3">
+                                  <p className="text-[8px] font-mono font-bold text-orange-400 uppercase tracking-wider">Mentors ({f.mentors.length})</p>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {f.mentors.map((m: any, idx: number) => (
+                                      <div key={idx} className="flex items-center gap-1.5 bg-white/5 border border-white/5 px-2 py-1 rounded-lg text-[10px]">
+                                        <div className="w-4 h-4 rounded-full overflow-hidden relative bg-zinc-800">
+                                          {m.photo_url || m.photo ? (
+                                            <Image src={m.photo_url || m.photo} alt={m.name} fill className="object-cover" unoptimized />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-[7px] text-gray-500 font-bold bg-[#111]">{m.name?.[0]}</div>
+                                          )}
+                                        </div>
+                                        <span className="text-zinc-300 max-w-[80px] truncate">{m.name}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               )}
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{p.role}</p>
-                              <h3 className="text-base font-bold text-white truncate">{p.name || "Unnamed"}</h3>
-                              <p className="text-[10px] text-gray-400 font-mono truncate">{p.institution}</p>
-                              <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
-                                {isFallback ? "Static Fallback" : "Live DB"}
-                              </span>
+                            
+                            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                              <div className="flex gap-1">
+                                <button disabled={isFallback} onClick={() => moveFacilityOrder(f, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                                <button disabled={isFallback} onClick={() => moveFacilityOrder(f, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                              </div>
+                              <div className="flex gap-1.5">
+                                <button disabled={isFallback} onClick={() => toggleFacilityActive(f)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${f.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                                  {f.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                </button>
+                                <button onClick={() => openFacilityEditForm(f)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                                <button disabled={isFallback} onClick={() => handleFacilityDelete(f.id, f.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                              </div>
                             </div>
-                          </div>
-                          <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative">
-                            <p className="text-xs text-gray-400 font-sans line-clamp-4">
-                              {p.description || "No description provided."}
-                            </p>
-                          </div>
+                          </GlassCard>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {networkSubTab === "engineers" && (
+                  <>
+                    <div className="flex justify-end mb-4">
+                      <button onClick={openEngineerAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Node
+                      </button>
+                    </div>
+
+                    {engineersList.some(e => String(e.id).startsWith("e")) && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                          <p>Currently showing static fallback engineering nodes. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_extended_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic edits.</p>
                         </div>
-                        
-                        <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                          <div className="flex gap-1">
-                            <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
-                            <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <button disabled={isFallback} onClick={() => toggleProfessionalActive(p)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${p.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
-                              {p.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                            </button>
-                            <button onClick={() => openProfessionalEditForm(p)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
-                            <button disabled={isFallback} onClick={() => handleProfessionalDelete(p.id, p.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
-                          </div>
-                        </div>
-                      </GlassCard>
-                    );
-                  })}
-                </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {engineersList.map((eng) => {
+                        const isFallback = String(eng.id).startsWith("e");
+                        return (
+                          <GlassCard key={eng.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${eng.active ? "opacity-100" : "opacity-55"}`}>
+                            <div className="space-y-4">
+                              <div className="flex gap-4">
+                                <div 
+                                  className={`w-16 h-16 rounded-xl overflow-hidden relative border shrink-0 bg-white group/avatar cursor-pointer flex items-center justify-center p-1 transition-all duration-300 ${
+                                    engineerUploadingFor === eng.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                                  }`}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => handleEngineerLogoDrop(e, eng.id)}
+                                >
+                                  {eng.logo_url || eng.logo ? (
+                                    <Image src={eng.logo_url || eng.logo} alt={eng.name} fill className="object-contain p-1" unoptimized />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-700 text-lg font-bold bg-[#111]">{eng.fallback_text || eng.fallbackText}</div>
+                                  )}
+                                  {!isFallback && (
+                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400" /> Drop Logo
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          setEngineerUploadingFor(eng.id);
+                                          const fd = new FormData();
+                                          fd.append("file", file);
+                                          fd.append("engineerId", eng.id);
+                                          fetch("/api/engineers/upload", { method: "POST", body: fd })
+                                            .then(r => r.json())
+                                            .then(data => {
+                                              if (data.url) {
+                                                showToast("Logo image uploaded!");
+                                                fetchData();
+                                              } else {
+                                                showToast(data.error ?? "Upload failed", "err");
+                                              }
+                                            })
+                                            .catch(() => showToast("Upload failed", "err"))
+                                            .finally(() => setEngineerUploadingFor(null));
+                                        }
+                                      }} />
+                                    </label>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <h3 className="text-base font-bold text-white truncate">{eng.name || "Unnamed"}</h3>
+                                  <p className="text-[10px] text-orange-400 font-mono truncate">{eng.team_name || eng.teamName}</p>
+                                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                                    {isFallback ? "Static Fallback" : "Live DB"}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <p className="text-xs text-gray-400 font-sans leading-relaxed">
+                                {eng.specialization}
+                              </p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                              <div className="flex gap-1">
+                                <button disabled={isFallback} onClick={() => moveEngineerOrder(eng, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                                <button disabled={isFallback} onClick={() => moveEngineerOrder(eng, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                              </div>
+                              <div className="flex gap-1.5">
+                                <button disabled={isFallback} onClick={() => toggleEngineerActive(eng)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${eng.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                                  {eng.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                </button>
+                                <button onClick={() => openEngineerEditForm(eng)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                                <button disabled={isFallback} onClick={() => handleEngineerDelete(eng.id, eng.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                              </div>
+                            </div>
+                          </GlassCard>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
 
@@ -4130,6 +4764,348 @@ export default function UnifiedAdminDashboard() {
         )}
       </AnimatePresence>
 
+      {/* Global Network Facilities Modal */}
+      <AnimatePresence>
+        {showFacilityForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowFacilityForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingFacilityId ? "Edit Facility" : "Add Facility"}</h2>
+                <button onClick={() => setShowFacilityForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              {facilityDbAlert && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-red-200 text-xs leading-relaxed font-mono">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold uppercase mb-1">Database Table Missing</p>
+                    <p>The database table 'global_facilities' is missing in Supabase. You must run `supabase_global_network_extended_schema.sql` in your Supabase SQL editor to create the table and enable dynamic database changes.</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleFacilitySubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Facility Name *</label>
+                    <input required value={facilityForm.name} onChange={e => setFacilityForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="e.g. IIT Madras" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">City *</label>
+                    <input required value={facilityForm.city} onChange={e => setFacilityForm((f: any) => ({ ...f, city: e.target.value }))} placeholder="e.g. Chennai" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Facility Hub/Sub-Name *</label>
+                  <input required value={facilityForm.facility} onChange={e => setFacilityForm((f: any) => ({ ...f, facility: e.target.value }))} placeholder="e.g. Clinical Systems Research Lab" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Projects (Comma-separated)</label>
+                  <input 
+                    value={facilityForm.projects?.join(", ")} 
+                    onChange={e => setFacilityForm((f: any) => ({ ...f, projects: e.target.value.split(",").map(p => p.trim()) }))} 
+                    placeholder="e.g. Cardio Diagnostics AI, Low-latency SOS Integration" 
+                    className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Campus Image URL</label>
+                  <input value={facilityForm.image_url} onChange={e => setFacilityForm((f: any) => ({ ...f, image_url: e.target.value }))} placeholder="https://..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div 
+                  className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-6 flex flex-col items-center justify-center relative transition-all duration-300"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      const id = editingFacilityId || "temp";
+                      if (String(id).startsWith("f")) {
+                        showToast("Cannot upload photo for static fallback facility. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("facilityId", id);
+                      fd.append("type", "campus");
+                      fetch("/api/facilities/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setFacilityForm((f: any) => ({ ...f, image_url: data.url }));
+                            showToast("Campus backdrop uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Campus Photo here to upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const id = editingFacilityId || "temp";
+                      if (String(id).startsWith("f")) {
+                        showToast("Cannot upload photo for static fallback facility. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("facilityId", id);
+                      fd.append("type", "campus");
+                      fetch("/api/facilities/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setFacilityForm((f: any) => ({ ...f, image_url: data.url }));
+                            showToast("Campus backdrop uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Facility Description *</label>
+                  <textarea rows={3} required value={facilityForm.description} onChange={e => setFacilityForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="Enter details about facility diagnostics, telemetry hardware or edge modules..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                {/* Nested Mentors Section */}
+                <div className="border-t border-white/10 pt-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono text-orange-400 uppercase tracking-wider font-bold">Affiliated Mentors ({facilityForm.mentors?.length || 0})</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setFacilityForm((f: any) => ({ ...f, mentors: [...(f.mentors || []), { name: "", role: "", photo: "", photo_url: "" }] }))}
+                      className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-mono font-bold text-white uppercase tracking-wider"
+                    >
+                      + Add Mentor
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {facilityForm.mentors?.map((mentor: any, idx: number) => (
+                      <div key={idx} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl space-y-3 relative group">
+                        <button 
+                          type="button" 
+                          onClick={() => setFacilityForm((f: any) => ({ ...f, mentors: f.mentors.filter((_: any, i: number) => i !== idx) }))}
+                          className="absolute top-3 right-3 text-gray-500 hover:text-red-400 text-xs font-mono uppercase"
+                        >
+                          Remove
+                        </button>
+                        
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className={`w-14 h-14 rounded-lg overflow-hidden border border-white/10 relative bg-zinc-900 flex items-center justify-center shrink-0 cursor-pointer ${
+                              mentorUploadingFor?.facilityId === (editingFacilityId || "temp") && mentorUploadingFor?.index === idx ? "border-orange-500 scale-105" : ""
+                            }`}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const file = e.dataTransfer.files?.[0];
+                              if (file) {
+                                uploadMentorPhotoInForm(file, idx);
+                              }
+                            }}
+                          >
+                            {mentor.photo_url || mentor.photo ? (
+                              <Image src={mentor.photo_url || mentor.photo} alt={mentor.name || "Mentor"} fill className="object-cover" unoptimized />
+                            ) : (
+                              <span className="text-[9px] text-zinc-500 font-mono text-center">Drop Photo</span>
+                            )}
+                            <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                uploadMentorPhotoInForm(file, idx);
+                              }
+                            }} />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 flex-1">
+                            <div>
+                              <input 
+                                required 
+                                value={mentor.name} 
+                                onChange={e => {
+                                  const updated = [...facilityForm.mentors];
+                                  updated[idx] = { ...updated[idx], name: e.target.value };
+                                  setFacilityForm((f: any) => ({ ...f, mentors: updated }));
+                                }} 
+                                placeholder="Mentor Name" 
+                                className="w-full bg-[#050505] border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none" 
+                              />
+                            </div>
+                            <div>
+                              <input 
+                                required 
+                                value={mentor.role} 
+                                onChange={e => {
+                                  const updated = [...facilityForm.mentors];
+                                  updated[idx] = { ...updated[idx], role: e.target.value };
+                                  setFacilityForm((f: any) => ({ ...f, mentors: updated }));
+                                }} 
+                                placeholder="Role / Specialty" 
+                                className="w-full bg-[#050505] border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none" 
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowFacilityForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={facilitySubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {facilitySubmitting ? "Saving..." : editingFacilityId ? "Save Changes" : "Create Facility"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Network Engineers Modal */}
+      <AnimatePresence>
+        {showEngineerForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowEngineerForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingEngineerId ? "Edit Engineer Node" : "Add Engineer Node"}</h2>
+                <button onClick={() => setShowEngineerForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              {engineerDbAlert && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-red-200 text-xs leading-relaxed font-mono">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold uppercase mb-1">Database Table Missing</p>
+                    <p>The database table 'global_engineers' is missing in Supabase. You must run `supabase_global_network_extended_schema.sql` in your Supabase SQL editor to create the table and enable dynamic database changes.</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleEngineerSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Institution Name *</label>
+                    <input required value={engineerForm.name} onChange={e => setEngineerForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="e.g. IIT Delhi" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Fallback Acronym *</label>
+                    <input required value={engineerForm.fallback_text} onChange={e => setEngineerForm((f: any) => ({ ...f, fallback_text: e.target.value }))} placeholder="e.g. IITD" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Research Group / Team Name *</label>
+                  <input required value={engineerForm.team_name} onChange={e => setEngineerForm((f: any) => ({ ...f, team_name: e.target.value }))} placeholder="e.g. Genomics Systems Group" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Logo Image URL</label>
+                  <input value={engineerForm.logo_url} onChange={e => setEngineerForm((f: any) => ({ ...f, logo_url: e.target.value }))} placeholder="https://..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div 
+                  className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-8 flex flex-col items-center justify-center relative transition-all duration-300"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      const id = editingEngineerId || "temp";
+                      if (String(id).startsWith("e")) {
+                        showToast("Cannot upload logo for static fallback node. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("engineerId", id);
+                      fetch("/api/engineers/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setEngineerForm((f: any) => ({ ...f, logo_url: data.url }));
+                            showToast("Node logo uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Logo Image Here to Upload</p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
+                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const id = editingEngineerId || "temp";
+                      if (String(id).startsWith("e")) {
+                        showToast("Cannot upload logo for static fallback node. Run SQL schema first.", "err");
+                        return;
+                      }
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("engineerId", id);
+                      fetch("/api/engineers/upload", { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(data => {
+                          if (data.url) {
+                            setEngineerForm((f: any) => ({ ...f, logo_url: data.url }));
+                            showToast("Node logo uploaded successfully!");
+                          } else {
+                            showToast(data.error || "Upload failed", "err");
+                          }
+                        });
+                    }
+                  }} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Specialization / Stream Description *</label>
+                  <input required value={engineerForm.specialization} onChange={e => setEngineerForm((f: any) => ({ ...f, specialization: e.target.value }))} placeholder="e.g. AI Diagnostics & Genomics Arrays" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowEngineerForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={engineerSubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {engineerSubmitting ? "Saving..." : editingEngineerId ? "Save Changes" : "Create Node"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -109,14 +109,15 @@ const ENGINEERING_INSTITUTIONS = [
   }
 ];
 
-function EngineeringLogo({ eng }: { eng: typeof ENGINEERING_INSTITUTIONS[0] }) {
+function EngineeringLogo({ eng }: { eng: any }) {
   const [failed, setFailed] = useState(false);
+  const logoSrc = eng.logo_url || eng.logo;
   return (
     <div className="w-16 h-16 border border-zinc-850 bg-white flex flex-col items-center justify-center rounded-xl shadow-sm relative group overflow-hidden mb-5">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
-      {eng.logo && !failed ? (
+      {logoSrc && !failed ? (
         <img 
-          src={eng.logo} 
+          src={logoSrc} 
           alt={eng.name} 
           referrerPolicy="no-referrer"
           className="w-11 h-11 object-contain p-1 relative z-10"
@@ -124,7 +125,7 @@ function EngineeringLogo({ eng }: { eng: typeof ENGINEERING_INSTITUTIONS[0] }) {
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-orange-600 text-white font-mono font-black text-xs uppercase">
-          {eng.fallbackText}
+          {eng.fallback_text || eng.fallbackText}
         </div>
       )}
     </div>
@@ -135,12 +136,18 @@ export default function GlobalNetworkPage() {
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [loadingProfs, setLoadingProfs] = useState(true);
 
+  // Dynamic state for Facilities and Engineers
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [engineers, setEngineers] = useState<any[]>([]);
+  const [loadingFac, setLoadingFac] = useState(true);
+  const [loadingEng, setLoadingEng] = useState(true);
+
   // Cinematic Institutional Section State
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const slideTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Load dynamic professionals list
+  // Load all dynamic data
   useEffect(() => {
     const fetchProfs = async () => {
       try {
@@ -155,32 +162,72 @@ export default function GlobalNetworkPage() {
         setLoadingProfs(false);
       }
     };
+
+    const fetchFacilities = async () => {
+      try {
+        const res = await fetch("/api/facilities");
+        if (res.ok) {
+          const data = await res.json();
+          setFacilities(data);
+        } else {
+          setFacilities(INSTITUTIONS);
+        }
+      } catch (err) {
+        console.error("Failed to load facilities:", err);
+        setFacilities(INSTITUTIONS);
+      } finally {
+        setLoadingFac(false);
+      }
+    };
+
+    const fetchEngineers = async () => {
+      try {
+        const res = await fetch("/api/engineers");
+        if (res.ok) {
+          const data = await res.json();
+          setEngineers(data);
+        } else {
+          setEngineers(ENGINEERING_INSTITUTIONS);
+        }
+      } catch (err) {
+        console.error("Failed to load engineers:", err);
+        setEngineers(ENGINEERING_INSTITUTIONS);
+      } finally {
+        setLoadingEng(false);
+      }
+    };
+
     fetchProfs();
+    fetchFacilities();
+    fetchEngineers();
   }, []);
+
+  const activeFacilities = facilities.length > 0 ? facilities : INSTITUTIONS;
+  const activeEngineers = engineers.length > 0 ? engineers : ENGINEERING_INSTITUTIONS;
 
   // Cinematic Slide Auto-Rotation Effect
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && activeFacilities.length > 1) {
       slideTimer.current = setInterval(() => {
-        setActiveIndex((prev) => (prev + 1) % INSTITUTIONS.length);
+        setActiveIndex((prev) => (prev + 1) % activeFacilities.length);
       }, 6000);
     }
     return () => {
       if (slideTimer.current) clearInterval(slideTimer.current);
     };
-  }, [isPlaying]);
+  }, [isPlaying, activeFacilities]);
 
   const handleNextSlide = () => {
     setIsPlaying(false);
-    setActiveIndex((prev) => (prev + 1) % INSTITUTIONS.length);
+    setActiveIndex((prev) => (prev + 1) % activeFacilities.length);
   };
 
   const handlePrevSlide = () => {
     setIsPlaying(false);
-    setActiveIndex((prev) => (prev - 1 + INSTITUTIONS.length) % INSTITUTIONS.length);
+    setActiveIndex((prev) => (prev - 1 + activeFacilities.length) % activeFacilities.length);
   };
 
-  const currentInstitution = INSTITUTIONS[activeIndex];
+  const currentInstitution = activeFacilities[activeIndex] || activeFacilities[0];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#ea580c]/20 py-20 overflow-x-hidden font-sans">
@@ -311,7 +358,7 @@ export default function GlobalNetworkPage() {
             
             {/* Left: Tab Selectors */}
             <div className="lg:col-span-4 flex flex-col gap-3 justify-center">
-              {INSTITUTIONS.map((inst, idx) => {
+              {activeFacilities.map((inst, idx) => {
                 const isActive = idx === activeIndex;
                 return (
                   <button
@@ -349,7 +396,7 @@ export default function GlobalNetworkPage() {
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={currentInstitution.id}
-                    src={currentInstitution.image}
+                    src={currentInstitution.image_url || currentInstitution.image}
                     alt={currentInstitution.name}
                     referrerPolicy="no-referrer"
                     initial={{ opacity: 0, scale: 1.08 }}
@@ -385,10 +432,10 @@ export default function GlobalNetworkPage() {
                 <div className="border-t border-zinc-800 pt-5">
                   <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-4">Affiliated Mentors & Researchers</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {currentInstitution.mentors.map((m, idx) => (
+                    {currentInstitution.mentors?.map((m: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.04] p-3 rounded-xl hover:bg-white/[0.04] transition-colors">
                         <div className="w-10 h-10 rounded-lg overflow-hidden border border-zinc-800 shrink-0">
-                          <img src={m.photo} alt={m.name} className="w-full h-full object-cover" />
+                          <img src={m.photo_url || m.photo} alt={m.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
                           <h4 className="font-bold text-xs text-white uppercase font-mono truncate">{m.name}</h4>
@@ -401,7 +448,7 @@ export default function GlobalNetworkPage() {
 
                 {/* Active BioLabs Research Projects */}
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-900">
-                  {currentInstitution.projects.map((proj, idx) => (
+                  {currentInstitution.projects?.map((proj: string, idx: number) => (
                     <span key={idx} className="px-2.5 py-1 bg-[#ea580c]/10 border border-[#ea580c]/20 text-[#ea580c] font-mono text-[9px] font-bold uppercase tracking-wider rounded">
                       {proj}
                     </span>
@@ -427,7 +474,7 @@ export default function GlobalNetworkPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {ENGINEERING_INSTITUTIONS.map((eng, idx) => (
+            {activeEngineers.map((eng, idx) => (
               <GlassCard 
                 key={idx} 
                 className="p-6 bg-zinc-950/40 border border-zinc-800/80 rounded-2xl flex flex-col justify-between min-h-[220px] hover:border-zinc-700 transition-colors group cursor-pointer"
@@ -436,7 +483,7 @@ export default function GlobalNetworkPage() {
 
                 <div>
                   <h3 className="font-mono text-sm font-bold uppercase text-white group-hover:text-[#ea580c] transition-colors">{eng.name}</h3>
-                  <p className="text-xs text-[#ea580c] font-mono uppercase font-bold mt-1 tracking-wider">{eng.teamName}</p>
+                  <p className="text-xs text-[#ea580c] font-mono uppercase font-bold mt-1 tracking-wider">{eng.team_name || eng.teamName}</p>
                   <p className="text-[10px] text-zinc-500 leading-relaxed mt-2.5 font-sans">
                     {eng.specialization}
                   </p>
