@@ -15,7 +15,7 @@ const INSTITUTIONS = [
     name: "AIIMS Delhi",
     city: "New Delhi",
     facility: "Healix Clinical Diagnostics Hub",
-    image: "https://upload.wikimedia.org/wikipedia/commons/b/b2/AIIMS_DELHI.jpg",
+    image: "https://images.unsplash.com/photo-1586773860418-d3b969c73059?q=80&w=1200&auto=format&fit=crop",
     description: "Serves as the primary clinical validation center. Focuses on real-time telemetry analytics, cardiovascular risk profiling, and patient diagnostics testing workflows.",
     mentors: [
       { name: "Dr. Amitabha Bandyopadhyay", role: "Clinical Genetics Consultant", photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=200&auto=format&fit=crop" },
@@ -28,7 +28,7 @@ const INSTITUTIONS = [
     name: "IIT Delhi",
     city: "New Delhi",
     facility: "Genomics Compute Center",
-    image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/IIT_Delhi_Main_building.jpg",
+    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1200&auto=format&fit=crop",
     description: "Hosts the distributed genomic sequence compute cluster. Drives explainable machine learning models for risk analysis and DNA sequence validation.",
     mentors: [
       { name: "Prof. James Gomes", role: "Biomedical Engineering Chair", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" },
@@ -41,7 +41,7 @@ const INSTITUTIONS = [
     name: "IIT Madras",
     city: "Chennai",
     facility: "Clinical Systems Research Lab",
-    image: "https://upload.wikimedia.org/wikipedia/commons/2/23/IIT_Madras_campus_main_gate.jpg",
+    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1200&auto=format&fit=crop",
     description: "Specializes in clinical IoT hardware architecture. Integrates hardware sensory fail-safes and edge network coordinates tracking arrays.",
     mentors: [
       { name: "Prof. Guhan Jayaraman", role: "Biotechnology Director", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" },
@@ -54,7 +54,7 @@ const INSTITUTIONS = [
     name: "IIT Bombay",
     city: "Mumbai",
     facility: "Public Health Biosensors Hub",
-    image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Main_building_in_IIT_Bombay.jpg",
+    image: "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?q=80&w=1200&auto=format&fit=crop",
     description: "Develops bio-sensory diagnostic hardware. Specializes in low-cost paper diagnostic sensors and secure telemetry transmitters.",
     mentors: [
       { name: "Prof. Rohit Srivastava", role: "Biosensors Innovation Chair", photo: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop" },
@@ -67,7 +67,7 @@ const INSTITUTIONS = [
     name: "IISc Bangalore",
     city: "Bengaluru",
     facility: "Molecular Dynamics & Biochemistry Hub",
-    image: "https://upload.wikimedia.org/wikipedia/commons/e/e4/IISc_main_building.jpg",
+    image: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=1200&auto=format&fit=crop",
     description: "Focuses on advanced biochemical dynamics, CRISPR off-target mutation models, and high-reliability data integration failsafes.",
     mentors: [
       { name: "Prof. Sandeep Verma", role: "Chemical Biology Lead", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop" },

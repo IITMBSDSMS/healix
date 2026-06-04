@@ -54,10 +54,15 @@ export async function POST(req: Request) {
 
   // If engineerId is a real DB record, update it
   if (engineerId && engineerId !== "temp" && !engineerId.startsWith("e")) {
-    await adminSupabase
+    const { error: updateError } = await adminSupabase
       .from("global_engineers")
       .update({ logo_url: urlData.publicUrl })
       .eq("id", engineerId);
+      
+    if (updateError) {
+      console.error("Failed to update engineer logo in DB:", updateError);
+      return NextResponse.json({ error: `Database update failed: ${updateError.message}` }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ url: urlData.publicUrl });

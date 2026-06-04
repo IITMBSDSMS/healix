@@ -59,27 +59,44 @@ export async function POST(req: Request) {
   // If facilityId is a real DB record, update it
   if (facilityId && facilityId !== "temp" && !facilityId.startsWith("f")) {
     if (type === "campus") {
-      await adminSupabase
+      const { error: updateError } = await adminSupabase
         .from("global_facilities")
         .update({ image_url: urlData.publicUrl })
         .eq("id", facilityId);
+      
+      if (updateError) {
+        console.error("Failed to update facility campus photo in DB:", updateError);
+        return NextResponse.json({ error: `Database update failed: ${updateError.message}` }, { status: 500 });
+      }
     } else if (type === "mentor" && mentorIndexStr !== null && mentorIndexStr !== undefined) {
       const mentorIndex = parseInt(mentorIndexStr, 10);
       // Fetch current mentors JSON
-      const { data: facility } = await adminSupabase
+      const { data: facility, error: fetchError } = await adminSupabase
         .from("global_facilities")
         .select("mentors")
         .eq("id", facilityId)
         .single();
 
+      if (fetchError) {
+        console.error("Failed to fetch facility mentors for photo update:", fetchError);
+        return NextResponse.json({ error: `Database fetch failed: ${fetchError.message}` }, { status: 500 });
+      }
+
       if (facility && Array.isArray(facility.mentors)) {
         const updatedMentors = [...facility.mentors];
         if (updatedMentors[mentorIndex]) {
           updatedMentors[mentorIndex].photo = urlData.publicUrl;
-          await adminSupabase
+          updatedMentors[mentorIndex].photo_url = urlData.publicUrl;
+          
+          const { error: updateError } = await adminSupabase
             .from("global_facilities")
             .update({ mentors: updatedMentors })
             .eq("id", facilityId);
+            
+          if (updateError) {
+            console.error("Failed to update facility mentors list in DB:", updateError);
+            return NextResponse.json({ error: `Database update failed: ${updateError.message}` }, { status: 500 });
+          }
         }
       }
     }
