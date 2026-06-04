@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
+export const dynamic = "force-dynamic";
+
 // Hardcoded fallback seed data for the 4 founders in case the DB table is not created yet
 export const DEFAULT_FOUNDERS = [
   {

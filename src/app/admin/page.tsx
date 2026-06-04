@@ -344,10 +344,12 @@ export default function UnifiedAdminDashboard() {
         setSurakshaData(surakshaRes);
       }
 
-      // Safe helper to fetch JSON lists
+      // Safe helper to fetch JSON lists with cache-busting
       const fetchSafeList = async (url: string) => {
         try {
-          const res = await fetch(url);
+          const separator = url.includes("?") ? "&" : "?";
+          const freshUrl = `${url}${separator}t=${Date.now()}`;
+          const res = await fetch(freshUrl);
           if (!res.ok) throw new Error(`HTTP status ${res.status}`);
           const json = await res.json();
           return Array.isArray(json) ? json : [];

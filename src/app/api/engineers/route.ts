@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
+export const dynamic = "force-dynamic";
+
 export const DEFAULT_ENGINEERS = [
   {
     id: "e1",

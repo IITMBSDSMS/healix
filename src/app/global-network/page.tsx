@@ -455,7 +455,7 @@ export default function GlobalNetworkPage() {
   useEffect(() => {
     const fetchProfs = async () => {
       try {
-        const res = await fetch("/api/professionals");
+        const res = await fetch(`/api/professionals?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setProfessionals(data);
@@ -469,7 +469,7 @@ export default function GlobalNetworkPage() {
 
     const fetchFacilities = async () => {
       try {
-        const res = await fetch("/api/facilities");
+        const res = await fetch(`/api/facilities?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setFacilities(data);
@@ -486,7 +486,7 @@ export default function GlobalNetworkPage() {
 
     const fetchEngineers = async () => {
       try {
-        const res = await fetch("/api/engineers");
+        const res = await fetch(`/api/engineers?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setEngineers(data);

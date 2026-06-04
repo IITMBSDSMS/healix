@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   const supabase = await createClient();
   const { searchParams } = new URL(req.url);
