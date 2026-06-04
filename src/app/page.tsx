@@ -561,7 +561,7 @@ export default function Home() {
           </div>
 
           {/* Right Column: Events */}
-          <div className="lg:col-span-4 bg-white border border-zinc-200 p-6">
+          <div id="events" className="lg:col-span-4 bg-white border border-zinc-200 p-6 scroll-mt-20">
             <h2 className="text-xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
               Upcoming <span className="text-[#ea580c]">Events</span>
             </h2>
