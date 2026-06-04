@@ -417,18 +417,18 @@ function EngineeringLogo({ eng }: { eng: any }) {
   const [failed, setFailed] = useState(false);
   const logoSrc = eng.logo_url || eng.logo;
   return (
-    <div className="w-16 h-16 border border-slate-200/80 bg-white flex flex-col items-center justify-center rounded-xl shadow-sm relative group overflow-hidden mb-5">
+    <div className="w-20 h-20 border border-slate-200 bg-white flex flex-col items-center justify-center rounded-2xl shadow-md relative group overflow-hidden mb-5">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
       {logoSrc && !failed ? (
         <img 
           src={logoSrc} 
           alt={eng.name} 
           referrerPolicy="no-referrer"
-          className="w-11 h-11 object-contain p-1 relative z-10"
+          className="w-16 h-16 object-contain relative z-10 transition-transform duration-300 group-hover:scale-105"
           onError={() => setFailed(true)}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#ea580c] text-white font-mono font-black text-xs uppercase">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#ea580c] text-white font-mono font-black text-sm uppercase">
           {eng.fallback_text || eng.fallbackText}
         </div>
       )}
