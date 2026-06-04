@@ -77,7 +77,7 @@ export function Navbar() {
             <span className="text-white font-bold">EMERGENCY LINE: +91 9540694581</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 divide-x divide-white/20 text-xs">
-            <Link href="/biolabs/dashboard" className="hover:text-zinc-200 transition-colors pl-0 font-medium">Research Portal</Link>
+            <a href="https://www.biolabsresearch-healix.com" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-200 transition-colors pl-0 font-medium">Research Portal</a>
             <Link href="/admin" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Tenders & Administration</Link>
             <Link href="/news" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Press Release</Link>
             <Link href="/academy/mentors" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Mentorship Directory</Link>
