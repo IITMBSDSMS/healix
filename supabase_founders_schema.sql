@@ -29,9 +29,10 @@ BEGIN
         SELECT 1 FROM pg_constraint WHERE conname = 'founders_name_key'
     ) THEN
         -- Delete any duplicate names first to ensure constraint creation succeeds
-        DELETE FROM founders WHERE id NOT IN (
-            SELECT MIN(id) FROM founders GROUP BY name
-        );
+        DELETE FROM founders f1
+        USING founders f2
+        WHERE f1.name = f2.name AND f1.id::text > f2.id::text;
+        
         ALTER TABLE founders ADD CONSTRAINT founders_name_key UNIQUE (name);
     END IF;
 END $$;
