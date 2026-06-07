@@ -66,46 +66,118 @@ const TEAM_MEMBERS = [
   }
 ];
 
-const ADVISORS = [
+const DEFAULT_ADVISORS = [
+  // Clinical Advisors
   {
-    name: "Dr. Sameer Kalra",
-    designation: "Senior Clinical Advisor",
-    institution: "Sir Ganga Ram Hospital",
-    expertise: "Public Health & Clinical Research",
-    photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Dr. Suresh Bangla",
-    designation: "Research Innovation Advisor",
+    name: "Dr. Partha Pratim",
+    designation: "MD",
     institution: "AIIMS New Delhi",
-    expertise: "Medical Innovation & Diagnostics",
+    expertise: "Genomics sequencing diagnostics & risk profiling",
+    category: "clinical",
     photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
   {
-    name: "Future AIIMS Faculty",
-    designation: "Research & Clinical Mentor",
+    name: "Dr. Sarah Chen",
+    designation: "MD, PhD",
+    institution: "Stanford Medicine",
+    expertise: "Clinical decision support & triaging pipelines",
+    category: "clinical",
+    photo: "https://images.unsplash.com/photo-1594824813573-246434de83fb?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Dr. A. C. Roy",
+    designation: "MD, FACC",
+    institution: "Mayo Clinic",
+    expertise: "Cardiovascular telemetry & remote monitoring",
+    category: "clinical",
+    photo: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Research Advisors
+  {
+    name: "Dr. Rajesh K. Sharma",
+    designation: "PhD",
+    institution: "IISc Bangalore",
+    expertise: "Distributed algorithms & database reliability",
+    category: "research",
+    photo: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Prof. Michael Sterling",
+    designation: "PhD",
+    institution: "MIT Media Lab",
+    expertise: "Wearable biosensors & edge compute arrays",
+    category: "research",
+    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Dr. Ananya Ray",
+    designation: "PhD",
+    institution: "IIT Madras",
+    expertise: "In-silico molecular modeling & cancer targets",
+    category: "research",
+    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Academic Mentors
+  {
+    name: "Prof. R. Sharma",
+    designation: "Senior Faculty",
+    institution: "IIT Delhi",
+    expertise: "Telemetry synchronization & network protocols",
+    category: "academic",
+    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Dr. Vikram Sen",
+    designation: "Professor",
     institution: "AIIMS New Delhi",
-    expertise: "AI Diagnostics & Telemetry Models",
-    isPlaceholder: true,
-    photo: null
+    expertise: "Community health diagnostics & survey design",
+    category: "academic",
+    photo: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
   {
-    name: "Future IIT Professors",
-    designation: "Systems & Engineering Mentor",
-    institution: "Indian Institutes of Technology (IIT)",
-    expertise: "Distributed Systems & Signal Processing",
-    isPlaceholder: true,
-    photo: null
+    name: "Dr. Helen Rostova",
+    designation: "Faculty",
+    institution: "Cambridge University",
+    expertise: "Explainable deep learning models in healthcare",
+    category: "academic",
+    photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Industry Experts
+  {
+    name: "Sudiksha Sharma",
+    designation: "Human Systems Strategist",
+    institution: "CU Delhi",
+    expertise: "Behavioral psychology & interface trust dynamics",
+    category: "industry",
+    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
   {
-    name: "Future Industry Scientists",
-    designation: "Biomedical & Pharmaceutical Mentor",
-    institution: "Leading Biotech & Pharma Enterprises",
-    expertise: "Molecular Sequencing & Therapeutics",
-    isPlaceholder: true,
-    photo: null
+    name: "Siddharth Bose",
+    designation: "Partner",
+    institution: "Biotech Capital",
+    expertise: "Commercialization & intellectual property structures",
+    category: "industry",
+    photo: "https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Elena Petrova",
+    designation: "Director",
+    institution: "Global Pharma Solutions",
+    expertise: "Clinical trial designs & regulatory compliance",
+    category: "industry",
+    photo: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
   }
 ];
 
@@ -245,6 +317,73 @@ const cardVariants = {
     }
   })
 };
+
+function AdvisorCard({ advisor }: { advisor: any }) {
+  if (advisor.isPlaceholder) {
+    return (
+      <div className="border border-dashed border-zinc-200 hover:border-[#ea580c] bg-zinc-50/50 p-4 transition-all duration-300 flex flex-col justify-between group min-h-[140px] rounded-lg">
+        <div>
+          <h4 className="font-extrabold text-xs text-zinc-800 font-mono uppercase tracking-tight leading-snug">{advisor.name}</h4>
+          <p className="text-[9px] text-[#ea580c] font-mono uppercase font-bold tracking-wider mt-0.5">{advisor.institution}</p>
+          <p className="text-[11px] text-zinc-500 leading-normal mt-2 font-sans">{advisor.expertise}</p>
+        </div>
+        <div className="mt-3">
+          <Link 
+            href="/contact" 
+            className="inline-flex items-center gap-1 text-[9px] font-bold text-[#ea580c] group-hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors"
+          >
+            Join Ecosystem <ArrowRight className="w-2.5 h-2.5" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const photo = advisor.photo || advisor.photo_url;
+  const linkedin = advisor.linkedin || advisor.linkedin_url;
+
+  return (
+    <div className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group p-4 flex gap-4 shadow-sm hover:shadow-md min-h-[140px] rounded-lg text-left">
+      {photo && (
+        <div className="w-12 h-12 rounded-full overflow-hidden border border-zinc-100 shrink-0 bg-zinc-100 relative">
+          <img 
+            src={photo} 
+            alt={advisor.name} 
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.05] transition-all duration-500"
+          />
+        </div>
+      )}
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight truncate">{advisor.name}</h4>
+            {linkedin && (
+              <a 
+                href={linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-zinc-400 hover:text-[#ea580c] transition-colors shrink-0"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                </svg>
+              </a>
+            )}
+          </div>
+          <p className="text-[10px] text-[#ea580c] font-bold uppercase tracking-wider mt-0.5 leading-none">
+            {advisor.designation}
+          </p>
+          <p className="text-[9px] text-zinc-400 font-mono uppercase tracking-wider leading-none mt-1">
+            {advisor.institution}
+          </p>
+          <p className="text-xs text-zinc-650 leading-snug mt-2 pt-2 border-t border-zinc-100 font-sans">
+            {advisor.expertise}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
@@ -485,68 +624,41 @@ export default function Home() {
   const displayTeam = [...mergedFounders, ...extraFounders];
 
   // Map dynamic advisors (mentors) from database
-  // Filter out duplicates that are core team members shown in Section 2
-  const filteredMentors = dbMentors.filter(m => 
-    !["avnish verma", "mahima sharma", "debarghya bag", "debraghya bag", "sudiksha sharma", "chaavi sharma", "swaranjali sonje", "dhruv advani"]
-      .includes(m.name?.toLowerCase().trim())
-  );
+  // Filter out core team members shown in Section 2
+  const CORE_TEAM_NAMES = ["avnish verma", "mahima sharma", "debarghya bag", "debraghya bag", "sudiksha sharma", "chaavi sharma", "swaranjali sonje", "dhruv advani"];
+  const filteredMentors = dbMentors.filter(m => !CORE_TEAM_NAMES.includes(m.name?.toLowerCase().trim()));
 
-  // If there are no custom database mentors, use our default advisors
-  const displayAdvisors = filteredMentors.length > 0 ? filteredMentors.map(m => ({
+  // Normalize db mentor to advisor shape
+  const normalizeDbMentor = (m: any) => ({
     name: m.name,
     designation: m.role,
     institution: m.organization || "Healix Advisory",
     expertise: m.bio || m.quote || "Clinical Research & Healthcare Mentorship",
-    photo: m.photo_url || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
+    category: m.category || "clinical",
+    photo: m.photo_url || "",
     linkedin: m.linkedin_url || "https://www.linkedin.com/company/quick-healix/"
-  })) : [
-    {
-      name: "Dr. Sameer Kalra",
-      designation: "Senior Clinical Advisor",
-      institution: "Sir Ganga Ram Hospital",
-      expertise: "Public Health & Clinical Research",
-      photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
-      linkedin: "https://www.linkedin.com/company/quick-healix/"
-    },
-    {
-      name: "Dr. Suresh Bangla",
-      designation: "Research Innovation Advisor",
-      institution: "AIIMS New Delhi",
-      expertise: "Medical Innovation & Diagnostics",
-      photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
-      linkedin: "https://www.linkedin.com/company/quick-healix/"
-    }
+  });
+
+  // Use DB advisors if available, else fall back to DEFAULT_ADVISORS
+  const sourceAdvisors = filteredMentors.length > 0 ? filteredMentors.map(normalizeDbMentor) : DEFAULT_ADVISORS;
+
+  // Group by category
+  const CATEGORY_CONFIG = [
+    { key: "clinical", label: "Clinical Advisors", color: "#ea580c" },
+    { key: "research", label: "Research Advisors", color: "#2563eb" },
+    { key: "academic", label: "Academic Mentors",  color: "#059669" },
+    { key: "industry", label: "Industry Experts",  color: "#7c3aed" },
   ];
 
-  // We always append the three placeholder slots to invite collaboration
-  const recruitmentSlots = [
-    {
-      name: "Future AIIMS Faculty",
-      designation: "Research & Clinical Mentor",
-      institution: "AIIMS New Delhi",
-      expertise: "AI Diagnostics & Telemetry Models",
-      isPlaceholder: true,
-      photo: null
-    },
-    {
-      name: "Future IIT Professors",
-      designation: "Systems & Engineering Mentor",
-      institution: "Indian Institutes of Technology (IIT)",
-      expertise: "Distributed Systems & Signal Processing",
-      isPlaceholder: true,
-      photo: null
-    },
-    {
-      name: "Future Industry Scientists",
-      designation: "Biomedical & Pharmaceutical Mentor",
-      institution: "Leading Biotech & Pharma Enterprises",
-      expertise: "Molecular Sequencing & Therapeutics",
-      isPlaceholder: true,
-      photo: null
-    }
-  ];
+  const groupedAdvisors = CATEGORY_CONFIG.map(cat => ({
+    ...cat,
+    members: sourceAdvisors.filter(a => (a.category || "clinical") === cat.key)
+  })).filter(cat => cat.members.length > 0);
 
-  const finalAdvisorsList = [...displayAdvisors, ...recruitmentSlots];
+  // If no category has items (edge case), show all under clinical
+  const finalGroupedAdvisors = groupedAdvisors.length > 0 ? groupedAdvisors : [
+    { key: "clinical", label: "Clinical Advisors", color: "#ea580c", members: DEFAULT_ADVISORS.filter(a => a.category === "clinical") }
+  ];
 
   return (
     <div className="relative min-h-screen flex flex-col w-full bg-white text-zinc-900 pb-20 overflow-x-hidden selection:bg-orange-500/20">
@@ -667,74 +779,65 @@ export default function Home() {
               Advisors & Mentors
             </h2>
             <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
-            <p className="text-zinc-650 text-sm leading-relaxed">
-              Guiding the future of healthcare innovation, research, and public health.
+            <p className="text-zinc-500 text-sm leading-relaxed">
+              An interdisciplinary advisory board guiding Healix across clinical, research, academic, and industry domains.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-            {finalAdvisorsList.map((advisor, i) => (
-              advisor.isPlaceholder ? (
-                <div key={i} className="border border-dashed border-zinc-300 hover:border-[#ea580c] bg-zinc-100/50 p-6 transition-all duration-300 flex flex-col justify-between group min-h-[300px]">
-                  <div>
-                    <div className="w-10 h-10 rounded-full bg-orange-500/5 border border-orange-500/20 flex items-center justify-center text-[#ea580c] mb-6 group-hover:bg-[#ea580c] group-hover:text-white transition-colors duration-300">
-                      <Users className="w-4 h-4" />
-                    </div>
-                    <h3 className="font-extrabold text-base text-zinc-800 font-mono uppercase tracking-tight leading-snug">{advisor.name}</h3>
-                    <p className="text-[10px] text-[#ea580c] font-mono uppercase font-bold tracking-wider mt-1">{advisor.institution}</p>
-                    <p className="text-xs text-zinc-500 leading-relaxed mt-4 font-sans">{advisor.expertise}</p>
-                  </div>
-                  <div className="mt-8">
-                    <Link 
-                      href="/contact" 
-                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#ea580c] group-hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors"
+          {/* Categorized 4-column grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {finalGroupedAdvisors.map((cat) => (
+              <div key={cat.key} className="flex flex-col gap-0">
+                {/* Column Header */}
+                <div
+                  className="flex items-center gap-2 px-4 py-3 mb-4 border-l-4"
+                  style={{ borderColor: cat.color, backgroundColor: cat.color + "10" }}
+                >
+                  <h3 className="text-[11px] font-black font-mono uppercase tracking-widest text-zinc-800">
+                    {cat.label}
+                  </h3>
+                </div>
+
+                {/* Cards */}
+                <div className="flex flex-col gap-3">
+                  {cat.members.map((advisor: any, i: number) => (
+                    <AdvisorCard key={i} advisor={advisor} />
+                  ))}
+
+                  {/* Recruitment placeholder at bottom of each column */}
+                  <div
+                    className="border border-dashed p-4 rounded-lg transition-all duration-300 group cursor-pointer"
+                    style={{ borderColor: cat.color + "40" }}
+                  >
+                    <p className="text-[9px] font-black font-mono uppercase tracking-widest mb-1" style={{ color: cat.color }}>
+                      Open Position
+                    </p>
+                    <p className="text-xs text-zinc-500 leading-snug mb-3">
+                      {cat.key === "clinical" && "AIIMS / PGIMER faculty and senior clinicians"}
+                      {cat.key === "research" && "IIT / IISc research scholars and scientists"}
+                      {cat.key === "academic" && "University faculty in health informatics"}
+                      {cat.key === "industry" && "Healthcare industry veterans and investors"}
+                    </p>
+                    <Link
+                      href="/contact"
+                      className="inline-flex items-center gap-1 text-[9px] font-bold font-mono uppercase tracking-wider transition-colors"
+                      style={{ color: cat.color }}
                     >
-                      Join Advisory <ArrowRight className="w-3 h-3" />
+                      Apply to Join <ArrowRight className="w-2.5 h-2.5" />
                     </Link>
                   </div>
                 </div>
-              ) : (
-                <div key={i} className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md min-h-[300px]">
-                  <div>
-                    <div className="aspect-square bg-zinc-100 relative overflow-hidden">
-                      {(advisor.photo || advisor.photo_url) && (
-                        <img 
-                          src={advisor.photo || advisor.photo_url} 
-                          alt={advisor.name} 
-                          className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-500"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
-                        <span className="text-[9px] font-mono text-white bg-zinc-950/80 border border-white/20 px-2 py-0.5 uppercase tracking-wider font-bold">
-                          {advisor.institution}
-                        </span>
-                        <a href={advisor.linkedin || advisor.linkedin_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
-                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                          </svg>
-                        </a>
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight">{advisor.name}</h3>
-                      <p className="text-[10px] text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{advisor.designation}</p>
-                      <p className="text-[9px] text-zinc-400 font-mono uppercase tracking-wider mt-0.5">{advisor.institution}</p>
-                      <p className="text-xs text-zinc-500 leading-relaxed mt-3 border-t border-zinc-100 pt-2.5">{advisor.expertise}</p>
-                    </div>
-                  </div>
-                  <div className="px-5 pb-5">
-                    <a 
-                      href={advisor.linkedin || advisor.linkedin_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="h-8 px-4 border border-zinc-200 hover:border-zinc-950 bg-zinc-50 hover:bg-zinc-950 hover:text-white text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center transition-all w-full gap-1"
-                    >
-                      LinkedIn Profile <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                </div>
-              )
+              </div>
             ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+            >
+              Join Our Advisory Network <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>

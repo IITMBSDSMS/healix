@@ -63,6 +63,7 @@ const EMPTY_CORP_MENTOR = {
   linkedin_url: "https://linkedin.com",
   twitter_url: "https://x.com",
   github_url: "https://github.com",
+  category: "clinical",
   display_order: 0,
   active: true,
 };
@@ -612,7 +613,8 @@ export default function UnifiedAdminDashboard() {
       name: m.name, role: m.role, organization: m.organization ?? "",
       bio: m.bio ?? "", quote: m.quote ?? "", photo_url: m.photo_url ?? "",
       linkedin_url: m.linkedin_url ?? "https://linkedin.com", twitter_url: m.twitter_url ?? "https://x.com",
-      github_url: m.github_url ?? "https://github.com", display_order: m.display_order,
+      github_url: m.github_url ?? "https://github.com", category: m.category ?? "clinical",
+      display_order: m.display_order,
       active: m.active,
     });
     setShowCorpForm(true);
@@ -4314,6 +4316,20 @@ export default function UnifiedAdminDashboard() {
                   <input placeholder="LinkedIn Url" value={corpForm.linkedin_url} onChange={e => setCorpForm(f => ({ ...f, linkedin_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
                   <input placeholder="Twitter Url" value={corpForm.twitter_url} onChange={e => setCorpForm(f => ({ ...f, twitter_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
                   <input placeholder="GitHub Url" value={corpForm.github_url} onChange={e => setCorpForm(f => ({ ...f, github_url: e.target.value }))} className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Homepage Section Category</label>
+                  <select
+                    value={corpForm.category}
+                    onChange={e => setCorpForm(f => ({ ...f, category: e.target.value }))}
+                    className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm"
+                  >
+                    <option value="clinical">🩺 Clinical Advisors</option>
+                    <option value="research">🔬 Research Advisors</option>
+                    <option value="academic">🎓 Academic Mentors</option>
+                    <option value="industry">🏢 Industry Experts</option>
+                  </select>
+                  <p className="text-[10px] text-gray-600 mt-1.5 font-mono">Controls which column this person appears in on the homepage.</p>
                 </div>
                 <div className="flex gap-3 pt-4 border-t border-white/5">
                   <button type="button" onClick={() => setShowCorpForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
