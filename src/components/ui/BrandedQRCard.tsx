@@ -75,7 +75,7 @@ export default function BrandedQRCard({
       // ── 5. Header section ─────────────────────────────────────────
       // We will load the official logo and draw it.
       const img = new Image();
-      img.src = "/official-logo.png";
+      img.src = "/official-logo-web.png";
       await new Promise((resolve) => {
         img.onload = resolve;
         img.onerror = resolve;

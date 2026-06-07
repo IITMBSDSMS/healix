@@ -280,7 +280,7 @@ export default function BioLabsPage() {
               }}
             >
               <Image
-                src="/biolabs-logo.png"
+                src="/biolabs-logo-web.png"
                 alt="Healix BioLabs"
                 width={100}
                 height={100}

@@ -92,7 +92,7 @@ export default function UserDashboardPage() {
         setBiolabsLogoBase64(canvas.toDataURL("image/png"));
       }
     };
-    img.src = "/biolabs-logo.png";
+    img.src = "/biolabs-logo-web.png";
   }, []);
 
   useEffect(() => {
@@ -526,7 +526,7 @@ export default function UserDashboardPage() {
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 via-[#eab308] to-blue-600" />
               <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
-                <Image src="/biolabs-logo.png" alt="BioLabs" width={48} height={48} />
+                <Image src="/biolabs-logo-web.png" alt="BioLabs" width={48} height={48} />
                 <div>
                   <h2 className="text-2xl font-bold tracking-tight text-white">HEALIX BIOLABS</h2>
                   <p className="text-[#eab308] font-mono text-xs tracking-widest uppercase">Official Welcome Packet</p>
@@ -559,7 +559,7 @@ export default function UserDashboardPage() {
         <div className="p-6 border-b border-white/5 bg-gradient-to-br from-purple-900/20 to-blue-900/20">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-1 bg-black rounded-xl border border-white/10 flex items-center justify-center h-10 w-10 overflow-hidden shrink-0">
-              <Image src="/biolabs-logo.png" alt="BioLabs Logo" width={32} height={32} className="object-contain" />
+              <Image src="/biolabs-logo-web.png" alt="BioLabs Logo" width={32} height={32} className="object-contain" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight tracking-tight text-white">BioLabs Portal</h1>
@@ -887,7 +887,7 @@ export default function UserDashboardPage() {
                                 <div className="bg-black/90 w-full h-full rounded-full flex items-center justify-center border border-[#eab308]/40 shadow-inner relative overflow-hidden p-1.5 sm:p-2.5">
                                   <div className="absolute inset-0.5 rounded-full border border-[#eab308]/15 pointer-events-none z-10" />
                                   <div className="w-full h-full relative">
-                                    <Image src="/biolabs-logo.png" alt="BioLabs Logo" fill className="object-contain" />
+                                    <Image src="/biolabs-logo-web.png" alt="BioLabs Logo" fill className="object-contain" />
                                   </div>
                                 </div>
                               </div>
@@ -899,7 +899,7 @@ export default function UserDashboardPage() {
                           <div className="absolute w-full h-full bg-[#0a0a0c] border border-zinc-800 rounded-2xl overflow-hidden p-3 sm:p-6 flex flex-col justify-between shadow-[0_4px_30px_rgba(0,0,0,0.4)]" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
                             {/* Large Watermark in background */}
                             <div className="absolute inset-0 flex items-center justify-center opacity-[0.015] pointer-events-none z-0">
-                              <Image src="/biolabs-logo.png" alt="Watermark" width={220} height={220} className="object-contain grayscale" />
+                              <Image src="/biolabs-logo-web.png" alt="Watermark" width={220} height={220} className="object-contain grayscale" />
                             </div>
                             
                             {/* Plastic PVC sheen glare overlay */}

@@ -22,7 +22,7 @@ export function HealixLogo({ size = 40, className }: HealixLogoProps) {
       style={{ width: size, height: size }}
     >
       <Image
-        src="/official-logo.png"
+        src="/official-logo-web.png"
         alt="Healix Official Logo"
         width={size}
         height={size}

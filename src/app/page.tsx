@@ -40,7 +40,7 @@ const STATIC_BRANDS = [
     color: "#ef4444",
     accent: "text-red-500 bg-red-500/10 border-red-500/20",
     icon_name: "Heart",
-    logo_url: "/hsf-official-logo.png"
+    logo_url: "/hsf-official-logo-web.png"
   },
   {
     id: "biolabs",
@@ -51,7 +51,7 @@ const STATIC_BRANDS = [
     color: "#06b6d4",
     accent: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
     icon_name: "Activity",
-    logo_url: "/biolabs-logo.png"
+    logo_url: "/biolabs-logo-web.png"
   },
   {
     id: "academy",
@@ -62,7 +62,7 @@ const STATIC_BRANDS = [
     color: "#ea580c",
     accent: "text-[#ea580c] bg-[#ea580c]/10 border-[#ea580c]/20",
     icon_name: "GraduationCap",
-    logo_url: "/official-logo.png"
+    logo_url: "/official-logo-web.png"
   }
 ];
 
@@ -468,8 +468,8 @@ export default function Home() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { title: "Avennix Pharma", subtitle: "Clinical Research & Care", logo: "/avennix-official-logo.png", href: "/care" },
-              { title: "HSF Safety", subtitle: "Community Support Portal", logo: "/hsf-official-logo.png", href: "/shesecure" },
-              { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo.png", href: "/biolabs" },
+              { title: "HSF Safety", subtitle: "Community Support Portal", logo: "/hsf-official-logo-web.png", href: "/shesecure" },
+              { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo-web.png", href: "/biolabs" },
               { title: "Healix AI Check", subtitle: "Symptom Triaging Portal", logo: "/ai-logo.jpg", href: "/ai-check" }
             ].map((unit, i) => (
               <motion.div

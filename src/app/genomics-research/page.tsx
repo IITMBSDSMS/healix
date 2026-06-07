@@ -188,10 +188,10 @@ export default function GenomicsResearch() {
     };
 
     try {
-      const logoBase64 = await loadImage("/biolabs-logo.png");
+      const logoBase64 = await loadImage("/biolabs-logo-web.png");
       doc.addImage(logoBase64, 'PNG', 15, 12, 28, 28);
       
-      const logo2Base64 = await loadImage("/official-logo.png");
+      const logo2Base64 = await loadImage("/official-logo-web.png");
       doc.addImage(logo2Base64, 'PNG', pageWidth - 43, 12, 28, 28);
       
       // Company Name next to logo
@@ -399,7 +399,7 @@ export default function GenomicsResearch() {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl" 
               />
-              <img src="/biolabs-logo.png" alt="Healix BioLabs" className="w-14 h-14 relative z-10 object-contain rounded-full border border-emerald-500/20 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-transform duration-500 group-hover:scale-110" />
+              <img src="/biolabs-logo-web.png" alt="Healix BioLabs" className="w-14 h-14 relative z-10 object-contain rounded-full border border-emerald-500/20 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-transform duration-500 group-hover:scale-110" />
             </div>
             <div className="flex flex-col ml-1">
               <span className="font-bold text-2xl tracking-tight text-white leading-none">Healix</span>

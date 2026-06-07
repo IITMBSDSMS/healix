@@ -255,7 +255,7 @@ export default function SheSecurePage() {
               {/* HSF Logo */}
               <div className="relative w-24 h-24 mb-4 select-none flex items-center justify-center">
                 <img 
-                  src="/hsf-official-logo.png" 
+                  src="/hsf-official-logo-web.png" 
                   alt="Healix Sahyog Foundation Logo" 
                   className="w-full h-full object-contain filter drop-shadow-sm animate-fade-in" 
                 />
@@ -359,7 +359,7 @@ export default function SheSecurePage() {
             <div className="flex items-center gap-2">
               {/* Mini hand-flower logo */}
               <img 
-                src="/hsf-official-logo.png" 
+                src="/hsf-official-logo-web.png" 
                 alt="HSF Logo" 
                 className="w-5 h-5 object-contain" 
               />

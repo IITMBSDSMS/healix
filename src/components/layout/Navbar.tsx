@@ -270,7 +270,7 @@ export function Navbar() {
 
               <div className="flex flex-col items-center text-center mt-2">
                 <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-zinc-200 shadow-sm mb-4 overflow-hidden">
-                  <img src="/hsf-official-logo.png" alt="HSF Logo" className="w-full h-full object-contain p-1" />
+                  <img src="/hsf-official-logo-web.png" alt="HSF Logo" className="w-full h-full object-contain p-1" />
                   <span className="absolute -top-1 -right-1 flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400/50 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-4 w-4 bg-[#ea580c] justify-center items-center">
