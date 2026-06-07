@@ -258,6 +258,7 @@ export default function Home() {
   const [founders, setFounders] = useState<any[]>(DEFAULT_FOUNDERS);
   const [activeFounderIndex, setActiveFounderIndex] = useState(0);
   const [selectedFounderForMsg, setSelectedFounderForMsg] = useState<any | null>(null);
+  const [dbMentors, setDbMentors] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([
     { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
     { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
@@ -352,6 +353,20 @@ export default function Home() {
       }
     };
 
+    const fetchMentors = async () => {
+      try {
+        const res = await fetch("/api/mentors");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setDbMentors(data);
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching mentors:", err);
+      }
+    };
+
     const fetchEvents = async () => {
       try {
         const supabase = createClient();
@@ -396,6 +411,7 @@ export default function Home() {
     fetchPodcasts();
     fetchBrands();
     fetchFounders();
+    fetchMentors();
     fetchEvents();
   }, []);
 
@@ -434,6 +450,104 @@ export default function Home() {
     "Call for Applications: Transformative Leadership in STEMM (TLS) Workshop by Healix Academy."
   ];
 
+  // Combine database founders with static defaults for the 7 core members
+  const mergedFounders = TEAM_MEMBERS.map(staticMember => {
+    const dbMember = founders.find(f => f.name?.toLowerCase().trim() === staticMember.name?.toLowerCase().trim());
+    if (dbMember) {
+      return {
+        ...staticMember,
+        name: dbMember.name,
+        role: dbMember.role,
+        quote: dbMember.quote,
+        photo: dbMember.photo_url || staticMember.photo,
+        linkedin: dbMember.linkedin_url || staticMember.linkedin || "https://www.linkedin.com/company/quick-healix/",
+        institution: dbMember.institution || staticMember.institution,
+        active: dbMember.active
+      };
+    }
+    return staticMember;
+  }).filter(m => m.active !== false);
+
+  // Append any new custom founders added from the database who are not in the default 7 list
+  const extraFounders = founders.filter(f => 
+    f.active && 
+    !TEAM_MEMBERS.some(staticMember => staticMember.name?.toLowerCase().trim() === f.name?.toLowerCase().trim())
+  ).map(f => ({
+    name: f.name,
+    role: f.role,
+    quote: f.quote,
+    photo: f.photo_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    linkedin: f.linkedin_url || "https://www.linkedin.com/company/quick-healix/",
+    institution: f.institution || "Healix Technologies",
+    active: true
+  }));
+
+  const displayTeam = [...mergedFounders, ...extraFounders];
+
+  // Map dynamic advisors (mentors) from database
+  // Filter out duplicates that are core team members shown in Section 2
+  const filteredMentors = dbMentors.filter(m => 
+    !["avnish verma", "mahima sharma", "debarghya bag", "debraghya bag", "sudiksha sharma", "chaavi sharma", "swaranjali sonje", "dhruv advani"]
+      .includes(m.name?.toLowerCase().trim())
+  );
+
+  // If there are no custom database mentors, use our default advisors
+  const displayAdvisors = filteredMentors.length > 0 ? filteredMentors.map(m => ({
+    name: m.name,
+    designation: m.role,
+    institution: m.organization || "Healix Advisory",
+    expertise: m.bio || m.quote || "Clinical Research & Healthcare Mentorship",
+    photo: m.photo_url || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
+    linkedin: m.linkedin_url || "https://www.linkedin.com/company/quick-healix/"
+  })) : [
+    {
+      name: "Dr. Sameer Kalra",
+      designation: "Senior Clinical Advisor",
+      institution: "Sir Ganga Ram Hospital",
+      expertise: "Public Health & Clinical Research",
+      photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
+      linkedin: "https://www.linkedin.com/company/quick-healix/"
+    },
+    {
+      name: "Dr. Suresh Bangla",
+      designation: "Research Innovation Advisor",
+      institution: "AIIMS New Delhi",
+      expertise: "Medical Innovation & Diagnostics",
+      photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
+      linkedin: "https://www.linkedin.com/company/quick-healix/"
+    }
+  ];
+
+  // We always append the three placeholder slots to invite collaboration
+  const recruitmentSlots = [
+    {
+      name: "Future AIIMS Faculty",
+      designation: "Research & Clinical Mentor",
+      institution: "AIIMS New Delhi",
+      expertise: "AI Diagnostics & Telemetry Models",
+      isPlaceholder: true,
+      photo: null
+    },
+    {
+      name: "Future IIT Professors",
+      designation: "Systems & Engineering Mentor",
+      institution: "Indian Institutes of Technology (IIT)",
+      expertise: "Distributed Systems & Signal Processing",
+      isPlaceholder: true,
+      photo: null
+    },
+    {
+      name: "Future Industry Scientists",
+      designation: "Biomedical & Pharmaceutical Mentor",
+      institution: "Leading Biotech & Pharma Enterprises",
+      expertise: "Molecular Sequencing & Therapeutics",
+      isPlaceholder: true,
+      photo: null
+    }
+  ];
+
+  const finalAdvisorsList = [...displayAdvisors, ...recruitmentSlots];
+
   return (
     <div className="relative min-h-screen flex flex-col w-full bg-white text-zinc-900 pb-20 overflow-x-hidden selection:bg-orange-500/20">
       
@@ -461,7 +575,7 @@ export default function Home() {
 
           {/* Grid of Team Members */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {TEAM_MEMBERS.map((member, i) => (
+            {displayTeam.map((member, i) => (
               <div key={i} className="bg-zinc-50 border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md">
                 <div>
                   <div className="aspect-square bg-zinc-100 relative overflow-hidden">
@@ -559,7 +673,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-            {ADVISORS.map((advisor, i) => (
+            {finalAdvisorsList.map((advisor, i) => (
               advisor.isPlaceholder ? (
                 <div key={i} className="border border-dashed border-zinc-300 hover:border-[#ea580c] bg-zinc-100/50 p-6 transition-all duration-300 flex flex-col justify-between group min-h-[300px]">
                   <div>
@@ -583,9 +697,9 @@ export default function Home() {
                 <div key={i} className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md min-h-[300px]">
                   <div>
                     <div className="aspect-square bg-zinc-100 relative overflow-hidden">
-                      {advisor.photo && (
+                      {(advisor.photo || advisor.photo_url) && (
                         <img 
-                          src={advisor.photo} 
+                          src={advisor.photo || advisor.photo_url} 
                           alt={advisor.name} 
                           className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-500"
                         />
@@ -594,7 +708,7 @@ export default function Home() {
                         <span className="text-[9px] font-mono text-white bg-zinc-950/80 border border-white/20 px-2 py-0.5 uppercase tracking-wider font-bold">
                           {advisor.institution}
                         </span>
-                        <a href={advisor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
+                        <a href={advisor.linkedin || advisor.linkedin_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
                           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                             <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
                           </svg>
@@ -610,7 +724,7 @@ export default function Home() {
                   </div>
                   <div className="px-5 pb-5">
                     <a 
-                      href={advisor.linkedin} 
+                      href={advisor.linkedin || advisor.linkedin_url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="h-8 px-4 border border-zinc-200 hover:border-zinc-950 bg-zinc-50 hover:bg-zinc-950 hover:text-white text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center transition-all w-full gap-1"

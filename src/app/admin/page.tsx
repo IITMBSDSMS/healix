@@ -104,6 +104,8 @@ const EMPTY_FOUNDER = {
   role: "",
   quote: "",
   photo_url: "",
+  linkedin_url: "",
+  institution: "",
   display_order: 0,
   active: true,
 };
@@ -1319,6 +1321,8 @@ export default function UnifiedAdminDashboard() {
       role: f.role,
       quote: f.quote || "",
       photo_url: f.photo_url || "",
+      linkedin_url: f.linkedin_url || "",
+      institution: f.institution || "",
       display_order: f.display_order ?? 0,
       active: f.active ?? true
     });
@@ -3375,7 +3379,9 @@ export default function UnifiedAdminDashboard() {
                             <div className="min-w-0">
                               <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{f.role}</p>
                               <h3 className="text-base font-bold text-white truncate">{f.name || "Unnamed"}</h3>
-                              <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                              {f.institution && <p className="text-[10px] text-gray-500 font-mono tracking-tight leading-none truncate mt-0.5">{f.institution}</p>}
+                              {f.linkedin_url && <p className="text-[9px] text-blue-400 font-mono tracking-tight leading-none truncate mt-1">{f.linkedin_url}</p>}
+                              <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1.5 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
                                 {isFallback ? "Static Fallback" : "Live DB"}
                               </span>
                             </div>
@@ -4758,6 +4764,17 @@ export default function UnifiedAdminDashboard() {
                 <div>
                   <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo URL</label>
                   <input value={founderForm.photo_url} onChange={e => setFounderForm(f => ({ ...f, photo_url: e.target.value }))} placeholder="https://..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Institution / Affiliation</label>
+                    <input value={founderForm.institution} onChange={e => setFounderForm(f => ({ ...f, institution: e.target.value }))} placeholder="Healix Technologies" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">LinkedIn Profile URL</label>
+                    <input value={founderForm.linkedin_url} onChange={e => setFounderForm(f => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
                 </div>
 
                 <div 
