@@ -111,43 +111,171 @@ export function HeroCarousel() {
             transition={{ duration: 1 }}
             className="absolute inset-0"
           >
-            {carouselItems[activeIndex].type === "video" ? (
-              <video 
-                src={carouselItems[activeIndex].media_url}
-                autoPlay muted loop playsInline
-                className="w-full h-full object-cover"
-              />
+            {activeIndex === 0 ? (
+              <div className="absolute inset-0 bg-[#050505] flex items-center justify-center overflow-hidden">
+                {/* Glowing Background Blobs */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+                
+                {/* DNA Double Helix Wave Animation */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-20 lg:opacity-40 z-0">
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-[50%] h-[400px] flex items-center justify-center">
+                    <svg viewBox="0 0 450 400" className="w-full h-full text-orange-500">
+                      <defs>
+                        <linearGradient id="dnaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ea580c" />
+                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
+                        </linearGradient>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="5" result="blur" />
+                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                      </defs>
+                      <g filter="url(#glow)">
+                        {Array.from({ length: 15 }).map((_, i) => {
+                          const x = 40 + i * 26;
+                          const offset = i * 0.4;
+                          return (
+                            <g key={i}>
+                              <line 
+                                x1={x} 
+                                y1={140 + Math.sin(offset) * 45} 
+                                x2={x} 
+                                y2={260 - Math.sin(offset) * 45} 
+                                stroke="url(#dnaGrad)" 
+                                strokeWidth="1.5" 
+                                strokeDasharray="3 3"
+                              >
+                                <animate 
+                                  attributeName="y1" 
+                                  values={`${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45}`} 
+                                  dur="5s" 
+                                  repeatCount="indefinite" 
+                                />
+                                <animate 
+                                  attributeName="y2" 
+                                  values={`${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45}`} 
+                                  dur="5s" 
+                                  repeatCount="indefinite" 
+                                />
+                              </line>
+                              <circle cx={x} cy={140 + Math.sin(offset) * 45} r="5.5" fill="#ea580c">
+                                <animate 
+                                  attributeName="cy" 
+                                  values={`${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45}`} 
+                                  dur="5s" 
+                                  repeatCount="indefinite" 
+                                />
+                              </circle>
+                              <circle cx={x} cy={260 - Math.sin(offset) * 45} r="5.5" fill="#3b82f6">
+                                <animate 
+                                  attributeName="cy" 
+                                  values={`${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45}`} 
+                                  dur="5s" 
+                                  repeatCount="indefinite" 
+                                />
+                              </circle>
+                            </g>
+                          );
+                        })}
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-20 z-10 max-w-5xl mx-auto">
+                  <motion.div
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.8 }}
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-6"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c] animate-pulse" />
+                    <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest font-bold">Healix Innovation Ecosystem</span>
+                  </motion.div>
+                  
+                  <motion.h1 
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.8 }}
+                    className="text-3xl sm:text-5xl md:text-6xl font-black text-white mb-6 uppercase tracking-tight max-w-4xl leading-tight"
+                  >
+                    Building the Future of Healthcare Through <span className="text-[#ea580c] bg-clip-text">Research, AI & Innovation</span>
+                  </motion.h1>
+                  
+                  <motion.p 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.8 }}
+                    className="text-sm sm:text-base md:text-lg text-zinc-300 font-medium max-w-2xl leading-relaxed mb-8"
+                  >
+                    Healix Technologies connects clinicians, researchers, engineers, psychologists, and innovators to solve real-world healthcare challenges.
+                  </motion.p>
+
+                  {/* Buttons */}
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                    className="flex flex-col sm:flex-row gap-4 items-center justify-center"
+                  >
+                    <a 
+                      href="/biolabs" 
+                      className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(234,88,12,0.3)]"
+                    >
+                      Explore BioLabs
+                    </a>
+                    <a 
+                      href="#leadership" 
+                      className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all"
+                    >
+                      Meet Our Team
+                    </a>
+                  </motion.div>
+                </div>
+              </div>
             ) : (
-              <Image 
-                src={carouselItems[activeIndex].media_url} 
-                alt={carouselItems[activeIndex].title}
-                fill
-                className="object-cover object-top"
-                priority
-              />
+              <>
+                {carouselItems[activeIndex].type === "video" ? (
+                  <video 
+                    src={carouselItems[activeIndex].media_url}
+                    autoPlay muted loop playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image 
+                    src={carouselItems[activeIndex].media_url} 
+                    alt={carouselItems[activeIndex].title}
+                    fill
+                    className="object-cover object-top"
+                    priority
+                  />
+                )}
+                {/* Gradient Overlay for Text Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                
+                {/* Center Content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pb-20">
+                  <motion.h2 
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg max-w-4xl"
+                  >
+                    {carouselItems[activeIndex].title}
+                  </motion.h2>
+                  <motion.p 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md max-w-2xl"
+                  >
+                    {carouselItems[activeIndex].subtitle}
+                  </motion.p>
+                </div>
+              </>
             )}
-            {/* Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            
-            {/* Center Content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pb-20">
-              <motion.h2 
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
-                className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg max-w-4xl"
-              >
-                {carouselItems[activeIndex].title}
-              </motion.h2>
-              <motion.p 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md max-w-2xl"
-              >
-                {carouselItems[activeIndex].subtitle}
-              </motion.p>
-            </div>
           </motion.div>
         </AnimatePresence>
 

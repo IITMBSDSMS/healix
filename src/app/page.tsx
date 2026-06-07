@@ -19,6 +19,31 @@ const IconMap: Record<string, any> = {
   Play
 };
 
+function Counter({ target, duration = 1.2 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = React.useRef(null);
+  const inView = true; // Simple trigger on client mount
+
+  useEffect(() => {
+    let start = 0;
+    const end = target;
+    if (start === end) return;
+
+    const totalMilliseconds = duration * 1000;
+    const incrementTime = Math.abs(Math.floor(totalMilliseconds / end));
+
+    const timer = setInterval(() => {
+      start += 1;
+      setCount(start);
+      if (start === end) clearInterval(timer);
+    }, incrementTime);
+
+    return () => clearInterval(timer);
+  }, [target, duration]);
+
+  return <span ref={ref}>{count}</span>;
+}
+
 const STATIC_BRANDS = [
   {
     id: "avennix",
@@ -308,662 +333,543 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen flex flex-col w-full bg-[#fafafa] text-black pb-20 overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col w-full bg-white text-zinc-900 pb-20 overflow-x-hidden selection:bg-orange-500/20">
       
       {/* Background patterns */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.03] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.5px,transparent_0.5px)] [background-size:24px_24px] opacity-[0.02] pointer-events-none" />
 
-      {/* Hero Carousel Banner (IITD Style) */}
+      {/* Hero Carousel Banner */}
       <div className="w-full">
         <HeroCarousel />
       </div>
 
-      <div className="relative mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 w-full mt-6 space-y-16">
+      {/* --- SECTION 2: HEALIX AT A GLANCE (Animated Counters) --- */}
+      <section className="bg-zinc-950 text-white py-16 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
+        {/* Grid Backdrop Mesh & radial glow */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.3px,transparent_0.3px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
         
-        {/* --- SECTION 1: IMPORTANT ANNOUNCEMENTS (IITD Style) --- */}
-        <div className="bg-white border border-zinc-200 shadow-sm rounded-none p-6 md:p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-xl md:text-3xl font-extrabold tracking-tight text-[#ea580c] uppercase flex items-center justify-center gap-3">
-              <Newspaper className="w-6 h-6 text-[#ea580c]" /> Important Announcements
-            </h2>
-            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
+        <div className="max-w-[94%] mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Institutional Scope</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight font-mono">Healix At A Glance</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
           </div>
-
-          <div className="grid grid-cols-1 gap-4 max-w-5xl mx-auto">
-            {announcements.map((ann, idx) => (
-              <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-[#fafafa] hover:bg-orange-50/20 transition-colors flex items-center justify-between">
-                <Link href="/news" className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1">
-                  {ann}
-                </Link>
-                <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-600 text-white font-mono text-[9px] font-bold rounded uppercase">
-                  New
-                </span>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-6 md:gap-8 text-center">
+            {[
+              { label: "AIIMS Contributors", value: 15, suffix: "+" },
+              { label: "Clinical Advisors", value: 25, suffix: "+" },
+              { label: "Research Associates", value: 40, suffix: "+" },
+              { label: "Active Projects", value: 12, suffix: "" },
+              { label: "Innovation Verticals", value: 6, suffix: "" },
+              { label: "Academic Collaborations", value: 10, suffix: "+" }
+            ].map((stat, i) => (
+              <div key={i} className="p-6 bg-zinc-900/40 border border-zinc-850 rounded-lg hover:border-[#ea580c]/30 hover:bg-zinc-900/80 transition-all group">
+                <p className="text-3xl md:text-4xl font-extrabold text-[#ea580c] font-mono tracking-tight group-hover:scale-105 transition-transform duration-300">
+                  <Counter target={stat.value} />{stat.suffix}
+                </p>
+                <p className="text-[10px] md:text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider mt-3 leading-relaxed">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* --- SECTION 2: ABOUT HEALIX & LEADER'S CORNER (IITD Style) --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left: About */}
-          <div className="lg:col-span-7 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between">
-            <div>
-              <h2 className="text-2xl font-black text-black tracking-tight mb-2 uppercase border-b-2 border-zinc-100 pb-3 flex items-center gap-2">
-                About <span className="text-[#ea580c]">Healix</span>
-              </h2>
-              <p className="text-sm text-zinc-900 leading-relaxed mb-6 mt-4">
-                Healix Technologies Pvt. Ltd. is India's premier biomedical research and engineering institution. Combining advanced digital twin telemetry, state-of-the-art BioLabs genomics sequence modeling, and emergency safety coordination platforms, we develop indigenous solutions addressing national clinical and community infrastructure safety metrics.
-              </p>
-              <p className="text-sm text-zinc-900 leading-relaxed mb-6">
-                Established under the guidance of leading clinical advisors and tech councils, the organization bridges the gap between hardware computing arrays and emergency response systems to build a secure, tech-driven tomorrow.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Link href="/about" className="h-10 px-6 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
-                Read More
-              </Link>
-              <Link href="/news" className="h-10 px-6 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
-                Newsletter
-              </Link>
-            </div>
+      {/* --- SECTION 3: OUR ECOSYSTEM --- */}
+      <section id="ecosystem" className="py-20 bg-white border-b border-zinc-200">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Structured Segments</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Our Ecosystem</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
           </div>
 
-          {/* Right: Leader's Corner */}
-          <div className="lg:col-span-5 bg-white border border-zinc-200 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden min-h-[360px]">
-            <div>
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-2">
-                <h2 className="text-2xl font-black text-black tracking-tight uppercase">
-                  Founder's <span className="text-[#ea580c]">Corner</span>
-                </h2>
-                {founders.length > 1 && (
-                  <div className="flex gap-1.5 items-center">
-                    <button 
-                      onClick={() => setActiveFounderIndex((prev) => (prev - 1 + founders.length) % founders.length)}
-                      className="p-1 rounded-full border border-zinc-200 hover:border-black hover:bg-zinc-50 text-zinc-600 hover:text-black transition-all cursor-pointer"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    <button 
-                      onClick={() => setActiveFounderIndex((prev) => (prev + 1) % founders.length)}
-                      className="p-1 rounded-full border border-zinc-200 hover:border-black hover:bg-zinc-50 text-zinc-600 hover:text-black transition-all cursor-pointer"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: "Bio Labs",
+                subtitle: "Research • Innovation • Mentorship",
+                desc: "High-performance sequencing pools, CRISPR targeting model validation, and elite biomedical research fellowships.",
+                logo: "/biolabs-logo-web.png",
+                href: "/biolabs",
+                tag: "GENOMICS & RESEARCH"
+              },
+              {
+                title: "Healix AI",
+                subtitle: "Artificial Intelligence for Healthcare",
+                desc: "Explainable deep learning diagnostics, digital twin systems, and low-latency clinical triaging pipelines.",
+                logo: "/ai-logo.jpg",
+                href: "/ai-check",
+                tag: "PREDICTIVE CLINICAL AI"
+              },
+              {
+                title: "Avennix Pharma",
+                subtitle: "Pharmaceutical & Healthcare Solutions",
+                desc: "Standardizing clinical trial metrics, software-driven drug discovery pipelines, and secure IoT care networks.",
+                logo: "/avennix-official-logo.png",
+                href: "/care",
+                tag: "DIGITAL THERAPEUTICS"
+              },
+              {
+                title: "Healix Sahyog Foundation",
+                subtitle: "Mental Health • Community Impact • Education",
+                desc: "Empowering communities with safety tech, Project Suraksha coordinates, and inclusive mental health initiatives.",
+                logo: "/hsf-official-logo-web.png",
+                href: "/shesecure",
+                tag: "COMMUNITY HEALTH & SAFETY"
+              }
+            ].map((eco, i) => (
+              <div key={i} className="group relative flex flex-col justify-between p-6 bg-zinc-50 border border-zinc-200 hover:border-zinc-950 transition-all duration-300 min-h-[280px]">
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-[9px] font-mono text-[#ea580c] bg-[#ea580c]/5 border border-[#ea580c]/20 px-2 py-0.5 font-bold uppercase tracking-wider">{eco.tag}</span>
+                    <div className="w-8 h-8 rounded border border-zinc-200/60 bg-white flex items-center justify-center overflow-hidden">
+                      <img src={eco.logo} alt="" className="w-full h-full object-contain p-1" />
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {founders.length > 0 && (
-                <div className="relative h-[180px] mt-4">
-                  <AnimatePresence mode="wait">
-                    {founders.map((f, idx) => idx === activeFounderIndex && (
-                      <motion.div
-                        key={f.id || idx}
-                        initial={{ opacity: 0, x: 15 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -15 }}
-                        transition={{ duration: 0.3 }}
-                        className="absolute inset-0 flex flex-col sm:flex-row gap-4 items-start"
-                      >
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
-                          {f.photo_url ? (
-                            <img 
-                              src={f.photo_url} 
-                              alt={f.name} 
-                              className="w-full h-full object-cover object-top"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-lg uppercase font-mono">
-                              {f.name?.[0]}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-extrabold text-base text-zinc-950 truncate font-mono uppercase tracking-tight">{f.name}</p>
-                          <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{f.role}</p>
-                          <p className="text-xs text-zinc-750 leading-relaxed mt-2.5 line-clamp-3 italic font-sans">
-                            "{f.quote}"
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                  <h3 className="text-lg font-black text-zinc-950 uppercase group-hover:text-[#ea580c] transition-colors">{eco.title}</h3>
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wide font-bold mt-1">{eco.subtitle}</p>
+                  <p className="text-xs text-zinc-650 leading-relaxed mt-3">{eco.desc}</p>
                 </div>
-              )}
-            </div>
+                <div className="mt-6">
+                  <Link href={eco.href} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors">
+                    Explore Portal <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            {founders.length > 0 && (
-              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 mt-6">
-                <button 
-                  onClick={() => setSelectedFounderForMsg(founders[activeFounderIndex])}
-                  className="h-10 px-6 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors w-fit font-mono"
-                >
-                  Read Message
-                </button>
-                <div className="flex gap-1">
-                  {founders.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveFounderIndex(i)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                        i === activeFounderIndex ? "bg-[#ea580c] w-3" : "bg-zinc-200 hover:bg-zinc-400"
-                      }`}
-                    />
+      {/* --- SECTION 4: LEADERSHIP TEAM --- */}
+      <section id="leadership" className="py-20 bg-white border-b border-zinc-200">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Ecosystem Direction</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Leadership Team</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                name: "Avnish Verma",
+                role: "Founder & CEO",
+                desc: "Focuses on precision health data infrastructure and standardizing distributed systems to unify fragmented clinical datasets.",
+                photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+                linkedin: "https://www.linkedin.com/company/quick-healix/",
+                founderId: "f1"
+              },
+              {
+                name: "Mahima Sharma",
+                role: "Chief Operating Officer",
+                desc: "Manages operational scaling, strategic partnerships, and structural expansion for translated clinical technologies.",
+                photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+                linkedin: "https://www.linkedin.com/company/quick-healix/",
+                founderId: "f3"
+              },
+              {
+                name: "Debarghya Bag",
+                role: "Chief Medical Officer",
+                desc: "Ensures scientific validation, medical credibility, and healthcare system reliability across all diagnostic pipelines.",
+                photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+                linkedin: "https://www.linkedin.com/company/quick-healix/",
+                founderId: "f2"
+              }
+            ].map((leader, i) => (
+              <div key={i} className="bg-zinc-50 border border-zinc-200 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between">
+                <div>
+                  <div className="aspect-square bg-zinc-200 relative overflow-hidden">
+                    <img src={leader.photo} alt={leader.name} className="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                      <a href={leader.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-extrabold text-lg text-zinc-950 font-mono uppercase tracking-tight">{leader.name}</h3>
+                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-1">{leader.role}</p>
+                    <p className="text-xs text-zinc-650 leading-relaxed mt-3">{leader.desc}</p>
+                  </div>
+                </div>
+                <div className="px-6 pb-6 pt-2">
+                  <button 
+                    onClick={() => {
+                      const fObj = founders.find(f => f.id === leader.founderId) || leader;
+                      setSelectedFounderForMsg(fObj);
+                    }}
+                    className="h-9 px-4 bg-zinc-950 hover:bg-[#ea580c] text-white text-[10px] font-bold uppercase tracking-wider flex items-center transition-colors w-fit font-mono"
+                  >
+                    Read Message
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- SECTION 5: ADVISORS & MENTORS --- */}
+      <section id="mentors" className="py-20 bg-zinc-50 border-b border-zinc-200">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Ecosystem Advisory</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Advisors & Mentors</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              {
+                category: "Clinical Advisors",
+                list: [
+                  { name: "Dr. Partha Pratim", credentials: "MD, AIIMS New Delhi", spec: "Genomics sequencing diagnostics & risk profiling" },
+                  { name: "Dr. Sarah Chen", credentials: "MD, PhD, Stanford Medicine", spec: "Clinical decision support & triaging pipelines" },
+                  { name: "Dr. A. C. Roy", credentials: "MD, FACC, Mayo Clinic", spec: "Cardiovascular telemetry & remote monitoring" }
+                ]
+              },
+              {
+                category: "Research Advisors",
+                list: [
+                  { name: "Dr. Rajesh K. Sharma", credentials: "PhD, IISc Bangalore", spec: "Distributed algorithms & database reliability" },
+                  { name: "Prof. Michael Sterling", credentials: "PhD, MIT Media Lab", spec: "Wearable biosensors & edge compute arrays" },
+                  { name: "Dr. Ananya Ray", credentials: "PhD, IIT Madras", spec: "In-silico molecular modeling & cancer targets" }
+                ]
+              },
+              {
+                category: "Academic Mentors",
+                list: [
+                  { name: "Prof. R. Sharma", credentials: "Senior Faculty, IIT Delhi", spec: "Telemetry synchronization & network protocols" },
+                  { name: "Dr. Vikram Sen", credentials: "Professor, AIIMS", spec: "Community health diagnostics & survey design" },
+                  { name: "Dr. Helen Rostova", credentials: "Faculty, Cambridge University", spec: "Explainable deep learning models in healthcare" }
+                ]
+              },
+              {
+                category: "Industry Experts",
+                list: [
+                  { name: "Sudiksha Sharma", credentials: "Human Systems Strategist", spec: "Behavioral psychology & interface trust dynamics" },
+                  { name: "Siddharth Bose", credentials: "Partner, BioTech Capital", spec: "Commercialization & intellectual property structures" },
+                  { name: "Elena Petrova", credentials: "Director, Global Pharma Solutions", spec: "Clinical trial designs & regulatory compliance" }
+                ]
+              }
+            ].map((cat, i) => (
+              <div key={i} className="space-y-4">
+                <div className="border-l-2 border-[#ea580c] pl-3 py-1">
+                  <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-wider">{cat.category}</h3>
+                </div>
+                <div className="space-y-3">
+                  {cat.list.map((adv, j) => (
+                    <div key={j} className="p-4 bg-white border border-zinc-200 hover:border-zinc-400 transition-all rounded shadow-sm">
+                      <p className="font-bold text-xs text-zinc-950">{adv.name}</p>
+                      <p className="text-[9px] font-mono text-[#ea580c] uppercase tracking-wider font-bold mt-0.5">{adv.credentials}</p>
+                      <p className="text-[10px] text-zinc-500 leading-relaxed mt-2">{adv.spec}</p>
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* --- SECTION 3: ACADEMIC UNITS / MODULES (IITD Style) --- */}
-        <div>
-          <div className="text-center mb-8">
-            <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
-              Healix <span className="text-[#ea580c]">Academic & Research Units</span>
-            </h2>
-            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: "Avennix Pharma", subtitle: "Clinical Research & Care", logo: "/avennix-official-logo.png", href: "/care" },
-              { title: "HSF Safety", subtitle: "Community Support Portal", logo: "/hsf-official-logo-web.png", href: "/shesecure" },
-              { title: "BioLabs Genomics", subtitle: "Genomics Sequence Labs", logo: "/biolabs-logo-web.png", href: "/biolabs" },
-              { title: "Healix AI Check", subtitle: "Symptom Triaging Portal", logo: "/ai-logo.jpg", href: "/ai-check" }
-            ].map((unit, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <Link 
-                  href={unit.href}
-                  className="bg-white border border-zinc-200 p-6 flex flex-col justify-between min-h-[160px] hover:border-[#ea580c] transition-all group cursor-pointer h-full"
-                >
-                  <div className="w-10 h-10 border border-zinc-200/60 bg-white flex items-center justify-center mb-4 overflow-hidden rounded-lg shadow-sm">
-                    <img src={unit.logo} alt={unit.title} className="w-full h-full object-contain p-1" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm sm:text-base text-zinc-950 group-hover:text-[#ea580c] transition-colors">{unit.title}</h3>
-                    <p className="text-[10px] sm:text-xs text-zinc-500 font-mono mt-1 uppercase tracking-wider">{unit.subtitle}</p>
-                  </div>
-                </Link>
-              </motion.div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* --- SECTION 4: STARTUPS@HEALIX (IITD Style) --- */}
-        <div>
-          <div className="flex justify-between items-center mb-8 border-b-2 border-zinc-150 pb-3">
-            <h2 className="text-2xl font-black tracking-tight text-black uppercase">
-              Startups<span className="text-[#ea580c]">@Healix</span>
-            </h2>
-            <Link href="/startups" className="h-8 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider flex items-center transition-colors">
-              View All
-            </Link>
+      {/* --- SECTION 6: CURRENT INITIATIVES --- */}
+      <section id="initiatives" className="py-20 bg-white border-b border-zinc-200">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Active Pursuits</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Current Initiatives</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: "CRISPR Target Diagnostics",
-                desc: "Advanced sequencing models predicting off-target genetic mutation metrics using high-performance computing pools.",
-                src: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=600&auto=format&fit=crop",
-                href: "/biolabs"
-              },
-              {
-                title: "Live GPS Telemetry Sync",
-                desc: "Low-latency socket streams transmitting secure coordinates to verified local authorities during emergency SOS checks.",
-                src: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop",
+                title: "Project Suraksha",
+                desc: "Standardizing low-latency travel safety telemetry tracking, encrypted hardware beacons, and one-tap emergency SOS broadcasts.",
+                status: "DEPLOYED",
+                color: "text-red-500 border-red-500/20 bg-red-500/5",
                 href: "/shesecure"
               },
               {
-                title: "AI Symptom Checker Pipeline",
-                desc: "Structured data pipelines matching user-reported symptoms to medical databases with transparent verification metrics.",
-                src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop",
+                title: "BioLabs Research Fellowship",
+                desc: "Full-time research stipends and laboratory access for graduate researchers building sequence modeling systems.",
+                status: "APPLICATIONS OPEN",
+                color: "text-emerald-500 border-emerald-500/20 bg-emerald-500/5",
+                href: "/biolabs"
+              },
+              {
+                title: "Healthcare Innovation Programs",
+                desc: "Connecting engineers, psychologists, and clinicians to test pilot systems in real-world clinical and rural environments.",
+                status: "IN PROGRESS",
+                color: "text-blue-500 border-blue-500/20 bg-blue-500/5",
+                href: "/contact"
+              },
+              {
+                title: "AI Healthcare Initiatives",
+                desc: "Deploying deep learning triage models to remote clinics to assist local caregivers with diagnostics classifications.",
+                status: "BETA TESTING",
+                color: "text-purple-500 border-purple-500/20 bg-purple-500/5",
                 href: "/ai-check"
               }
-            ].map((start, idx) => (
-              <motion.div
-                key={idx}
-                custom={idx}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <div className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group h-full">
-                  <div className="h-44 bg-zinc-150 relative overflow-hidden">
-                    <img src={start.src} alt={start.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" />
+            ].map((init, i) => (
+              <div key={i} className="bg-zinc-50 border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-950 transition-all duration-300 min-h-[220px]">
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={`text-[8px] font-mono font-bold tracking-widest uppercase border px-2 py-0.5 rounded ${init.color}`}>{init.status}</span>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-extrabold text-base text-zinc-950 mb-2">{start.title}</h4>
-                      <p className="text-xs text-zinc-700 leading-relaxed mb-4">{start.desc}</p>
-                    </div>
-                    <Link href={start.href} className="h-8 px-4 border border-zinc-300 hover:border-[#ea580c] hover:bg-orange-50/20 text-zinc-800 hover:text-[#ea580c] text-[10px] font-bold uppercase tracking-wider w-fit flex items-center justify-center transition-all">
-                      Read More
-                    </Link>
-                  </div>
+                  <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight leading-snug">{init.title}</h3>
+                  <p className="text-xs text-zinc-650 leading-relaxed mt-3">{init.desc}</p>
                 </div>
-              </motion.div>
+                <div className="mt-6">
+                  <Link href={init.href} className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider flex items-center gap-1">
+                    Learn More <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* --- SECTION 5: LATEST NEWS & EVENTS --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-zinc-200 pt-12 items-start">
-          {/* Left Column: News */}
-          <div className="lg:col-span-8">
-            <h2 className="text-2xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
-              Latest <span className="text-[#ea580c]">News</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {[
-                {
-                  title: "In-Silico Breast Cancer Mutation Analysis",
-                  desc: "Predictive BRCA1 genetic sequencing parameters mapped with 98.4% confidence rating.",
-                  src: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400"
-                },
-                {
-                  title: "Distributed Edge Telemetry Failsafes",
-                  desc: "Establishing decentralized failsafe socket buffers to capture SOS emergency coordinates.",
-                  src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400"
-                }
-              ].map((res, idx) => (
-                <motion.div
-                  key={idx}
-                  custom={idx}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-50px" }}
-                  variants={cardVariants}
-                  className="h-full"
-                >
-                  <div className="bg-white border border-zinc-200 flex flex-col justify-between hover:border-black transition-all group h-full">
-                    <div className="h-36 bg-zinc-150 relative">
-                      <img src={res.src} alt={res.title} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-extrabold text-sm text-zinc-950 mb-2 leading-snug">{res.title}</h4>
-                        <p className="text-xs text-zinc-700 leading-relaxed mb-4">{res.desc}</p>
-                      </div>
-                      <Link href="/news" className="h-7 px-3 border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-[10px] font-bold uppercase tracking-wider w-fit flex items-center transition-colors">
-                        Details
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+      {/* --- SECTION 7: LATEST NEWS & UPDATES --- */}
+      <section id="news" className="py-20 bg-white border-b border-zinc-200">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Live Feed</p>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Latest News & Updates</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
           </div>
 
-          {/* Right Column: Events */}
-          <div id="events" className="lg:col-span-4 bg-white border border-zinc-200 p-6 scroll-mt-20 flex flex-col justify-between">
-            <div>
-              <h2 className="text-xl font-black tracking-tight text-black uppercase mb-6 pb-3 border-b border-zinc-200">
-                Upcoming <span className="text-[#ea580c]">Events</span>
-              </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Announcements (Left column) */}
+            <div className="lg:col-span-8 bg-zinc-50 border border-zinc-200 p-6 md:p-8">
+              <h3 className="text-lg font-black text-zinc-950 uppercase mb-6 flex items-center gap-2 border-b border-zinc-200 pb-3 font-mono">
+                <Newspaper className="w-5 h-5 text-[#ea580c]" /> Important Announcements
+              </h3>
+              
               <div className="space-y-4">
-                {upcomingEvents.map((sem, idx) => (
-                  <div key={idx} className="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
-                    <Link 
-                      href={`/events?search=${encodeURIComponent(sem.title)}`} 
-                      className="text-sm font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block"
-                    >
-                      {sem.title}
+                {announcements.map((ann, idx) => (
+                  <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-white hover:bg-orange-50/20 transition-colors flex items-center justify-between shadow-sm">
+                    <Link href="/news" className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1">
+                      {ann}
                     </Link>
-                    <div className="flex justify-between items-center mt-2 text-xs text-zinc-650 font-mono">
-                      <span>{sem.speaker}</span>
-                      <span>{sem.date}</span>
-                    </div>
+                    <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-600 text-white font-mono text-[8px] font-bold rounded uppercase">
+                      New
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-            
-            <div className="mt-8">
-              <Link 
-                href="/events" 
-                className="w-full py-3 bg-zinc-900 hover:bg-[#ea580c] text-white text-center text-xs font-bold uppercase tracking-wider block transition-colors duration-300 rounded-none shadow-sm"
-              >
-                View All Events
-              </Link>
-            </div>
-          </div>
-        </div>
 
-        {/* --- SECTION 6: OUR BRANDS (Cinematic Slideshow) --- */}
-        <div className="border-t border-zinc-200 pt-16 content-visibility-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
-              Our <span className="text-[#ea580c]">Brands</span>
-            </h2>
-            <div className="w-24 h-1 bg-[#ea580c] mx-auto mt-3" />
-          </div>
-
-          <div className="bg-white border border-zinc-200 rounded-none p-6 md:p-12 relative overflow-hidden shadow-sm min-h-[300px] flex items-center">
-            {/* Grid Backdrop Mesh */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full z-10">
-              {/* Brand Navigation Indicators (Left) */}
-              <div className="lg:col-span-4 flex flex-col gap-3">
-                {brands.map((brand, idx) => {
-                  const IconComponent = brand.icon || (IconMap[brand.icon_name] || Shield);
-                  const isActive = idx === activeBrandIndex;
-                  return (
-                    <button
-                      key={brand.id || idx}
-                      onClick={() => setActiveBrandIndex(idx)}
-                      className={`flex items-center gap-3 px-5 py-4 border text-left transition-all duration-300 ${
-                        isActive 
-                          ? "bg-[#ea580c]/5 border-[#ea580c] translate-x-2" 
-                          : "bg-[#fafafa] border-zinc-200 hover:border-zinc-400"
-                      }`}
-                    >
-                      <div className={`p-1.5 rounded border flex items-center justify-center ${isActive ? "text-[#ea580c] border-[#ea580c]/30 bg-[#ea580c]/10" : "text-zinc-400 border-zinc-250 bg-white"}`}>
-                        {brand.logo_url ? (
-                          <img src={brand.logo_url} alt="" className="w-4 h-4 object-contain" />
-                        ) : (
-                          <IconComponent className="w-4 h-4" />
-                        )}
-                      </div>
-                      <div>
-                        <p className={`font-bold text-sm ${isActive ? "text-zinc-950 font-black" : "text-zinc-700"}`}>{brand.name}</p>
-                        <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">{brand.logoText || brand.logo_text}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Brand Details Card (Right) */}
-              <div className="lg:col-span-8 flex justify-center items-center">
-                <AnimatePresence mode="wait">
-                  {brands[activeBrandIndex] && (
-                    <motion.div
-                      key={activeBrandIndex}
-                      initial={{ opacity: 0, x: 20, filter: "blur(4px)" }}
-                      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
-                      transition={{ duration: 0.4 }}
-                      className="w-full flex flex-col md:flex-row gap-8 items-center bg-zinc-50 border border-zinc-200 p-8 rounded-none"
-                    >
-                      {/* Big stylized logo frame */}
-                      <div className="w-36 h-36 border border-zinc-200 bg-white flex flex-col items-center justify-center shrink-0 shadow-sm relative group overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.01)_0%,transparent_70%)]" />
-                        {brands[activeBrandIndex].logo_url ? (
-                          <img 
-                            src={brands[activeBrandIndex].logo_url} 
-                            alt={brands[activeBrandIndex].name} 
-                            className="w-20 h-20 object-contain mb-2" 
-                          />
-                        ) : (
-                          <div className="p-4 rounded-full border border-zinc-150 bg-zinc-50 text-zinc-600 mb-2">
-                            {React.createElement(brands[activeBrandIndex].icon || (IconMap[brands[activeBrandIndex].icon_name] || Shield), { className: "w-8 h-8 text-[#ea580c]" })}
-                          </div>
-                        )}
-                        <p className="font-mono font-black text-xs text-zinc-900 tracking-wider uppercase">{brands[activeBrandIndex].logoText || brands[activeBrandIndex].logo_text}</p>
-                      </div>
-
-                      {/* Brand descriptions */}
-                      <div className="space-y-4 text-left">
-                        <div className="inline-flex px-2 py-0.5 border border-zinc-200 text-zinc-500 font-mono text-[9px] font-bold uppercase tracking-widest bg-white">
-                          Official Entity / Brand
-                        </div>
-                        <h3 className="text-2xl font-black font-mono text-zinc-950 uppercase">{brands[activeBrandIndex].name}</h3>
-                        <p className="text-xs font-mono text-[#ea580c] uppercase font-bold tracking-wider">{brands[activeBrandIndex].role}</p>
-                        <p className="text-sm text-zinc-650 leading-relaxed font-sans">{brands[activeBrandIndex].desc || brands[activeBrandIndex].description}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* --- SECTION 7: PODCASTS (Animated dynamic list) --- */}
-        <div className="border-t border-zinc-200 pt-16 content-visibility-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-10 border-b border-zinc-200 pb-4 w-full">
-            <div className="flex items-center gap-3">
-              {/* Dancing soundwave animation */}
-              <div className="flex items-end gap-0.5 h-6 w-8 pb-1">
-                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-1 h-3" />
-                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-2 h-5" />
-                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-3 h-2" />
-                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-4 h-6" />
-                <div className="w-0.5 bg-[#ea580c] rounded-full audio-bar-5 h-4" />
-              </div>
-              <h2 className="text-xl md:text-3xl font-black tracking-tight text-black uppercase">
-                Healix <span className="text-[#ea580c]">Podcasts</span>
-              </h2>
-            </div>
-            
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#ea580c]/30 bg-[#ea580c]/10 text-[#ea580c] font-mono text-[9px] font-bold uppercase tracking-wider mt-3 sm:mt-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" /> Broadcast Active
-            </span>
-          </div>
-
-          {/* Embedded internal CSS for soundwave dancing */}
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes soundwave-dancing {
-              0%, 100% { height: 8px; }
-              50% { height: 24px; }
-            }
-            .audio-bar-1 { animation: soundwave-dancing 0.8s ease-in-out infinite; }
-            .audio-bar-2 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.15s; }
-            .audio-bar-3 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.3s; }
-            .audio-bar-4 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.45s; }
-            .audio-bar-5 { animation: soundwave-dancing 0.8s ease-in-out infinite 0.6s; }
-          ` }} />
-
-          {/* Grid list of podcasts */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {podcasts.map((pod, idx) => (
-              <motion.div
-                key={pod.id}
-                custom={idx}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <div 
-                  className="bg-white border border-zinc-200 rounded-none overflow-hidden hover:border-black transition-all group flex flex-col justify-between h-full"
-                >
-                  {/* Thumbnail with overlay play trigger */}
-                  <div 
-                    className="aspect-video bg-zinc-150 relative overflow-hidden cursor-pointer"
-                    onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
-                  >
-                    {pod.thumbnail_url ? (
-                      <img 
-                        src={pod.thumbnail_url} 
-                        alt={pod.title} 
-                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-white/30 text-xs font-mono">
-                        No Thumbnail
-                      </div>
-                    )}
-
-                    {/* Play badge overlays */}
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full border-2 border-white bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:scale-110 transition-transform duration-300 shadow-md">
-                        <Play className="w-5 h-5 text-white fill-white translate-x-0.5" />
-                      </div>
-                    </div>
-
-                    {/* Duration label */}
-                    {pod.duration && (
-                      <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] text-white font-mono font-bold tracking-wider">
-                        {pod.duration}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-widest">Episode Broadcast</p>
-                      <h4 className="font-extrabold text-base text-zinc-950 mb-2 group-hover:text-[#ea580c] transition-colors leading-snug">
-                        {pod.title}
-                      </h4>
-                      <p className="text-xs text-zinc-650 leading-relaxed font-sans line-clamp-3">
-                        {pod.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-6">
-                      <button 
-                        onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
-                        className="h-8 px-4 bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 hover:bg-[#ea580c] hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300"
+            {/* Events & Podcasts (Right column) */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Events Block */}
+              <div className="bg-zinc-50 border border-zinc-200 p-6">
+                <h3 className="text-base font-black text-zinc-950 uppercase mb-4 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
+                  <Calendar className="w-4.5 h-4.5 text-[#ea580c]" /> Upcoming Events
+                </h3>
+                <div className="space-y-4">
+                  {upcomingEvents.map((sem, idx) => (
+                    <div key={idx} className="pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
+                      <Link 
+                        href={`/events?search=${encodeURIComponent(sem.title)}`} 
+                        className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block"
                       >
-                        Watch Episode
-                      </button>
+                        {sem.title}
+                      </Link>
+                      <div className="flex justify-between items-center mt-2 text-[10px] text-zinc-500 font-mono">
+                        <span>{sem.speaker}</span>
+                        <span>{sem.date}</span>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </motion.div>
-            ))}
+                <Link href="/events" className="w-full py-2 bg-zinc-950 hover:bg-[#ea580c] text-white text-center text-[10px] font-bold uppercase tracking-wider block transition-colors mt-6 font-mono">
+                  View All Seminars
+                </Link>
+              </div>
+
+              {/* Podcasts Block */}
+              <div className="bg-zinc-50 border border-zinc-200 p-6">
+                <h3 className="text-base font-black text-zinc-950 uppercase mb-4 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
+                  <Play className="w-4 h-4 text-[#ea580c]" /> Podcast Snippets
+                </h3>
+                <div className="space-y-3">
+                  {podcasts.slice(0, 2).map((pod, idx) => (
+                    <div key={idx} className="flex gap-3 items-center pb-2 border-b border-zinc-200 last:border-0 last:pb-0">
+                      <div className="w-14 h-10 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer" onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}>
+                        <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-zinc-900 truncate block hover:text-[#ea580c] cursor-pointer" onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}>{pod.title}</span>
+                        <span className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-wider">{pod.duration}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* --- CINEMATIC YOUTUBE PLAYER MODAL --- */}
-        <AnimatePresence>
-          {activePodcast && (
+      {/* --- SECTION 8: JOIN THE ECOSYSTEM --- */}
+      <section className="bg-black text-white py-20 px-6 sm:px-8 border-t border-zinc-900 relative overflow-hidden text-center">
+        {/* Grid Backdrop Mesh & radial glow */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[140px] pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10 space-y-8">
+          <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Collaborative Venture</p>
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight max-w-3xl mx-auto font-mono">
+            Join India’s Next Generation Healthcare Innovation Ecosystem
+          </h2>
+          <p className="text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
+            Whether you are an active clinician, a molecular researcher, a systems engineer, or an industry partner, we invite you to collaborate with us to deploy healthcare safety systems at national scale.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <Link href="/biolabs" className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto shadow-[0_0_20px_rgba(234,88,12,0.3)]">
+              Apply for BioLabs
+            </Link>
+            <Link href="/academy/mentors" className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">
+              Become a Mentor
+            </Link>
+            <Link href="/contact" className="px-8 py-3 bg-white hover:bg-zinc-150 text-black text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">
+              Collaborate With Us
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* --- CINEMATIC YOUTUBE PLAYER MODAL --- */}
+      <AnimatePresence>
+        {activePodcast && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+            onClick={() => setActivePodcast(null)}
+          >
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
-              onClick={() => setActivePodcast(null)}
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-none shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div 
-                initial={{ scale: 0.95, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 20 }}
-                transition={{ duration: 0.3 }}
-                className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-none shadow-2xl relative"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Header title */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-900 bg-zinc-900/50">
-                  <p className="text-xs font-mono text-[#ea580c] uppercase tracking-wider font-bold">Healix Cinema Broadcast</p>
-                  <button 
-                    onClick={() => setActivePodcast(null)}
-                    className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Aspect video container */}
-                <div className="aspect-video w-full relative bg-black">
-                  <iframe 
-                    src={getEmbedUrl(activePodcast.youtube_url) + "?autoplay=1"}
-                    title={activePodcast.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full border-none"
-                  />
-                </div>
-
-                <div className="p-4 bg-zinc-900/35">
-                  <h3 className="font-extrabold text-sm text-white font-mono uppercase tracking-wide">{activePodcast.title}</h3>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* --- FOUNDER MESSAGE ENVELOPE MODAL --- */}
-        <AnimatePresence>
-          {selectedFounderForMsg && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-              onClick={() => setSelectedFounderForMsg(null)}
-            >
-              <motion.div 
-                initial={{ scale: 0.95, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 15 }}
-                transition={{ duration: 0.25 }}
-                className="w-full max-w-lg bg-white border border-zinc-200 rounded-none shadow-2xl relative p-6 md:p-8"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Close Button */}
+              {/* Header title */}
+              <div className="flex items-center justify-between p-4 border-b border-zinc-900 bg-zinc-900/50">
+                <p className="text-xs font-mono text-[#ea580c] uppercase tracking-wider font-bold">Healix Cinema Broadcast</p>
                 <button 
-                  onClick={() => setSelectedFounderForMsg(null)}
-                  className="absolute top-4 right-4 p-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black transition-colors"
+                  onClick={() => setActivePodcast(null)}
+                  className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
 
-                {/* Message Header */}
-                <div className="flex items-center gap-4 mb-6 border-b border-zinc-100 pb-5 mt-2">
-                  <div className="w-16 h-16 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
-                    {selectedFounderForMsg.photo_url ? (
-                      <img 
-                        src={selectedFounderForMsg.photo_url} 
-                        alt={selectedFounderForMsg.name} 
-                        className="w-full h-full object-cover object-top"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-sm uppercase font-mono">
-                        {selectedFounderForMsg.name?.[0]}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-black font-mono uppercase tracking-tight">{selectedFounderForMsg.name}</h3>
-                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{selectedFounderForMsg.role}</p>
-                    <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">Healix Technologies Pvt. Ltd.</p>
-                  </div>
-                </div>
+              {/* Aspect video container */}
+              <div className="aspect-video w-full relative bg-black">
+                <iframe 
+                  src={getEmbedUrl(activePodcast.youtube_url) + "?autoplay=1"}
+                  title={activePodcast.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-none"
+                />
+              </div>
 
-                {/* Letter Body */}
-                <div className="relative font-serif text-zinc-800 text-sm leading-relaxed whitespace-pre-line py-2">
-                  <Quote className="absolute -top-1 -left-2 w-8 h-8 text-orange-100 -z-10 rotate-180" />
-                  <p className="italic font-medium text-zinc-900 text-base mb-4">"Greetings from the Leadership Team,"</p>
-                  <p className="font-medium text-zinc-700 leading-relaxed font-sans">{selectedFounderForMsg.quote}</p>
-                </div>
-
-                {/* Signature/Footer */}
-                <div className="mt-8 border-t border-zinc-100 pt-5 flex items-center justify-between text-xs font-mono">
-                  <div>
-                    <p className="text-zinc-400 uppercase">Status</p>
-                    <p className="text-emerald-600 font-bold uppercase flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Verified Leadership
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => setSelectedFounderForMsg(null)}
-                    className="px-4 py-2 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider transition-colors font-mono"
-                  >
-                    Close
-                  </button>
-                </div>
-              </motion.div>
+              <div className="p-4 bg-zinc-900/35">
+                <h3 className="font-extrabold text-sm text-white font-mono uppercase tracking-wide">{activePodcast.title}</h3>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      </div>
+      {/* --- FOUNDER MESSAGE ENVELOPE MODAL --- */}
+      <AnimatePresence>
+        {selectedFounderForMsg && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setSelectedFounderForMsg(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full max-w-lg bg-white border border-zinc-200 rounded-none shadow-2xl relative p-6 md:p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedFounderForMsg(null)}
+                className="absolute top-4 right-4 p-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Message Header */}
+              <div className="flex items-center gap-4 mb-6 border-b border-zinc-100 pb-5 mt-2">
+                <div className="w-16 h-16 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
+                  {selectedFounderForMsg.photo_url ? (
+                    <img 
+                      src={selectedFounderForMsg.photo_url} 
+                      alt={selectedFounderForMsg.name} 
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-sm uppercase font-mono">
+                      {selectedFounderForMsg.name?.[0]}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-black font-mono uppercase tracking-tight">{selectedFounderForMsg.name}</h3>
+                  <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{selectedFounderForMsg.role}</p>
+                  <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">Healix Technologies Pvt. Ltd.</p>
+                </div>
+              </div>
+
+              {/* Letter Body */}
+              <div className="relative font-serif text-zinc-800 text-sm leading-relaxed whitespace-pre-line py-2">
+                <Quote className="absolute -top-1 -left-2 w-8 h-8 text-orange-100 -z-10 rotate-180" />
+                <p className="italic font-medium text-zinc-900 text-base mb-4">"Greetings from the Leadership Team,"</p>
+                <p className="font-medium text-zinc-700 leading-relaxed font-sans">{selectedFounderForMsg.quote}</p>
+              </div>
+
+              {/* Signature/Footer */}
+              <div className="mt-8 border-t border-zinc-100 pt-5 flex items-center justify-between text-xs font-mono">
+                <div>
+                  <p className="text-zinc-400 uppercase">Status</p>
+                  <p className="text-emerald-600 font-bold uppercase flex items-center gap-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Verified Leadership
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setSelectedFounderForMsg(null)}
+                  className="px-4 py-2 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
