@@ -68,8 +68,8 @@ export function Navbar() {
 
   return (
     <header className="w-full z-50 relative flex flex-col">
-      {/* 1. TOP UTILITY BAR (Energetic Bright Orange Background, White Text) */}
-      <div className="bg-[#ea580c] text-white text-xs sm:text-sm py-2 px-4 sm:px-6 lg:px-8 border-b border-orange-600 font-sans tracking-wide">
+      {/* 1. TOP UTILITY BAR (Energetic Bright Orange Background, White Text - Hidden on Mobile/Tablet) */}
+      <div className="hidden lg:block bg-[#ea580c] text-white text-xs sm:text-sm py-2 px-4 sm:px-6 lg:px-8 border-b border-orange-600 font-sans tracking-wide">
         <div className="max-w-[94%] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline font-bold">HEALIX SERVICES PORTAL</span>
@@ -96,7 +96,7 @@ export function Navbar() {
               <span className="text-base sm:text-2xl font-black tracking-tight text-zinc-950 uppercase leading-none">
                 Healix Technologies Pvt. Ltd.
               </span>
-              <span className="text-[10px] sm:text-xs text-zinc-600 font-bold tracking-wide uppercase mt-1.5">
+              <span className="hidden sm:block text-[10px] sm:text-xs text-zinc-600 font-bold tracking-wide uppercase mt-1.5">
                 जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र
               </span>
             </div>
@@ -187,10 +187,11 @@ export function Navbar() {
               </div>
             )}
 
-            {/* Mobile menu button */}
+            {/* Mobile menu button (Enhanced Tap Target: 44x44px target box) */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2 rounded-lg text-zinc-400 hover:text-white transition-colors"
+              className="lg:hidden h-11 w-11 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900/30 transition-colors"
+              aria-label="Toggle menu"
             >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -235,6 +236,37 @@ export function Navbar() {
                     </Link>
                   );
                 })}
+
+                {/* Secondary Portal Services for Mobile */}
+                <div className="border-t border-zinc-800 pt-3.5 mt-3.5">
+                  <p className="px-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest font-bold mb-2">Portal Services</p>
+                  <a 
+                    href="https://www.biolabsresearch-healix.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
+                  >
+                    Research Portal
+                  </a>
+                  <Link 
+                    href="/admin" 
+                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
+                  >
+                    Tenders & Administration
+                  </Link>
+                  <Link 
+                    href="/news" 
+                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
+                  >
+                    Press Release
+                  </Link>
+                  <Link 
+                    href="/academy/mentors" 
+                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
+                  >
+                    Mentorship Directory
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}
