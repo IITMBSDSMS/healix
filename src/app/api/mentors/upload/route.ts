@@ -24,6 +24,21 @@ export async function POST(req: Request) {
   // 2. Upload photo and update DB with admin client (bypasses RLS issues)
   const adminSupabase = createAdminClient();
 
+  // Verify & create 'mentor-photos' bucket if it doesn't exist
+  try {
+    const { data: buckets } = await adminSupabase.storage.listBuckets();
+    const hasBucket = buckets?.some(b => b.id === 'mentor-photos');
+    if (!hasBucket) {
+      await adminSupabase.storage.createBucket('mentor-photos', {
+        public: true,
+        allowedMimeTypes: ['image/*'],
+        fileSizeLimit: 5242880 // 5MB
+      });
+    }
+  } catch (bucketErr) {
+    console.error("Error creating bucket mentor-photos:", bucketErr);
+  }
+
   const { error: uploadError } = await adminSupabase.storage
     .from("mentor-photos")
     .upload(fileName, buffer, {

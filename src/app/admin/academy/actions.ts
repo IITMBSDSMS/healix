@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { checkIsAdmin } from "@/app/admin/actions";
 import { revalidatePath } from "next/cache";
 
@@ -8,7 +8,7 @@ export async function addCourse(formData: FormData) {
   const isAdmin = await checkIsAdmin();
   if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const price = Number(formData.get("price")) || 4999;
   const shortDescription = formData.get("shortDescription")?.toString() || "Build production-grade applications.";
@@ -47,7 +47,7 @@ export async function deleteCourse(id: string) {
   const isAdmin = await checkIsAdmin();
   if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from('academy_courses').delete().eq('id', id);
   
   if (error) return { error: error.message };
@@ -61,7 +61,7 @@ export async function addMentor(formData: FormData) {
   const isAdmin = await checkIsAdmin();
   if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   let companies: string[] = ["Healix"];
   const companiesRaw = formData.get("companies")?.toString();
@@ -106,7 +106,7 @@ export async function updateMentor(id: string, formData: FormData) {
   const isAdmin = await checkIsAdmin();
   if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   let companies: string[] = ["Healix"];
   const companiesRaw = formData.get("companies")?.toString();
@@ -150,7 +150,7 @@ export async function deleteMentor(id: string) {
   const isAdmin = await checkIsAdmin();
   if (!isAdmin) return { error: "Unauthorized" };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from('academy_mentors').delete().eq('id', id);
   
   if (error) return { error: error.message };

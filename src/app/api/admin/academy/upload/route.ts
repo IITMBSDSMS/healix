@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    // 1. Authenticate user
+    const clientSupabase = await createClient();
+    const { data: { user } } = await clientSupabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const mentorId = formData.get("mentorId") as string;
@@ -18,8 +25,25 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
 
-    // Upload to 'mentor-photos' storage bucket (making sure it exists or fallback)
-    const { error: uploadError } = await supabase.storage
+    // 2. Upload with admin client (bypasses RLS issues)
+    const adminSupabase = createAdminClient();
+    
+    // Ensure bucket exists
+    try {
+      const { data: buckets } = await adminSupabase.storage.listBuckets();
+      const hasBucket = buckets?.some(b => b.id === 'mentor-photos');
+      if (!hasBucket) {
+        await adminSupabase.storage.createBucket('mentor-photos', {
+          public: true,
+          allowedMimeTypes: ['image/*'],
+          fileSizeLimit: 5242880 // 5MB
+        });
+      }
+    } catch (bucketErr) {
+      console.error("Error creating bucket mentor-photos:", bucketErr);
+    }
+
+    const { error: uploadError } = await adminSupabase.storage
       .from("mentor-photos")
       .upload(fileName, buffer, {
         contentType: file.type,
@@ -30,13 +54,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminSupabase.storage
       .from("mentor-photos")
       .getPublicUrl(fileName);
 
     // If mentorId is supplied, update the academy_mentors table
     if (mentorId) {
-      await supabase
+      await adminSupabase
         .from("academy_mentors")
         .update({ photoUrl: urlData.publicUrl })
         .eq("id", mentorId);
