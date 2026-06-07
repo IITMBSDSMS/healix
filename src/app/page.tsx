@@ -2,10 +2,112 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart, ChevronLeft, ChevronRight, Quote, ExternalLink, Award, Users, Target, BookOpen } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
+
+const TEAM_MEMBERS = [
+  {
+    name: "Avnish Verma",
+    role: "Founder & CEO",
+    photo: "https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Precision health data infrastructure is the foundation of modern clinical safety and AI diagnostics. At Healix, we are commoditizing the complex engineering required to unify fragmented health datasets so innovators can build clinical products at scale.",
+    institution: "Healix Technologies"
+  },
+  {
+    name: "Mahima Sharma",
+    role: "Chief Operating Officer",
+    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Reliability is not a feature; it is the core foundation. Scaling operations, securing strategic partnerships, and building sustainable ecosystem networks are key to translating Healix's clinical tech into tangible community outcomes.",
+    institution: "Healix Technologies"
+  },
+  {
+    name: "Debarghya Bag",
+    role: "Chief Medical Officer",
+    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Precision medicine starts with precise data engineering. Ensuring scientific credibility, medical correctness, and healthcare system reliability is not a post-hoc check—it is built into every telemetry model we run at Healix.",
+    institution: "AIIMS New Delhi"
+  },
+  {
+    name: "Sudiksha Sharma",
+    role: "Mental Health & Psychology",
+    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Technology must serve the human experience. Designing healthcare systems that people emotionally trust, feel safe using, and find reassuring is critical for securing widespread public health adoption.",
+    institution: "Healix Technologies"
+  },
+  {
+    name: "Chaavi Sharma",
+    role: "Mental Health & Human Development",
+    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Human-centric development and mental health support must be integrated into modern healthcare systems to build long-term trust and community resilience.",
+    institution: "Healix Technologies"
+  },
+  {
+    name: "Swaranjali Sonje",
+    role: "Biomedical Engineering",
+    photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Bridging the gap between engineering and clinical application allows us to build robust hardware telemetry and biosensors that save lives in real-time.",
+    institution: "Healix Technologies"
+  },
+  {
+    name: "Dhruv Advani",
+    role: "Clinical Research & Medical Innovation",
+    photo: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/",
+    quote: "Clinical research is the bedrock of medical innovation. By combining AI diagnostics with rigorous validation, we ensure the safety of digital health deployments.",
+    institution: "AIIMS New Delhi"
+  }
+];
+
+const ADVISORS = [
+  {
+    name: "Dr. Sameer Kalra",
+    designation: "Senior Clinical Advisor",
+    institution: "Sir Ganga Ram Hospital",
+    expertise: "Public Health & Clinical Research",
+    photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Dr. Suresh Bangla",
+    designation: "Research Innovation Advisor",
+    institution: "AIIMS New Delhi",
+    expertise: "Medical Innovation & Diagnostics",
+    photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  {
+    name: "Future AIIMS Faculty",
+    designation: "Research & Clinical Mentor",
+    institution: "AIIMS New Delhi",
+    expertise: "AI Diagnostics & Telemetry Models",
+    isPlaceholder: true,
+    photo: null
+  },
+  {
+    name: "Future IIT Professors",
+    designation: "Systems & Engineering Mentor",
+    institution: "Indian Institutes of Technology (IIT)",
+    expertise: "Distributed Systems & Signal Processing",
+    isPlaceholder: true,
+    photo: null
+  },
+  {
+    name: "Future Industry Scientists",
+    designation: "Biomedical & Pharmaceutical Mentor",
+    institution: "Leading Biotech & Pharma Enterprises",
+    expertise: "Molecular Sequencing & Therapeutics",
+    isPlaceholder: true,
+    photo: null
+  }
+];
 
 const IconMap: Record<string, any> = {
   Shield,
@@ -338,59 +440,290 @@ export default function Home() {
       {/* Background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.5px,transparent_0.5px)] [background-size:24px_24px] opacity-[0.02] pointer-events-none" />
 
-      {/* Hero Carousel Banner */}
+      {/* 1. Hero Carousel Banner */}
       <div className="w-full">
         <HeroCarousel />
       </div>
 
-      {/* --- SECTION 2: HEALIX AT A GLANCE (Animated Counters) --- */}
-      <section className="bg-zinc-950 text-white py-16 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
+      {/* 2. People Behind Healix */}
+      <section id="leadership" className="py-24 bg-white border-b border-zinc-100 relative">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Core Leadership & Network</p>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">
+              People Behind Healix
+            </h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm md:text-base leading-relaxed">
+              An interdisciplinary network of clinicians, researchers, engineers, psychologists, and innovators.
+            </p>
+          </div>
+
+          {/* Grid of Team Members */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {TEAM_MEMBERS.map((member, i) => (
+              <div key={i} className="bg-zinc-50 border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md">
+                <div>
+                  <div className="aspect-square bg-zinc-100 relative overflow-hidden">
+                    <img 
+                      src={member.photo} 
+                      alt={member.name} 
+                      className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
+                      <span className="text-[9px] font-mono text-white bg-zinc-950/80 border border-white/20 px-2 py-0.5 uppercase tracking-wider font-bold">
+                        {member.institution}
+                      </span>
+                      <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors rounded-none">
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                          <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-extrabold text-base text-zinc-950 font-mono uppercase tracking-tight">{member.name}</h3>
+                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-1">{member.role}</p>
+                    <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mt-1">{member.institution}</p>
+                  </div>
+                </div>
+                <div className="px-6 pb-6 pt-0">
+                  <button 
+                    onClick={() => setSelectedFounderForMsg(member)}
+                    className="h-8 px-4 border border-zinc-300 hover:border-zinc-950 bg-white hover:bg-zinc-950 hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center transition-all w-full justify-center font-mono"
+                  >
+                    Read Message
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link 
+              href="/about" 
+              className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+            >
+              View Full Team <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Healix Network */}
+      <section className="bg-zinc-950 text-white py-20 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
         {/* Grid Backdrop Mesh & radial glow */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.3px,transparent_0.3px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:35px_35px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-orange-500/5 rounded-full blur-[120px] pointer-events-none" />
         
         <div className="max-w-[94%] mx-auto relative z-10">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Institutional Scope</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight font-mono">Healix At A Glance</h2>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight font-mono">Healix Network</h2>
             <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
           </div>
           
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-6 md:gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center max-w-7xl mx-auto">
             {[
               { label: "AIIMS Contributors", value: 15, suffix: "+" },
               { label: "Clinical Advisors", value: 25, suffix: "+" },
               { label: "Research Associates", value: 40, suffix: "+" },
-              { label: "Active Projects", value: 12, suffix: "" },
-              { label: "Innovation Verticals", value: 6, suffix: "" },
-              { label: "Academic Collaborations", value: 10, suffix: "+" }
+              { label: "Biomedical Researchers", value: 30, suffix: "+" },
+              { label: "Psychology Professionals", value: 20, suffix: "+" },
+              { label: "Innovation Programs", value: 8, suffix: "" },
+              { label: "Healthcare Initiatives", value: 12, suffix: "" }
             ].map((stat, i) => (
-              <div key={i} className="p-6 bg-zinc-900/40 border border-zinc-850 rounded-lg hover:border-[#ea580c]/30 hover:bg-zinc-900/80 transition-all group">
-                <p className="text-3xl md:text-4xl font-extrabold text-[#ea580c] font-mono tracking-tight group-hover:scale-105 transition-transform duration-300">
+              <div key={i} className="p-5 bg-zinc-900/40 border border-zinc-850 hover:border-[#ea580c]/30 hover:bg-zinc-900/80 transition-all duration-300 group flex flex-col justify-center">
+                <p className="text-2xl md:text-3xl font-extrabold text-[#ea580c] font-mono tracking-tight group-hover:scale-105 transition-transform duration-300">
                   <Counter target={stat.value} />{stat.suffix}
                 </p>
-                <p className="text-[10px] md:text-xs text-zinc-400 font-mono font-bold uppercase tracking-wider mt-3 leading-relaxed">{stat.label}</p>
+                <p className="text-[9px] md:text-[10px] text-zinc-400 font-mono font-bold uppercase tracking-wider mt-3 leading-relaxed">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* --- SECTION 3: OUR ECOSYSTEM --- */}
-      <section id="ecosystem" className="py-20 bg-white border-b border-zinc-200">
+      {/* 4. Advisors & Mentors */}
+      <section id="mentors" className="py-24 bg-zinc-50 border-b border-zinc-100 relative">
         <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Structured Segments</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Our Ecosystem</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Ecosystem Advisory</p>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">
+              Advisors & Mentors
+            </h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm leading-relaxed">
+              Guiding the future of healthcare innovation, research, and public health.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+            {ADVISORS.map((advisor, i) => (
+              advisor.isPlaceholder ? (
+                <div key={i} className="border border-dashed border-zinc-300 hover:border-[#ea580c] bg-zinc-100/50 p-6 transition-all duration-300 flex flex-col justify-between group min-h-[300px]">
+                  <div>
+                    <div className="w-10 h-10 rounded-full bg-orange-500/5 border border-orange-500/20 flex items-center justify-center text-[#ea580c] mb-6 group-hover:bg-[#ea580c] group-hover:text-white transition-colors duration-300">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <h3 className="font-extrabold text-base text-zinc-800 font-mono uppercase tracking-tight leading-snug">{advisor.name}</h3>
+                    <p className="text-[10px] text-[#ea580c] font-mono uppercase font-bold tracking-wider mt-1">{advisor.institution}</p>
+                    <p className="text-xs text-zinc-500 leading-relaxed mt-4 font-sans">{advisor.expertise}</p>
+                  </div>
+                  <div className="mt-8">
+                    <Link 
+                      href="/contact" 
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#ea580c] group-hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors"
+                    >
+                      Join Advisory <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div key={i} className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md min-h-[300px]">
+                  <div>
+                    <div className="aspect-square bg-zinc-100 relative overflow-hidden">
+                      {advisor.photo && (
+                        <img 
+                          src={advisor.photo} 
+                          alt={advisor.name} 
+                          className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-500"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
+                        <span className="text-[9px] font-mono text-white bg-zinc-950/80 border border-white/20 px-2 py-0.5 uppercase tracking-wider font-bold">
+                          {advisor.institution}
+                        </span>
+                        <a href={advisor.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight">{advisor.name}</h3>
+                      <p className="text-[10px] text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{advisor.designation}</p>
+                      <p className="text-[9px] text-zinc-400 font-mono uppercase tracking-wider mt-0.5">{advisor.institution}</p>
+                      <p className="text-xs text-zinc-500 leading-relaxed mt-3 border-t border-zinc-100 pt-2.5">{advisor.expertise}</p>
+                    </div>
+                  </div>
+                  <div className="px-5 pb-5">
+                    <a 
+                      href={advisor.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="h-8 px-4 border border-zinc-200 hover:border-zinc-950 bg-zinc-50 hover:bg-zinc-950 hover:text-white text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center transition-all w-full gap-1"
+                    >
+                      LinkedIn Profile <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Founder's Vision */}
+      <section className="py-24 bg-white border-b border-zinc-100 relative overflow-hidden">
+        <div className="max-w-[94%] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center max-w-7xl mx-auto">
+            {/* Left Side: Founder Image Card */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative group w-full max-w-sm border border-zinc-200 p-3 bg-zinc-50 shadow-md">
+                <div className="aspect-[3/4] bg-zinc-100 relative overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=600&auto=format&fit=crop" 
+                    alt="Avnish Verma" 
+                    className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6">
+                    <p className="text-xs font-mono text-[#ea580c] uppercase font-bold tracking-widest">Founder & CEO</p>
+                    <h3 className="text-xl font-black text-white font-mono uppercase tracking-tight mt-1">Avnish Verma</h3>
+                    <p className="text-[10px] text-zinc-300 font-mono mt-0.5">Healix Technologies</p>
+                  </div>
+                </div>
+                {/* Decorative border */}
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 border-r-2 border-b-2 border-[#ea580c] pointer-events-none group-hover:translate-x-1 group-hover:translate-y-1 transition-transform duration-300" />
+              </div>
+            </div>
+
+            {/* Right Side: Vision Details */}
+            <div className="lg:col-span-7 space-y-8">
+              <div className="space-y-3">
+                <span className="text-[10px] font-mono text-[#ea580c] bg-orange-500/5 border border-orange-500/10 px-3 py-1 font-bold uppercase tracking-widest">
+                  Leadership Directive
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">
+                  Founder’s Vision
+                </h2>
+                <div className="w-12 h-1 bg-[#ea580c]" />
+              </div>
+
+              {/* Main Vision Statement */}
+              <div className="relative font-serif py-2 pl-6 border-l-4 border-[#ea580c]">
+                <Quote className="absolute -top-3 -left-3 w-8 h-8 text-orange-50 rotate-180 -z-10" />
+                <p className="text-zinc-700 text-sm md:text-base leading-relaxed italic font-medium font-sans">
+                  "Healix Technologies was founded to bridge the gap between healthcare, research, technology, and education by building an ecosystem where clinicians, researchers, engineers, psychologists, and innovators can collaborate to solve real-world healthcare challenges."
+                </p>
+              </div>
+
+              {/* Mission & Vision 2030 grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-100">
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-zinc-950">
+                    <Target className="w-4 h-4 text-[#ea580c]" />
+                    <h4 className="font-extrabold text-sm uppercase tracking-wider font-mono">Mission Statement</h4>
+                  </div>
+                  <p className="text-xs text-zinc-650 leading-relaxed font-sans">
+                    To build high-reliability, open clinical data pipelines and secure IoT systems that connect engineers and researchers directly to responder networks.
+                  </p>
+                </div>
+                
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-zinc-950">
+                    <Award className="w-4 h-4 text-[#ea580c]" />
+                    <h4 className="font-extrabold text-sm uppercase tracking-wider font-mono">Vision 2030</h4>
+                  </div>
+                  <p className="text-xs text-zinc-650 leading-relaxed font-sans">
+                    To standardise edge health intelligence and launch distributed computing workflows across AIIMS and IIT research divisions at national scale.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action message envelope trigger */}
+              <div className="pt-6">
+                <button 
+                  onClick={() => setSelectedFounderForMsg(TEAM_MEMBERS[0])}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+                >
+                  Read Founder Message <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Ecosystem */}
+      <section id="ecosystem" className="py-24 bg-zinc-50 border-b border-zinc-100 relative">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Structured Segments</p>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">Our Ecosystem</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm leading-relaxed">
+              Explore the core innovation verticals developing next-generation medical systems, genomics software, and community health networks.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {[
               {
-                title: "Bio Labs",
+                title: "BioLabs Genomics",
                 subtitle: "Research • Innovation • Mentorship",
-                desc: "High-performance sequencing pools, CRISPR targeting model validation, and elite biomedical research fellowships.",
+                desc: "Building high-performance genomic sequence modeling tools, CRISPR outcome validation protocols, and elite research fellowships.",
                 logo: "/biolabs-logo-web.png",
                 href: "/biolabs",
                 tag: "GENOMICS & RESEARCH"
@@ -398,7 +731,7 @@ export default function Home() {
               {
                 title: "Healix AI",
                 subtitle: "Artificial Intelligence for Healthcare",
-                desc: "Explainable deep learning diagnostics, digital twin systems, and low-latency clinical triaging pipelines.",
+                desc: "Developing explainable deep learning diagnostic pipelines, medical twin simulations, and low-latency clinical triaging networks.",
                 logo: "/ai-logo.jpg",
                 href: "/ai-check",
                 tag: "PREDICTIVE CLINICAL AI"
@@ -414,23 +747,23 @@ export default function Home() {
               {
                 title: "Healix Sahyog Foundation",
                 subtitle: "Mental Health • Community Impact • Education",
-                desc: "Empowering communities with safety tech, Project Suraksha coordinates, and inclusive mental health initiatives.",
+                desc: "Empowering community health with active safety networks, Project Suraksha coordinates, and inclusive mental health support.",
                 logo: "/hsf-official-logo-web.png",
                 href: "/shesecure",
                 tag: "COMMUNITY HEALTH & SAFETY"
               }
             ].map((eco, i) => (
-              <div key={i} className="group relative flex flex-col justify-between p-6 bg-zinc-50 border border-zinc-200 hover:border-zinc-950 transition-all duration-300 min-h-[280px]">
+              <div key={i} className="group relative flex flex-col justify-between p-6 bg-white border border-zinc-200 hover:border-zinc-950 transition-all duration-300 min-h-[290px] shadow-sm">
                 <div>
                   <div className="flex justify-between items-start mb-4">
-                    <span className="text-[9px] font-mono text-[#ea580c] bg-[#ea580c]/5 border border-[#ea580c]/20 px-2 py-0.5 font-bold uppercase tracking-wider">{eco.tag}</span>
-                    <div className="w-8 h-8 rounded border border-zinc-200/60 bg-white flex items-center justify-center overflow-hidden">
+                    <span className="text-[8px] font-mono text-[#ea580c] bg-[#ea580c]/5 border border-[#ea580c]/20 px-2 py-0.5 font-bold uppercase tracking-wider">{eco.tag}</span>
+                    <div className="w-8 h-8 rounded border border-zinc-200/60 bg-white flex items-center justify-center overflow-hidden shrink-0">
                       <img src={eco.logo} alt="" className="w-full h-full object-contain p-1" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-black text-zinc-950 uppercase group-hover:text-[#ea580c] transition-colors">{eco.title}</h3>
-                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wide font-bold mt-1">{eco.subtitle}</p>
-                  <p className="text-xs text-zinc-650 leading-relaxed mt-3">{eco.desc}</p>
+                  <h3 className="text-base font-black text-zinc-950 uppercase group-hover:text-[#ea580c] transition-colors font-mono tracking-tight mt-2">{eco.title}</h3>
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wide font-bold mt-1 leading-snug">{eco.subtitle}</p>
+                  <p className="text-xs text-zinc-650 leading-relaxed mt-4">{eco.desc}</p>
                 </div>
                 <div className="mt-6">
                   <Link href={eco.href} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors">
@@ -443,187 +776,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- SECTION 4: LEADERSHIP TEAM --- */}
-      <section id="leadership" className="py-20 bg-white border-b border-zinc-200">
+      {/* 7. Current Projects */}
+      <section id="initiatives" className="py-24 bg-white border-b border-zinc-100 relative">
         <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Ecosystem Direction</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Leadership Team</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Avnish Verma",
-                role: "Founder & CEO",
-                desc: "Focuses on precision health data infrastructure and standardizing distributed systems to unify fragmented clinical datasets.",
-                photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
-                linkedin: "https://www.linkedin.com/company/quick-healix/",
-                founderId: "f1"
-              },
-              {
-                name: "Mahima Sharma",
-                role: "Chief Operating Officer",
-                desc: "Manages operational scaling, strategic partnerships, and structural expansion for translated clinical technologies.",
-                photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
-                linkedin: "https://www.linkedin.com/company/quick-healix/",
-                founderId: "f3"
-              },
-              {
-                name: "Debarghya Bag",
-                role: "Chief Medical Officer",
-                desc: "Ensures scientific validation, medical credibility, and healthcare system reliability across all diagnostic pipelines.",
-                photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
-                linkedin: "https://www.linkedin.com/company/quick-healix/",
-                founderId: "f2"
-              }
-            ].map((leader, i) => (
-              <div key={i} className="bg-zinc-50 border border-zinc-200 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between">
-                <div>
-                  <div className="aspect-square bg-zinc-200 relative overflow-hidden">
-                    <img src={leader.photo} alt={leader.name} className="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                      <a href={leader.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors">
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                          <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-extrabold text-lg text-zinc-950 font-mono uppercase tracking-tight">{leader.name}</h3>
-                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-1">{leader.role}</p>
-                    <p className="text-xs text-zinc-650 leading-relaxed mt-3">{leader.desc}</p>
-                  </div>
-                </div>
-                <div className="px-6 pb-6 pt-2">
-                  <button 
-                    onClick={() => {
-                      const fObj = founders.find(f => f.id === leader.founderId) || leader;
-                      setSelectedFounderForMsg(fObj);
-                    }}
-                    className="h-9 px-4 bg-zinc-950 hover:bg-[#ea580c] text-white text-[10px] font-bold uppercase tracking-wider flex items-center transition-colors w-fit font-mono"
-                  >
-                    Read Message
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* --- SECTION 5: ADVISORS & MENTORS --- */}
-      <section id="mentors" className="py-20 bg-zinc-50 border-b border-zinc-200">
-        <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Ecosystem Advisory</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Advisors & Mentors</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[
-              {
-                category: "Clinical Advisors",
-                list: [
-                  { name: "Dr. Partha Pratim", credentials: "MD, AIIMS New Delhi", spec: "Genomics sequencing diagnostics & risk profiling" },
-                  { name: "Dr. Sarah Chen", credentials: "MD, PhD, Stanford Medicine", spec: "Clinical decision support & triaging pipelines" },
-                  { name: "Dr. A. C. Roy", credentials: "MD, FACC, Mayo Clinic", spec: "Cardiovascular telemetry & remote monitoring" }
-                ]
-              },
-              {
-                category: "Research Advisors",
-                list: [
-                  { name: "Dr. Rajesh K. Sharma", credentials: "PhD, IISc Bangalore", spec: "Distributed algorithms & database reliability" },
-                  { name: "Prof. Michael Sterling", credentials: "PhD, MIT Media Lab", spec: "Wearable biosensors & edge compute arrays" },
-                  { name: "Dr. Ananya Ray", credentials: "PhD, IIT Madras", spec: "In-silico molecular modeling & cancer targets" }
-                ]
-              },
-              {
-                category: "Academic Mentors",
-                list: [
-                  { name: "Prof. R. Sharma", credentials: "Senior Faculty, IIT Delhi", spec: "Telemetry synchronization & network protocols" },
-                  { name: "Dr. Vikram Sen", credentials: "Professor, AIIMS", spec: "Community health diagnostics & survey design" },
-                  { name: "Dr. Helen Rostova", credentials: "Faculty, Cambridge University", spec: "Explainable deep learning models in healthcare" }
-                ]
-              },
-              {
-                category: "Industry Experts",
-                list: [
-                  { name: "Sudiksha Sharma", credentials: "Human Systems Strategist", spec: "Behavioral psychology & interface trust dynamics" },
-                  { name: "Siddharth Bose", credentials: "Partner, BioTech Capital", spec: "Commercialization & intellectual property structures" },
-                  { name: "Elena Petrova", credentials: "Director, Global Pharma Solutions", spec: "Clinical trial designs & regulatory compliance" }
-                ]
-              }
-            ].map((cat, i) => (
-              <div key={i} className="space-y-4">
-                <div className="border-l-2 border-[#ea580c] pl-3 py-1">
-                  <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-wider">{cat.category}</h3>
-                </div>
-                <div className="space-y-3">
-                  {cat.list.map((adv, j) => (
-                    <div key={j} className="p-4 bg-white border border-zinc-200 hover:border-zinc-400 transition-all rounded shadow-sm">
-                      <p className="font-bold text-xs text-zinc-950">{adv.name}</p>
-                      <p className="text-[9px] font-mono text-[#ea580c] uppercase tracking-wider font-bold mt-0.5">{adv.credentials}</p>
-                      <p className="text-[10px] text-zinc-500 leading-relaxed mt-2">{adv.spec}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* --- SECTION 6: CURRENT INITIATIVES --- */}
-      <section id="initiatives" className="py-20 bg-white border-b border-zinc-200">
-        <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
             <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Active Pursuits</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Current Initiatives</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">Current Projects</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm leading-relaxed">
+              Tracking our current scientific and biomedical developments undergoing institutional trials or pilot testing.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {[
               {
                 title: "Project Suraksha",
-                desc: "Standardizing low-latency travel safety telemetry tracking, encrypted hardware beacons, and one-tap emergency SOS broadcasts.",
-                status: "DEPLOYED",
-                color: "text-red-500 border-red-500/20 bg-red-500/5",
+                desc: "Developing low-latency travel safety telemetry tracking, encrypted hardware beacons, and emergency SOS networks.",
+                status: "DEVELOPING / FIELD TESTING",
+                color: "text-amber-600 border-amber-600/20 bg-amber-500/5",
                 href: "/shesecure"
               },
               {
                 title: "BioLabs Research Fellowship",
-                desc: "Full-time research stipends and laboratory access for graduate researchers building sequence modeling systems.",
+                desc: "Providing research stipends and laboratory access for graduate researchers building sequence modeling models.",
                 status: "APPLICATIONS OPEN",
-                color: "text-emerald-500 border-emerald-500/20 bg-emerald-500/5",
+                color: "text-emerald-600 border-emerald-600/20 bg-emerald-500/5",
                 href: "/biolabs"
               },
               {
                 title: "Healthcare Innovation Programs",
-                desc: "Connecting engineers, psychologists, and clinicians to test pilot systems in real-world clinical and rural environments.",
+                desc: "Connecting engineers, psychologists, and clinicians to develop and test pilot systems in real-world environments.",
                 status: "IN PROGRESS",
-                color: "text-blue-500 border-blue-500/20 bg-blue-500/5",
+                color: "text-blue-600 border-blue-600/20 bg-blue-500/5",
                 href: "/contact"
               },
               {
                 title: "AI Healthcare Initiatives",
-                desc: "Deploying deep learning triage models to remote clinics to assist local caregivers with diagnostics classifications.",
+                desc: "Deploying deep learning triage models to remote clinics to assist local caregivers with diagnostic classifications.",
                 status: "BETA TESTING",
-                color: "text-purple-500 border-purple-500/20 bg-purple-500/5",
+                color: "text-purple-600 border-purple-600/20 bg-purple-500/5",
                 href: "/ai-check"
               }
             ].map((init, i) => (
-              <div key={i} className="bg-zinc-50 border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-950 transition-all duration-300 min-h-[220px]">
+              <div key={i} className="bg-zinc-50 border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-950 transition-all duration-300 min-h-[230px] shadow-sm">
                 <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className={`text-[8px] font-mono font-bold tracking-widest uppercase border px-2 py-0.5 rounded ${init.color}`}>{init.status}</span>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className={`text-[8px] font-mono font-bold tracking-widest uppercase border px-2 py-0.5 ${init.color}`}>{init.status}</span>
                   </div>
                   <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight leading-snug">{init.title}</h3>
-                  <p className="text-xs text-zinc-650 leading-relaxed mt-3">{init.desc}</p>
+                  <p className="text-xs text-zinc-650 leading-relaxed mt-4">{init.desc}</p>
                 </div>
                 <div className="mt-6">
                   <Link href={init.href} className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider flex items-center gap-1">
@@ -636,29 +838,84 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- SECTION 7: LATEST NEWS & UPDATES --- */}
-      <section id="news" className="py-20 bg-white border-b border-zinc-200">
+      {/* 8. Events */}
+      <section id="events-section" className="py-24 bg-zinc-50 border-b border-zinc-100 relative">
         <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Live Feed</p>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-zinc-950 font-mono">Latest News & Updates</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Academic Seminars</p>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">Upcoming Events</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm leading-relaxed">
+              Register for academic panels, research presentations, and clinical informatics workshops hosted by our faculty.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {upcomingEvents.map((sem, idx) => (
+              <div key={idx} className="bg-white border border-zinc-200 hover:border-zinc-950 p-6 flex flex-col justify-between transition-all duration-300 min-h-[200px] shadow-sm group">
+                <div>
+                  <div className="flex items-center gap-2 text-[#ea580c] mb-4">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{sem.date}</span>
+                  </div>
+                  <h3 className="text-base font-black text-zinc-950 uppercase font-mono tracking-tight leading-snug group-hover:text-[#ea580c] transition-colors">
+                    {sem.title}
+                  </h3>
+                  <p className="text-xs text-zinc-550 mt-3 flex items-center gap-1.5 font-sans">
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 shrink-0" />
+                    Speaker: <strong className="text-zinc-750 font-semibold">{sem.speaker}</strong>
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
+                  <Link 
+                    href={`/events?search=${encodeURIComponent(sem.title)}`} 
+                    className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-widest flex items-center gap-1"
+                  >
+                    Register Now <ArrowRight className="w-3 h-3" />
+                  </Link>
+                  <span className="text-[9px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 uppercase">Academic Session</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link 
+              href="/events" 
+              className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+            >
+              View All Seminars <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. News & Updates */}
+      <section id="news" className="py-24 bg-white border-b border-zinc-100 relative">
+        <div className="max-w-[94%] mx-auto">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Live Feed</p>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">News & Updates</h2>
+            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
+            <p className="text-zinc-650 text-sm leading-relaxed">
+              Stay updated with structural developments, announcements, and research podcasts from the Healix network.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-7xl mx-auto">
             {/* Announcements (Left column) */}
-            <div className="lg:col-span-8 bg-zinc-50 border border-zinc-200 p-6 md:p-8">
-              <h3 className="text-lg font-black text-zinc-950 uppercase mb-6 flex items-center gap-2 border-b border-zinc-200 pb-3 font-mono">
-                <Newspaper className="w-5 h-5 text-[#ea580c]" /> Important Announcements
+            <div className="lg:col-span-8 bg-zinc-50 border border-zinc-200/80 p-6 md:p-8 shadow-sm">
+              <h3 className="text-base font-black text-zinc-950 uppercase mb-6 flex items-center gap-2 border-b border-zinc-200 pb-3 font-mono">
+                <Newspaper className="w-4.5 h-4.5 text-[#ea580c]" /> Important Announcements
               </h3>
               
               <div className="space-y-4">
                 {announcements.map((ann, idx) => (
                   <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-white hover:bg-orange-50/20 transition-colors flex items-center justify-between shadow-sm">
-                    <Link href="/news" className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1">
+                    <Link href="/news" className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1 font-mono">
                       {ann}
                     </Link>
-                    <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-600 text-white font-mono text-[8px] font-bold rounded uppercase">
+                    <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-650 text-white font-mono text-[8px] font-bold uppercase">
                       New
                     </span>
                   </div>
@@ -666,63 +923,45 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Events & Podcasts (Right column) */}
-            <div className="lg:col-span-4 space-y-6">
-              {/* Events Block */}
-              <div className="bg-zinc-50 border border-zinc-200 p-6">
-                <h3 className="text-base font-black text-zinc-950 uppercase mb-4 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
-                  <Calendar className="w-4.5 h-4.5 text-[#ea580c]" /> Upcoming Events
-                </h3>
-                <div className="space-y-4">
-                  {upcomingEvents.map((sem, idx) => (
-                    <div key={idx} className="pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
-                      <Link 
-                        href={`/events?search=${encodeURIComponent(sem.title)}`} 
-                        className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed block"
+            {/* Podcasts Block (Right column) */}
+            <div className="lg:col-span-4 bg-zinc-50 border border-zinc-200/80 p-6 shadow-sm">
+              <h3 className="text-base font-black text-zinc-950 uppercase mb-6 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
+                <Play className="w-4 h-4 text-[#ea580c]" /> Podcast Broadcasts
+              </h3>
+              <div className="space-y-4">
+                {podcasts.slice(0, 3).map((pod, idx) => (
+                  <div key={idx} className="flex gap-4 items-center pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
+                    <div 
+                      className="w-16 h-12 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer shadow-sm group/thumb" 
+                      onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                    >
+                      <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
+                        <Play className="w-4 h-4 fill-white" />
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <span 
+                        className="text-xs font-bold text-zinc-900 truncate block hover:text-[#ea580c] cursor-pointer font-mono" 
+                        onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
                       >
-                        {sem.title}
-                      </Link>
-                      <div className="flex justify-between items-center mt-2 text-[10px] text-zinc-500 font-mono">
-                        <span>{sem.speaker}</span>
-                        <span>{sem.date}</span>
-                      </div>
+                        {pod.title}
+                      </span>
+                      <span className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-wider mt-1 block">{pod.duration}</span>
                     </div>
-                  ))}
-                </div>
-                <Link href="/events" className="w-full py-2 bg-zinc-950 hover:bg-[#ea580c] text-white text-center text-[10px] font-bold uppercase tracking-wider block transition-colors mt-6 font-mono">
-                  View All Seminars
-                </Link>
-              </div>
-
-              {/* Podcasts Block */}
-              <div className="bg-zinc-50 border border-zinc-200 p-6">
-                <h3 className="text-base font-black text-zinc-950 uppercase mb-4 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
-                  <Play className="w-4 h-4 text-[#ea580c]" /> Podcast Snippets
-                </h3>
-                <div className="space-y-3">
-                  {podcasts.slice(0, 2).map((pod, idx) => (
-                    <div key={idx} className="flex gap-3 items-center pb-2 border-b border-zinc-200 last:border-0 last:pb-0">
-                      <div className="w-14 h-10 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer" onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}>
-                        <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[10px] font-bold text-zinc-900 truncate block hover:text-[#ea580c] cursor-pointer" onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}>{pod.title}</span>
-                        <span className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-wider">{pod.duration}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- SECTION 8: JOIN THE ECOSYSTEM --- */}
-      <section className="bg-black text-white py-20 px-6 sm:px-8 border-t border-zinc-900 relative overflow-hidden text-center">
+      {/* 10. Join BioLabs */}
+      <section className="bg-black text-white py-24 px-6 sm:px-8 border-t border-zinc-900 relative overflow-hidden text-center">
         {/* Grid Backdrop Mesh & radial glow */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-orange-600/10 rounded-full blur-[140px] pointer-events-none" />
         
         <div className="max-w-4xl mx-auto relative z-10 space-y-8">
           <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Collaborative Venture</p>
@@ -730,17 +969,17 @@ export default function Home() {
             Join India’s Next Generation Healthcare Innovation Ecosystem
           </h2>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-            Whether you are an active clinician, a molecular researcher, a systems engineer, or an industry partner, we invite you to collaborate with us to deploy healthcare safety systems at national scale.
+            Whether you are an active clinician, a molecular researcher, a systems engineer, or an industry partner, we invite you to collaborate with us to develop healthcare safety systems at national scale.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Link href="/biolabs" className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto shadow-[0_0_20px_rgba(234,88,12,0.3)]">
+            <Link href="/biolabs" className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto shadow-[0_0_20px_rgba(234,88,12,0.3)] font-mono">
               Apply for BioLabs
             </Link>
-            <Link href="/academy/mentors" className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">
+            <Link href="/academy/mentors" className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto font-mono">
               Become a Mentor
             </Link>
-            <Link href="/contact" className="px-8 py-3 bg-white hover:bg-zinc-150 text-black text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">
+            <Link href="/contact" className="px-8 py-3 bg-white hover:bg-zinc-150 text-black text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto font-mono">
               Collaborate With Us
             </Link>
           </div>
@@ -824,7 +1063,13 @@ export default function Home() {
               {/* Message Header */}
               <div className="flex items-center gap-4 mb-6 border-b border-zinc-100 pb-5 mt-2">
                 <div className="w-16 h-16 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
-                  {selectedFounderForMsg.photo_url ? (
+                  {selectedFounderForMsg.photo ? (
+                    <img 
+                      src={selectedFounderForMsg.photo} 
+                      alt={selectedFounderForMsg.name} 
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : selectedFounderForMsg.photo_url ? (
                     <img 
                       src={selectedFounderForMsg.photo_url} 
                       alt={selectedFounderForMsg.name} 
@@ -839,7 +1084,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-lg font-black text-black font-mono uppercase tracking-tight">{selectedFounderForMsg.name}</h3>
                   <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{selectedFounderForMsg.role}</p>
-                  <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">Healix Technologies Pvt. Ltd.</p>
+                  <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">{selectedFounderForMsg.institution || "Healix Technologies"}</p>
                 </div>
               </div>
 
