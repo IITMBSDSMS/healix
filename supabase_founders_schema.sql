@@ -18,6 +18,24 @@ CREATE TABLE IF NOT EXISTS founders (
   updated_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure columns exist in case the table was created previously without them
+ALTER TABLE founders ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
+ALTER TABLE founders ADD COLUMN IF NOT EXISTS institution TEXT;
+
+-- Safely add UNIQUE constraint to name if not already present
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'founders_name_key'
+    ) THEN
+        -- Delete any duplicate names first to ensure constraint creation succeeds
+        DELETE FROM founders WHERE id NOT IN (
+            SELECT MIN(id) FROM founders GROUP BY name
+        );
+        ALTER TABLE founders ADD CONSTRAINT founders_name_key UNIQUE (name);
+    END IF;
+END $$;
+
 -- 2. AUTO-UPDATE updated_at
 CREATE OR REPLACE FUNCTION update_founders_updated_at()
 RETURNS TRIGGER AS $$
@@ -35,9 +53,12 @@ CREATE TRIGGER founders_updated_at
 -- 3. ROW LEVEL SECURITY
 ALTER TABLE founders ENABLE ROW LEVEL SECURITY;
 
+-- Safely recreate policies
+DROP POLICY IF EXISTS "Public can read active founders" ON founders;
 CREATE POLICY "Public can read active founders"
   ON founders FOR SELECT USING (active = true);
 
+DROP POLICY IF EXISTS "Service role can manage founders" ON founders;
 CREATE POLICY "Service role can manage founders"
   ON founders FOR ALL USING (true) WITH CHECK (true);
 
@@ -107,4 +128,10 @@ VALUES
     'AIIMS New Delhi',
     6
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (name) DO UPDATE SET
+  role = EXCLUDED.role,
+  quote = EXCLUDED.quote,
+  photo_url = EXCLUDED.photo_url,
+  linkedin_url = EXCLUDED.linkedin_url,
+  institution = EXCLUDED.institution,
+  display_order = EXCLUDED.display_order;
