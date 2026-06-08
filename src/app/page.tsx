@@ -1086,17 +1086,32 @@ export default function Home() {
                 <Newspaper className="w-4.5 h-4.5 text-[#ea580c]" /> Important Announcements
               </h3>
               
-              <div className="space-y-4">
-                {announcements.map((ann, idx) => (
-                  <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-white hover:bg-orange-50/20 transition-colors flex items-center justify-between shadow-sm">
-                    <Link href="/news" className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1 font-mono">
-                      {ann}
-                    </Link>
-                    <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-650 text-white font-mono text-[8px] font-bold uppercase">
-                      New
-                    </span>
-                  </div>
-                ))}
+              <div className="relative h-[320px] overflow-hidden group">
+                {/* Gradient overlays for smooth fading effect */}
+                <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-zinc-50 to-transparent pointer-events-none z-10" />
+                
+                <motion.div 
+                  className="flex flex-col gap-4 absolute w-full"
+                  animate={{ y: ["-50%", "0%"] }}
+                  transition={{ 
+                    duration: 25, 
+                    ease: "linear", 
+                    repeat: Infinity 
+                  }}
+                >
+                  {[...announcements, ...announcements].map((ann, idx) => (
+                    <div key={idx} className="border-l-4 border-[#ea580c] pl-4 py-3 bg-white hover:bg-orange-50/20 transition-colors flex items-center justify-between shadow-sm">
+                      <Link href="/news" className="text-xs font-bold text-zinc-900 hover:text-[#ea580c] transition-colors leading-relaxed flex-1 font-mono">
+                        {ann}
+                      </Link>
+                      <span className="hidden sm:inline-flex ml-3 px-2 py-0.5 bg-red-650 text-white font-mono text-[8px] font-bold uppercase">
+                        New
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+
+                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-zinc-50 to-transparent pointer-events-none z-10" />
               </div>
             </div>
 
