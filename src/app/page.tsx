@@ -1242,30 +1242,92 @@ export default function Home() {
       </section>
 
       {/* 10. Join BioLabs */}
-      <section className="bg-black text-white py-24 px-6 sm:px-8 border-t border-zinc-900 relative overflow-hidden text-center">
-        {/* Grid Backdrop Mesh & radial glow */}
+      <section className="bg-black text-white border-t border-zinc-900 relative overflow-hidden">
+        {/* Grid backdrop */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-orange-600/10 rounded-full blur-[140px] pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto relative z-10 space-y-8">
-          <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Collaborative Venture</p>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight max-w-3xl mx-auto font-mono">
-            Join India’s Next Generation Healthcare Innovation Ecosystem
-          </h2>
-          <p className="text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-            Whether you are an active clinician, a molecular researcher, a systems engineer, or an industry partner, we invite you to collaborate with us to develop healthcare safety systems at national scale.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Link href="/biolabs" className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto shadow-[0_0_20px_rgba(234,88,12,0.3)] font-mono">
-              Apply for BioLabs
-            </Link>
-            <Link href="/academy/mentors" className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto font-mono">
-              Become a Mentor
-            </Link>
-            <Link href="/contact" className="px-8 py-3 bg-white hover:bg-zinc-150 text-black text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto font-mono">
-              Collaborate With Us
-            </Link>
+        {/* Radial orange glow */}
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-orange-600/8 rounded-full blur-[160px] pointer-events-none" />
+        {/* Bottom-right corner accent */}
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-orange-500/5 rounded-tl-full pointer-events-none" />
+
+        <div className="max-w-[94%] mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-end min-h-[480px]">
+
+            {/* LEFT: Text Content */}
+            <div className="flex flex-col justify-center py-20 pr-0 lg:pr-16 space-y-8">
+              {/* Tag */}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-px bg-[#ea580c]" />
+                <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-[0.3em] font-bold">Collaborative Venture</p>
+              </div>
+
+              {/* Headline */}
+              <h2 className="text-4xl sm:text-5xl xl:text-6xl font-black uppercase tracking-tight leading-[1.0] font-mono text-white">
+                Join India's<br />
+                <span className="text-[#ea580c]">Next Generation</span><br />
+                Healthcare<br />
+                Innovation<br />
+                Ecosystem
+              </h2>
+
+              {/* Body text */}
+              <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
+                Whether you are an active clinician, a molecular researcher, a systems engineer, or an industry partner, we invite you to collaborate with us to develop healthcare safety systems at national scale.
+              </p>
+
+              {/* Stats row */}
+              <div className="flex gap-8 pt-2 border-t border-white/5">
+                {[
+                  { val: "10+", label: "Research Domains" },
+                  { val: "50+", label: "Expert Advisors" },
+                  { val: "∞", label: "Impact Potential" },
+                ].map(s => (
+                  <div key={s.label}>
+                    <p className="text-2xl font-black text-white font-mono">{s.val}</p>
+                    <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest mt-0.5">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link href="/biolabs" className="px-7 py-3.5 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_24px_rgba(234,88,12,0.35)] hover:shadow-[0_0_36px_rgba(234,88,12,0.5)] font-mono flex items-center gap-2">
+                  Apply for BioLabs <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link href="/contact" className="px-7 py-3.5 border border-white/20 hover:border-[#ea580c] hover:text-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-all font-mono flex items-center gap-2">
+                  Become a Mentor <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link href="/contact" className="px-7 py-3.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-wider transition-all font-mono flex items-center gap-2">
+                  Collaborate With Us <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT: Illustration anchored to bottom-right */}
+            <div className="hidden lg:flex items-end justify-end h-full relative">
+              {/* Decorative ring behind illustration */}
+              <div className="absolute bottom-12 right-8 w-80 h-80 border border-white/5 rounded-full" />
+              <div className="absolute bottom-16 right-12 w-60 h-60 border border-[#ea580c]/10 rounded-full" />
+
+              {/* Illustration */}
+              <div className="relative z-10 self-end">
+                <img
+                  src="/collaboration-highfive.png"
+                  alt="Collaboration - two professionals celebrating a high five"
+                  className="w-[420px] xl:w-[500px] object-contain drop-shadow-2xl select-none"
+                  style={{ filter: "drop-shadow(0 0 40px rgba(234,88,12,0.15))" }}
+                />
+                {/* Floating badge */}
+                <div className="absolute top-8 left-0 bg-zinc-900 border border-white/10 px-4 py-2.5 rounded-xl shadow-xl">
+                  <p className="text-[9px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Partnership</p>
+                  <p className="text-sm font-black text-white font-mono">Open to Collaborate</p>
+                </div>
+                {/* Spark dots */}
+                <div className="absolute top-6 right-6 w-2 h-2 rounded-full bg-[#ea580c] animate-ping" />
+                <div className="absolute top-10 right-2 w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
