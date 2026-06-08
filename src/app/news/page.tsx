@@ -8,30 +8,30 @@ import { GlassCard } from "@/components/ui/GlassCard";
 const newsArticles = [
   {
     id: "1",
-    title: "Healix BioLabs Launches High-Performance Genomics Accelerator",
-    category: "RESEARCH",
-    date: "May 28, 2026",
-    author: "Dr. A. C. Research Director",
-    desc: "Healix BioLabs has officially inaugurated its new distributed genomic diagnostic compute cluster. The facility integrates real-time DNA sequencing workflows with explainable machine learning models to accelerate personal safety telemetry and cardiovascular disease risk profiling.",
-    img: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=600&auto=format&fit=crop"
+    title: "Healix Technologies Pvt. Ltd. incorporation process underway.",
+    category: "ANNOUNCEMENT",
+    date: "June 2026",
+    author: "Healix Press Team",
+    desc: "Healix Technologies is currently undergoing its formal incorporation process. This marks a significant milestone in our journey to build high-reliability clinical data pipelines.",
+    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop"
   },
   {
     id: "2",
-    title: "AVENNIX PHARMA Partnership Combines AI Diagnostics with Instant Medicine Delivery",
-    category: "ANNOUNCEMENT",
-    date: "May 15, 2026",
-    author: "Healix Press Team",
-    desc: "Healix Care has finalized a logistics partnership under the AVENNIX PHARMA division to enable 30-minute delivery loops for critical care prescriptions in Hauz Khas. Patients can now trigger AI symptom triage checkups and order medications directly inside the unified console.",
-    img: "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=600&auto=format&fit=crop"
+    title: "BioLabs research and innovation ecosystem under development.",
+    category: "RESEARCH",
+    date: "June 2026",
+    author: "BioLabs Division",
+    desc: "Our high-performance genomic diagnostic compute cluster and innovation ecosystem are actively under development, setting the foundation for future real-time DNA sequencing workflows.",
+    img: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=600&auto=format&fit=crop"
   },
   {
     id: "3",
-    title: "HSF (Healix Sahyog Foundation) Launches Suraksha QR Campaign in Delhi Metro Transit Network",
-    category: "COMMUNITY",
-    date: "May 02, 2026",
-    author: "HSF Outreach Loop",
-    desc: "To strengthen women's travel safety, the Healix Sahyog Foundation has deployed public Suraksha QR code vectors across leading Delhi transit networks. Commuters can scan transit identifiers to start zero-knowledge GPS logs and sync active audio telemetry with trusted guardians.",
-    img: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=600&auto=format&fit=crop"
+    title: "Applications open for Founding Research Associates and Student Contributors.",
+    category: "OPPORTUNITY",
+    date: "June 2026",
+    author: "Healix HR",
+    desc: "We are actively seeking talented individuals to join our mission. Applications are now open for Founding Research Associates and Student Contributors across various engineering and medical verticals.",
+    img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop"
   }
 ];
 

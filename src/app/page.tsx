@@ -25,7 +25,7 @@ const TEAM_MEMBERS = [
     institution: "Healix Technologies"
   },
   {
-    name: "Debarghya Bag",
+    name: "Debraghya Bag",
     role: "Chief Medical Officer",
     photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/",
@@ -398,11 +398,7 @@ export default function Home() {
   const [activeFounderIndex, setActiveFounderIndex] = useState(0);
   const [selectedFounderForMsg, setSelectedFounderForMsg] = useState<any | null>(null);
   const [dbMentors, setDbMentors] = useState<any[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([
-    { title: "Genomics Sequence Diagnostics", speaker: "Dr. Partha Pratim", date: "June 1, 2026" },
-    { title: "Distributed Audio Failsafe Networks", speaker: "Prof. R. Sharma", date: "June 10, 2026" },
-    { title: "Explainable AI Clinical Triaging", speaker: "Dr. Sarah Chen", date: "June 18, 2026" }
-  ]);
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
 
 
   useEffect(() => {
@@ -426,41 +422,16 @@ export default function Home() {
         const res = await fetch("/api/podcasts");
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setPodcasts(data);
+          if (Array.isArray(data)) {
+            const realPodcasts = data.filter(p => p.youtube_url && !p.youtube_url.includes("dQw4w9WgXcQ"));
+            setPodcasts(realPodcasts);
             return;
           }
         }
       } catch (err) {
         console.warn("Error fetching podcasts:", err);
       }
-      // Fallback seed data
-      setPodcasts([
-        {
-          id: "1",
-          title: "BioLabs Sequence Modeling & Genetic Compute Failsafes",
-          description: "Deep dive with our research fellows on leveraging high-performance compute clusters to map CRISPR off-target genetic mutation metrics safely.",
-          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          thumbnail_url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
-          duration: "18:45"
-        },
-        {
-          id: "2",
-          title: "SheSecure IoT Protocols & GPS Failsafe Telemetry Systems",
-          description: "Explaining the low-latency socket streams, emergency SOS overrides, and client-side web dashboards that secure community tracking networks.",
-          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          thumbnail_url: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=600&auto=format&fit=crop",
-          duration: "24:12"
-        },
-        {
-          id: "3",
-          title: "Building Indigenous Clinical Data Infrastructure at IIT Madras",
-          description: "Discussion with our board advisors on bridging the gap between clinical systems and emergency response models inside the indian healthcare stack.",
-          youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          thumbnail_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop",
-          duration: "15:30"
-        }
-      ]);
+      setPodcasts([]);
     };
 
     const fetchBrands = async () => {
@@ -581,47 +552,30 @@ export default function Home() {
   };
 
   const announcements = [
-    "Important: Proposal submission for the 2026 BioLabs Research Incubator starts June 15th.",
-    "Notification No. 08/2026: HSF invites applications for field safety coordinators (Delhi NCR).",
-    "High-Performance Computing (HPC) Genomic modeling workshop scheduled for July 10th-12th.",
-    "Registration Open: Summer training sessions in Bio-Medical Diagnostics and IoT failsafes.",
-    "Corrigendum to Advt. No. HSF/Apprentice (1) / 2026 for engagement of apprentices under the Apprentices Act.",
-    "Call for Applications: Transformative Leadership in STEMM (TLS) Workshop by Healix Academy."
+    "Healix Technologies Pvt. Ltd. incorporation process underway.",
+    "BioLabs research and innovation ecosystem under development.",
+    "Applications open for Founding Research Associates and Student Contributors.",
+    "Advisory Board and Mentor Network formation in progress.",
+    "Healthcare, research, and mental health initiatives being planned under Healix verticals.",
+    "New collaborations and team onboarding updates to be announced soon."
   ];
 
-  // Combine database founders with static defaults for the 7 core members
-  const mergedFounders = TEAM_MEMBERS.map(staticMember => {
-    const dbMember = founders.find(f => f.name?.toLowerCase().trim() === staticMember.name?.toLowerCase().trim());
-    if (dbMember) {
-      return {
-        ...staticMember,
-        name: dbMember.name,
-        role: dbMember.role,
-        quote: dbMember.quote,
-        photo: dbMember.photo_url || staticMember.photo,
-        linkedin: dbMember.linkedin_url || staticMember.linkedin || "https://www.linkedin.com/company/quick-healix/",
-        institution: dbMember.institution || staticMember.institution,
-        active: dbMember.active
-      };
-    }
-    return staticMember;
-  }).filter(m => m.active !== false);
-
-  // Append any new custom founders added from the database who are not in the default 7 list
-  const extraFounders = founders.filter(f => 
-    f.active && 
-    !TEAM_MEMBERS.some(staticMember => staticMember.name?.toLowerCase().trim() === f.name?.toLowerCase().trim())
-  ).map(f => ({
-    name: f.name,
-    role: f.role,
-    quote: f.quote,
-    photo: f.photo_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
-    linkedin: f.linkedin_url || "https://www.linkedin.com/company/quick-healix/",
-    institution: f.institution || "Healix Technologies",
-    active: true
-  }));
-
-  const displayTeam = [...mergedFounders, ...extraFounders];
+  // If founders exist in the database, use ONLY the database founders to allow removal.
+  // Sort them by display_order. If database is empty, fallback to TEAM_MEMBERS.
+  const displayTeam = founders.length > 0
+    ? [...founders]
+        .filter(f => f.active !== false)
+        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+        .map(f => ({
+          name: f.name,
+          role: f.role,
+          quote: f.quote,
+          photo: f.photo_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+          linkedin: f.linkedin_url || "https://www.linkedin.com/company/quick-healix/",
+          institution: f.institution || "Healix Technologies",
+          active: true
+        }))
+    : TEAM_MEMBERS;
 
   // Map dynamic advisors (mentors) from database
   // Filter out core team members shown in Section 2
@@ -912,7 +866,7 @@ export default function Home() {
               {/* Action message envelope trigger */}
               <div className="pt-6">
                 <button 
-                  onClick={() => setSelectedFounderForMsg(TEAM_MEMBERS[0])}
+                  onClick={() => setSelectedFounderForMsg(displayTeam.length > 0 ? displayTeam[0] : TEAM_MEMBERS[0])}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
                 >
                   Read Founder Message <ArrowRight className="w-3.5 h-3.5" />
@@ -1068,32 +1022,38 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {upcomingEvents.map((sem, idx) => (
-              <div key={idx} className="bg-white border border-zinc-200 hover:border-zinc-950 p-6 flex flex-col justify-between transition-all duration-300 min-h-[200px] shadow-sm group">
-                <div>
-                  <div className="flex items-center gap-2 text-[#ea580c] mb-4">
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{sem.date}</span>
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((sem, idx) => (
+                <div key={idx} className="bg-white border border-zinc-200 hover:border-zinc-950 p-6 flex flex-col justify-between transition-all duration-300 min-h-[200px] shadow-sm group">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#ea580c] mb-4">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{sem.date}</span>
+                    </div>
+                    <h3 className="text-base font-black text-zinc-950 uppercase font-mono tracking-tight leading-snug group-hover:text-[#ea580c] transition-colors">
+                      {sem.title}
+                    </h3>
+                    <p className="text-xs text-zinc-550 mt-3 flex items-center gap-1.5 font-sans">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 shrink-0" />
+                      Speaker: <strong className="text-zinc-750 font-semibold">{sem.speaker}</strong>
+                    </p>
                   </div>
-                  <h3 className="text-base font-black text-zinc-950 uppercase font-mono tracking-tight leading-snug group-hover:text-[#ea580c] transition-colors">
-                    {sem.title}
-                  </h3>
-                  <p className="text-xs text-zinc-550 mt-3 flex items-center gap-1.5 font-sans">
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 shrink-0" />
-                    Speaker: <strong className="text-zinc-750 font-semibold">{sem.speaker}</strong>
-                  </p>
+                  <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
+                    <Link 
+                      href={`/events?search=${encodeURIComponent(sem.title)}`} 
+                      className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-widest flex items-center gap-1"
+                    >
+                      Register Now <ArrowRight className="w-3 h-3" />
+                    </Link>
+                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 uppercase">Academic Session</span>
+                  </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
-                  <Link 
-                    href={`/events?search=${encodeURIComponent(sem.title)}`} 
-                    className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-widest flex items-center gap-1"
-                  >
-                    Register Now <ArrowRight className="w-3 h-3" />
-                  </Link>
-                  <span className="text-[9px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 uppercase">Academic Session</span>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-zinc-650 font-mono text-sm">Upcoming events will be announced shortly.</p>
               </div>
-            ))}
+            )}
           </div>
 
           <div className="text-center mt-12">
@@ -1142,33 +1102,52 @@ export default function Home() {
 
             {/* Podcasts Block (Right column) */}
             <div className="lg:col-span-4 bg-zinc-50 border border-zinc-200/80 p-6 shadow-sm">
-              <h3 className="text-base font-black text-zinc-950 uppercase mb-6 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
-                <Play className="w-4 h-4 text-[#ea580c]" /> Podcast Broadcasts
-              </h3>
-              <div className="space-y-4">
-                {podcasts.slice(0, 3).map((pod, idx) => (
-                  <div key={idx} className="flex gap-4 items-center pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
-                    <div 
-                      className="w-16 h-12 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer shadow-sm group/thumb" 
-                      onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
-                    >
-                      <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
-                        <Play className="w-4 h-4 fill-white" />
+              {podcasts.length > 0 ? (
+                <>
+                  <h3 className="text-base font-black text-zinc-950 uppercase mb-6 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
+                    <Play className="w-4 h-4 text-[#ea580c]" /> Podcast Broadcasts
+                  </h3>
+                  <div className="space-y-4">
+                    {podcasts.slice(0, 3).map((pod, idx) => (
+                      <div key={idx} className="flex gap-4 items-center pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
+                        <div 
+                          className="w-16 h-12 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer shadow-sm group/thumb" 
+                          onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                        >
+                          <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
+                            <Play className="w-4 h-4 fill-white" />
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <span 
+                            className="text-xs font-bold text-zinc-900 truncate block hover:text-[#ea580c] cursor-pointer font-mono" 
+                            onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
+                          >
+                            {pod.title}
+                          </span>
+                          <span className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-wider mt-1 block">{pod.duration}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="min-w-0">
-                      <span 
-                        className="text-xs font-bold text-zinc-900 truncate block hover:text-[#ea580c] cursor-pointer font-mono" 
-                        onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
-                      >
-                        {pod.title}
-                      </span>
-                      <span className="text-[9px] font-mono text-[#ea580c] uppercase font-bold tracking-wider mt-1 block">{pod.duration}</span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-base font-black text-zinc-950 uppercase mb-6 border-b border-zinc-200 pb-3 font-mono flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#ea580c]" /> LATEST ORGANIZATION UPDATES
+                  </h3>
+                  <div className="space-y-4">
+                    {["TEAM ONBOARDING", "ADVISOR NETWORK", "RESEARCH OPPORTUNITIES", "HEALTHCARE INITIATIVES"].map((update, idx) => (
+                      <div key={idx} className="flex gap-4 items-center pb-3 border-b border-zinc-200 last:border-0 last:pb-0">
+                        <span className="text-xs font-bold text-zinc-900 block font-mono hover:text-[#ea580c] cursor-pointer transition-colors">
+                          {update}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
