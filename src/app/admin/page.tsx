@@ -18,7 +18,7 @@ import {
   GraduationCap, PlayCircle, Eye, EyeOff, Edit3, X, Check, Upload, Loader2, ArrowUpRight, 
   DollarSign, BookOpen, Star, Book, UserPlus, Code2, Link2, MessageCircle, RefreshCw, 
   Battery, Signal, Zap, ShieldAlert, Play, Square, ExternalLink, Copy, Smartphone,
-  ChevronUp, ChevronDown, Quote
+  ChevronUp, ChevronDown, Quote, GripVertical
 } from "lucide-react";
 
 import { 
@@ -208,6 +208,8 @@ export default function UnifiedAdminDashboard() {
   const [corpSubmitting, setCorpSubmitting] = useState(false);
   const [corpUploadingFor, setCorpUploadingFor] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
+  const [corpDragId, setCorpDragId] = useState<string | null>(null);
+  const [corpDragOverId, setCorpDragOverId] = useState<string | null>(null);
 
   // ─── 3.5 ENGINEERING TEAM CRUD STATES ───
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -601,6 +603,30 @@ export default function UnifiedAdminDashboard() {
   };
 
   // ─── CORPORATE ADVISORS / MENTORS HANDLERS ───
+  const handleCorpDragReorder = async (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    const ordered = [...corpMentors].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+    const dragIdx = ordered.findIndex(m => m.id === draggedId);
+    const targetIdx = ordered.findIndex(m => m.id === targetId);
+    if (dragIdx === -1 || targetIdx === -1) return;
+    const reordered = [...ordered];
+    const [dragged] = reordered.splice(dragIdx, 1);
+    reordered.splice(targetIdx, 0, dragged);
+    // Optimistic update
+    setCorpMentors(reordered.map((m, i) => ({ ...m, display_order: i })));
+    // Persist each updated order
+    await Promise.all(
+      reordered.map((m, i) =>
+        fetch(`/api/mentors/${m.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ display_order: i }),
+        })
+      )
+    );
+    showToast("Order saved!", "ok");
+  };
+
   const openCorpAddForm = () => {
     setEditingCorpId(null);
     setCorpForm({ ...EMPTY_CORP_MENTOR, display_order: corpMentors.length });
@@ -3214,19 +3240,62 @@ export default function UnifiedAdminDashboard() {
               <motion.div key="mentors" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
                 <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-8">
                   <div>
-                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Mentors & Leaders</h2>
-                    <p className="text-white/50 text-sm">Manage corporate advisors and leadership profiles appearing on the About page.</p>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Advisors & Mentors</h2>
+                    <p className="text-white/50 text-sm">Manage advisor profiles shown on the homepage marquee. Drag cards to reorder.</p>
                   </div>
                   <button onClick={openCorpAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
-                    <Plus className="w-4 h-4" /> Add Mentor
+                    <Plus className="w-4 h-4" /> Add Advisor
                   </button>
                 </div>
 
+                {/* Category filter pills */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {["all", "clinical", "research", "academic", "industry"].map(cat => {
+                    const colors: Record<string, string> = { clinical: "#ea580c", research: "#2563eb", academic: "#059669", industry: "#7c3aed" };
+                    const count = cat === "all" ? corpMentors.length : corpMentors.filter(m => (m.category || "clinical") === cat).length;
+                    return (
+                      <span key={cat} className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 text-white/60" style={cat !== "all" ? { borderColor: colors[cat] + "60", color: colors[cat] } : {}}>
+                        {cat} ({count})
+                      </span>
+                    );
+                  })}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {corpMentors.map((m) => (
-                    <GlassCard key={m.id} className={`p-5 flex flex-col gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${m.active ? "opacity-100" : "opacity-55"}`}>
+                  {[...corpMentors].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)).map((m) => (
+                    <GlassCard
+                      key={m.id}
+                      draggable
+                      onDragStart={() => setCorpDragId(m.id)}
+                      onDragOver={(e: React.DragEvent) => { e.preventDefault(); setCorpDragOverId(m.id); }}
+                      onDragLeave={() => setCorpDragOverId(null)}
+                      onDrop={(e: React.DragEvent) => { e.preventDefault(); if (corpDragId) handleCorpDragReorder(corpDragId, m.id); setCorpDragId(null); setCorpDragOverId(null); }}
+                      onDragEnd={() => { setCorpDragId(null); setCorpDragOverId(null); }}
+                      className={`p-5 flex flex-col gap-4 border transition-all cursor-grab active:cursor-grabbing select-none ${
+                        corpDragOverId === m.id ? "border-emerald-400 bg-emerald-500/5 scale-[1.02]" :
+                        corpDragId === m.id ? "border-white/20 opacity-40" :
+                        m.active ? "border-white/5 bg-[#0a0a0a] hover:border-white/10" : "border-white/5 bg-[#0a0a0a] opacity-55"
+                      }`}
+                    >
+                      {/* Drag handle + category badge */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <GripVertical className="w-4 h-4 text-white/20" />
+                          {m.category && (
+                            <span className="text-[9px] font-black font-mono uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
+                              color: m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed",
+                              backgroundColor: (m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed") + "15",
+                            }}>{m.category}</span>
+                          )}
+                        </div>
+                        <span className={`text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full ${ m.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400" }`}>
+                          {m.active ? "Live" : "Hidden"}
+                        </span>
+                      </div>
+
                       <div className="flex gap-4">
-                        <div 
+                        {/* Photo with drag-drop upload */}
+                        <div
                           className={`w-20 h-20 rounded-full overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
                             corpUploadingFor === m.id ? "border-emerald-500 bg-emerald-500/20 scale-105" : "border-white/10"
                           }`}
@@ -3239,7 +3308,7 @@ export default function UnifiedAdminDashboard() {
                             <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{m.name[0]}</div>
                           )}
                           <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
-                            <Upload className="w-3.5 h-3.5 mb-1 text-emerald-400 animate-bounce" /> Drag & Drop
+                            <Upload className="w-3.5 h-3.5 mb-1 text-emerald-400 animate-bounce" /> Photo
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCorpPhotoUpload(e, m.id)} />
                           </label>
                         </div>
@@ -3247,20 +3316,21 @@ export default function UnifiedAdminDashboard() {
                           <p className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{m.role}</p>
                           <h3 className="text-base font-bold text-white">{m.name}</h3>
                           <p className="text-xs text-gray-500 font-medium">{m.organization}</p>
+                          {m.bio && <p className="text-[10px] text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
                         <div className="flex gap-1">
-                          <button onClick={() => moveCorpOrder(m, "up")} className="p-1.5 bg-white/5 rounded"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
-                          <button onClick={() => moveCorpOrder(m, "down")} className="p-1.5 bg-white/5 rounded"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                          <button onClick={() => moveCorpOrder(m, "up")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move up"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                          <button onClick={() => moveCorpOrder(m, "down")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move down"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
                         </div>
                         <div className="flex gap-1.5">
-                          <button onClick={() => toggleCorpActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+                          <button onClick={() => toggleCorpActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-400 hover:bg-red-500/20"}`} title={m.active ? "Hide" : "Show"}>
                             {m.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                           </button>
-                          <button onClick={() => openCorpEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
-                          <button onClick={() => handleCorpDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded"><Trash2 className="w-3.5 h-3.5"/></button>
+                          <button onClick={() => openCorpEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5"/></button>
+                          <button onClick={() => handleCorpDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5"/></button>
                         </div>
                       </div>
                     </GlassCard>

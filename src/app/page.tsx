@@ -321,18 +321,6 @@ const cardVariants = {
 function BigAdvisorCard({ advisor }: { advisor: any }) {
   const photo = advisor.photo || advisor.photo_url;
   const linkedin = advisor.linkedin || advisor.linkedin_url;
-  
-  if (advisor.isPlaceholder) {
-    return (
-       <div className="border border-dashed border-zinc-200 hover:border-[#ea580c] bg-white p-8 transition-all duration-300 flex flex-col items-center text-center justify-center group h-[320px] w-full rounded-2xl shadow-sm hover:shadow-md">
-          <p className="text-[11px] font-black font-mono uppercase tracking-widest mb-2" style={{ color: advisor.categoryColor || '#ea580c' }}>Open Position</p>
-          <h4 className="font-bold text-sm text-zinc-800 mb-6">{advisor.expertise}</h4>
-          <Link href="/contact" className="inline-flex items-center gap-2 text-xs font-bold text-white bg-zinc-950 px-5 py-2.5 rounded-full uppercase tracking-wider transition-colors hover:bg-[#ea580c]">
-             Apply to Join <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-       </div>
-    );
-  }
 
   return (
     <div className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-500 group p-8 flex flex-col items-center text-center shadow-sm hover:shadow-xl h-[320px] w-full rounded-2xl relative overflow-hidden">
@@ -354,7 +342,7 @@ function BigAdvisorCard({ advisor }: { advisor: any }) {
       )}
       
       <h4 className="font-black text-lg text-zinc-950 font-mono uppercase tracking-tight leading-none mb-2 group-hover:text-[#ea580c] transition-colors">{advisor.name}</h4>
-      <p className="text-[10px] text-[#ea580c] font-mono font-bold tracking-widest uppercase mb-3 line-clamp-1">{advisor.role || advisor.expertise}</p>
+      <p className="text-[10px] text-[#ea580c] font-mono font-bold tracking-widest uppercase mb-3 line-clamp-1">{advisor.role || advisor.designation || advisor.expertise}</p>
       
       {advisor.institution && (
         <p className="text-xs text-zinc-500 font-medium leading-relaxed line-clamp-2">{advisor.institution}</p>
@@ -806,71 +794,74 @@ export default function Home() {
           </div>
 
           {(() => {
-            // Flatten all advisors and attach category styles
-            const allAdvisors = finalGroupedAdvisors.flatMap(cat => {
-              const placeholder = {
-                isPlaceholder: true,
-                expertise: cat.key === "clinical" ? "AIIMS / PGIMER faculty and senior clinicians" :
-                           cat.key === "research" ? "IIT / IISc research scholars and scientists" :
-                           cat.key === "academic" ? "University faculty in health informatics" :
-                           "Healthcare industry veterans and investors",
-                categoryColor: cat.color,
-                categoryLabel: cat.label
-              };
-              return [...cat.members.map((member: any) => ({ ...member, categoryLabel: cat.label, categoryColor: cat.color })), placeholder];
-            });
-            
-            // Split into two rows
-            const row1 = allAdvisors.filter((_, i) => i % 2 === 0);
-            const row2 = allAdvisors.filter((_, i) => i % 2 !== 0);
-            
-            // Duplicate for smooth infinite marquee
-            const marquee1 = [...row1, ...row1, ...row1, ...row1];
-            const marquee2 = [...row2, ...row2, ...row2, ...row2];
+            // Only real advisors (no placeholders) in the marquee
+            const allAdvisors = finalGroupedAdvisors.flatMap(cat =>
+              cat.members.map((member: any) => ({ ...member, categoryLabel: cat.label, categoryColor: cat.color }))
+            );
+
+            // Need at least a few to marquee — if empty show nothing
+            if (allAdvisors.length === 0) return null;
+
+            // Duplicate enough copies for infinite scroll
+            const copies = Math.max(4, Math.ceil(16 / allAdvisors.length));
+            const marqueeItems = Array.from({ length: copies }, () => allAdvisors).flat();
+
+            // Split into two rows by alternating
+            const row1 = marqueeItems.filter((_, i) => i % 2 === 0);
+            const row2 = marqueeItems.filter((_, i) => i % 2 !== 0);
 
             return (
               <div className="relative w-full max-w-[100vw] flex flex-col gap-8 mt-10 overflow-hidden">
-                {/* Left to Right Marquee */}
+                {/* Row 1: Left to Right */}
                 <div className="flex w-full overflow-hidden relative">
-                  <motion.div 
-                    className="flex gap-6 min-w-max pr-6 hover:[animation-play-state:paused]"
+                  <motion.div
+                    className="flex gap-6 min-w-max pr-6"
                     animate={{ x: ["0%", "-50%"] }}
                     transition={{ ease: "linear", duration: 80, repeat: Infinity }}
                   >
-                    {marquee1.map((adv, i) => (
+                    {row1.map((adv, i) => (
                       <div key={i} className="w-[320px] shrink-0">
                         <BigAdvisorCard advisor={adv} />
                       </div>
                     ))}
                   </motion.div>
                 </div>
-                
-                {/* Right to Left Marquee */}
-                <div className="flex w-full overflow-hidden relative">
-                  <motion.div 
-                    className="flex gap-6 min-w-max pr-6 hover:[animation-play-state:paused]"
-                    animate={{ x: ["-50%", "0%"] }}
-                    transition={{ ease: "linear", duration: 85, repeat: Infinity }}
-                  >
-                    {marquee2.map((adv, i) => (
-                      <div key={i} className="w-[320px] shrink-0">
-                        <BigAdvisorCard advisor={adv} />
-                      </div>
-                    ))}
-                  </motion.div>
-                </div>
-                
-                {/* Fade overlays for the edges */}
+
+                {/* Row 2: Right to Left */}
+                {row2.length > 0 && (
+                  <div className="flex w-full overflow-hidden relative">
+                    <motion.div
+                      className="flex gap-6 min-w-max pr-6"
+                      animate={{ x: ["-50%", "0%"] }}
+                      transition={{ ease: "linear", duration: 85, repeat: Infinity }}
+                    >
+                      {row2.map((adv, i) => (
+                        <div key={i} className="w-[320px] shrink-0">
+                          <BigAdvisorCard advisor={adv} />
+                        </div>
+                      ))}
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* Fade overlays */}
                 <div className="absolute top-0 left-0 w-20 md:w-40 h-full bg-gradient-to-r from-zinc-50 to-transparent pointer-events-none z-10" />
                 <div className="absolute top-0 right-0 w-20 md:w-40 h-full bg-gradient-to-l from-zinc-50 to-transparent pointer-events-none z-10" />
               </div>
             );
           })()}
 
-          <div className="text-center mt-12">
+          {/* CTA Buttons — both together at the bottom */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-14">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 font-mono rounded-lg"
+            >
+              Apply to Join <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-zinc-950 hover:border-[#ea580c] hover:text-[#ea580c] text-zinc-950 text-xs font-bold uppercase tracking-wider transition-all duration-300 font-mono rounded-lg"
             >
               Join Our Advisory Network <ArrowRight className="w-3.5 h-3.5" />
             </Link>
