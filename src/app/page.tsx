@@ -318,6 +318,73 @@ const cardVariants = {
   })
 };
 
+function BigAdvisorCard({ advisor }: { advisor: any }) {
+  const photo = advisor.photo || advisor.photo_url;
+  const linkedin = advisor.linkedin || advisor.linkedin_url;
+  
+  if (advisor.isPlaceholder) {
+    return (
+       <div className="border border-dashed border-zinc-200 hover:border-[#ea580c] bg-white p-8 transition-all duration-300 flex flex-col items-center text-center justify-center group h-[320px] w-full rounded-2xl shadow-sm hover:shadow-md">
+          <p className="text-[11px] font-black font-mono uppercase tracking-widest mb-2" style={{ color: advisor.categoryColor || '#ea580c' }}>Open Position</p>
+          <h4 className="font-bold text-sm text-zinc-800 mb-6">{advisor.expertise}</h4>
+          <Link href="/contact" className="inline-flex items-center gap-2 text-xs font-bold text-white bg-zinc-950 px-5 py-2.5 rounded-full uppercase tracking-wider transition-colors hover:bg-[#ea580c]">
+             Apply to Join <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+       </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-zinc-200/80 hover:border-zinc-950 transition-all duration-500 group p-8 flex flex-col items-center text-center shadow-sm hover:shadow-xl h-[320px] w-full rounded-2xl relative overflow-hidden">
+      {advisor.categoryLabel && (
+        <div 
+          className="absolute top-0 left-0 w-full h-1" 
+          style={{ backgroundColor: advisor.categoryColor || '#ea580c' }} 
+        />
+      )}
+      
+      {photo ? (
+        <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-zinc-100 shadow-sm mb-5 shrink-0 relative group-hover:scale-110 transition-transform duration-500">
+          <img src={photo} alt={advisor.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+        </div>
+      ) : (
+        <div className="w-24 h-24 rounded-full bg-zinc-100 flex items-center justify-center border-[3px] border-white shadow-sm mb-5 shrink-0 text-zinc-400 group-hover:scale-110 transition-transform duration-500">
+          <Users className="w-10 h-10" />
+        </div>
+      )}
+      
+      <h4 className="font-black text-lg text-zinc-950 font-mono uppercase tracking-tight leading-none mb-2 group-hover:text-[#ea580c] transition-colors">{advisor.name}</h4>
+      <p className="text-[10px] text-[#ea580c] font-mono font-bold tracking-widest uppercase mb-3 line-clamp-1">{advisor.role || advisor.expertise}</p>
+      
+      {advisor.institution && (
+        <p className="text-xs text-zinc-500 font-medium leading-relaxed line-clamp-2">{advisor.institution}</p>
+      )}
+
+      {advisor.categoryLabel && (
+        <span 
+          className="mt-auto px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border"
+          style={{ 
+            color: advisor.categoryColor || '#ea580c', 
+            borderColor: (advisor.categoryColor || '#ea580c') + '40',
+            backgroundColor: (advisor.categoryColor || '#ea580c') + '05'
+          }}
+        >
+          {advisor.categoryLabel}
+        </span>
+      )}
+
+      {linkedin && (
+        <a href={linkedin} target="_blank" rel="noopener noreferrer" className="absolute top-4 right-4 text-zinc-400 hover:text-[#0a66c2] transition-colors">
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+        </a>
+      )}
+    </div>
+  );
+}
+
+
 function AdvisorCard({ advisor }: { advisor: any }) {
   if (advisor.isPlaceholder) {
     return (
@@ -738,52 +805,67 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Categorized 4-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {finalGroupedAdvisors.map((cat) => (
-              <div key={cat.key} className="flex flex-col gap-0">
-                {/* Column Header */}
-                <div
-                  className="flex items-center gap-2 px-4 py-3 mb-4 border-l-4"
-                  style={{ borderColor: cat.color, backgroundColor: cat.color + "10" }}
-                >
-                  <h3 className="text-[11px] font-black font-mono uppercase tracking-widest text-zinc-800">
-                    {cat.label}
-                  </h3>
-                </div>
+          {(() => {
+            // Flatten all advisors and attach category styles
+            const allAdvisors = finalGroupedAdvisors.flatMap(cat => {
+              const placeholder = {
+                isPlaceholder: true,
+                expertise: cat.key === "clinical" ? "AIIMS / PGIMER faculty and senior clinicians" :
+                           cat.key === "research" ? "IIT / IISc research scholars and scientists" :
+                           cat.key === "academic" ? "University faculty in health informatics" :
+                           "Healthcare industry veterans and investors",
+                categoryColor: cat.color,
+                categoryLabel: cat.label
+              };
+              return [...cat.members.map((member: any) => ({ ...member, categoryLabel: cat.label, categoryColor: cat.color })), placeholder];
+            });
+            
+            // Split into two rows
+            const row1 = allAdvisors.filter((_, i) => i % 2 === 0);
+            const row2 = allAdvisors.filter((_, i) => i % 2 !== 0);
+            
+            // Duplicate for smooth infinite marquee
+            const marquee1 = [...row1, ...row1, ...row1, ...row1];
+            const marquee2 = [...row2, ...row2, ...row2, ...row2];
 
-                {/* Cards */}
-                <div className="flex flex-col gap-3">
-                  {cat.members.map((advisor: any, i: number) => (
-                    <AdvisorCard key={i} advisor={advisor} />
-                  ))}
-
-                  {/* Recruitment placeholder at bottom of each column */}
-                  <div
-                    className="border border-dashed p-4 rounded-lg transition-all duration-300 group cursor-pointer"
-                    style={{ borderColor: cat.color + "40" }}
+            return (
+              <div className="relative w-full max-w-[100vw] flex flex-col gap-8 mt-10 overflow-hidden">
+                {/* Left to Right Marquee */}
+                <div className="flex w-full overflow-hidden relative">
+                  <motion.div 
+                    className="flex gap-6 min-w-max pr-6 hover:[animation-play-state:paused]"
+                    animate={{ x: ["0%", "-50%"] }}
+                    transition={{ ease: "linear", duration: 80, repeat: Infinity }}
                   >
-                    <p className="text-[9px] font-black font-mono uppercase tracking-widest mb-1" style={{ color: cat.color }}>
-                      Open Position
-                    </p>
-                    <p className="text-xs text-zinc-500 leading-snug mb-3">
-                      {cat.key === "clinical" && "AIIMS / PGIMER faculty and senior clinicians"}
-                      {cat.key === "research" && "IIT / IISc research scholars and scientists"}
-                      {cat.key === "academic" && "University faculty in health informatics"}
-                      {cat.key === "industry" && "Healthcare industry veterans and investors"}
-                    </p>
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center gap-1 text-[9px] font-bold font-mono uppercase tracking-wider transition-colors"
-                      style={{ color: cat.color }}
-                    >
-                      Apply to Join <ArrowRight className="w-2.5 h-2.5" />
-                    </Link>
-                  </div>
+                    {marquee1.map((adv, i) => (
+                      <div key={i} className="w-[320px] shrink-0">
+                        <BigAdvisorCard advisor={adv} />
+                      </div>
+                    ))}
+                  </motion.div>
                 </div>
+                
+                {/* Right to Left Marquee */}
+                <div className="flex w-full overflow-hidden relative">
+                  <motion.div 
+                    className="flex gap-6 min-w-max pr-6 hover:[animation-play-state:paused]"
+                    animate={{ x: ["-50%", "0%"] }}
+                    transition={{ ease: "linear", duration: 85, repeat: Infinity }}
+                  >
+                    {marquee2.map((adv, i) => (
+                      <div key={i} className="w-[320px] shrink-0">
+                        <BigAdvisorCard advisor={adv} />
+                      </div>
+                    ))}
+                  </motion.div>
+                </div>
+                
+                {/* Fade overlays for the edges */}
+                <div className="absolute top-0 left-0 w-20 md:w-40 h-full bg-gradient-to-r from-zinc-50 to-transparent pointer-events-none z-10" />
+                <div className="absolute top-0 right-0 w-20 md:w-40 h-full bg-gradient-to-l from-zinc-50 to-transparent pointer-events-none z-10" />
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           <div className="text-center mt-12">
             <Link
