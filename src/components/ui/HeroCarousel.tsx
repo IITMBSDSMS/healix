@@ -299,7 +299,12 @@ export function HeroCarousel() {
             <button 
               key={idx}
               onClick={() => setActiveIndex(idx)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${idx === activeIndex ? "bg-white w-8" : "bg-white/40 hover:bg-white/70"}`}
+              className={`!min-w-0 !min-h-0 !p-0 rounded-full transition-all duration-300 ${
+                idx === activeIndex 
+                  ? "bg-white w-5 h-1.5" 
+                  : "bg-white/35 hover:bg-white/60 w-1.5 h-1.5"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
         </div>
