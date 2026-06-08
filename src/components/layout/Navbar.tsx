@@ -78,9 +78,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-3 sm:gap-4 divide-x divide-white/20 text-xs">
             <a href="https://www.biolabsresearch-healix.com" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-200 transition-colors pl-0 font-medium">Research Portal</a>
-            <Link href="/admin" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Tenders & Administration</Link>
             <Link href="/news" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Press Release</Link>
-            <Link href="/academy/mentors" className="hover:text-zinc-200 transition-colors pl-3 font-medium">Mentorship Directory</Link>
           </div>
         </div>
       </div>
@@ -249,22 +247,10 @@ export function Navbar() {
                     Research Portal
                   </a>
                   <Link 
-                    href="/admin" 
-                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
-                  >
-                    Tenders & Administration
-                  </Link>
-                  <Link 
                     href="/news" 
                     className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
                   >
                     Press Release
-                  </Link>
-                  <Link 
-                    href="/academy/mentors" 
-                    className="block px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-900 hover:text-white uppercase transition-colors rounded-lg"
-                  >
-                    Mentorship Directory
                   </Link>
                 </div>
               </div>
