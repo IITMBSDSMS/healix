@@ -1078,232 +1078,267 @@ function SunOrb() {
           antialias: true,
         }) as WebGLRenderingContext | null);
     } catch (e) {
-      console.error("WebGL support checking failed for SunOrb", e);
+      console.error("WebGL init failed for SunOrb", e);
     }
-
     if (!gl) return;
 
     const vsSource = `
       attribute vec2 a_position;
-      varying vec2 v_texCoord;
+      varying vec2 v_uv;
       void main() {
-        v_texCoord = a_position * 0.5 + 0.5;
+        v_uv = a_position * 0.5 + 0.5;
         gl_Position = vec4(a_position, 0.0, 1.0);
       }
     `;
 
     const fsSource = `
-      precision mediump float;
-      varying vec2 v_texCoord;
+      precision highp float;
+      varying vec2 v_uv;
       uniform float u_time;
 
+      /* ── Hashing & Noise ── */
       float hash(vec3 p) {
-        p = fract(p * vec3(443.8975, 397.2973, 491.1871));
+        p  = fract(p * vec3(443.8975, 397.2973, 491.1871));
         p += dot(p.xyz, p.yzx + 19.19);
         return fract(p.x * p.y * p.z);
       }
-
-      float noise3d(vec3 p) {
-        vec3 i = floor(p);
-        vec3 f = fract(p);
-        vec3 u = f * f * (3.0 - 2.0 * f);
-        
-        float n000 = hash(i + vec3(0.0, 0.0, 0.0));
-        float n100 = hash(i + vec3(1.0, 0.0, 0.0));
-        float n010 = hash(i + vec3(0.0, 1.0, 0.0));
-        float n110 = hash(i + vec3(1.0, 1.0, 0.0));
-        float n001 = hash(i + vec3(0.0, 0.0, 1.0));
-        float n101 = hash(i + vec3(1.0, 0.0, 1.0));
-        float n011 = hash(i + vec3(0.0, 1.0, 1.0));
-        float n111 = hash(i + vec3(1.0, 1.0, 1.0));
-        
-        float x0 = mix(n000, n100, u.x);
-        float x1 = mix(n010, n110, u.x);
-        float y0 = mix(x0, x1, u.y);
-        
-        float x2 = mix(n001, n101, u.x);
-        float x3 = mix(n011, n111, u.x);
-        float y1 = mix(x2, x3, u.y);
-        
-        return mix(y0, y1, u.z);
+      float hash2(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
       }
 
-      float fbm3d(vec3 p) {
-        float v = 0.0;
-        float a = 0.5;
-        for (int i = 0; i < 3; ++i) {
-          v += a * noise3d(p);
-          p = p * 2.0;
-          a *= 0.5;
-        }
+      float noise3(vec3 p) {
+        vec3 i = floor(p), f = fract(p);
+        vec3 u = f*f*(3.0-2.0*f);
+        return mix(
+          mix(mix(hash(i),             hash(i+vec3(1,0,0)),u.x),
+              mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)),u.x),u.y),
+          mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),u.x),
+              mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),u.x),u.y), u.z);
+      }
+      float noise2(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        vec2 u = f*f*(3.0-2.0*f);
+        return mix(mix(hash2(i),hash2(i+vec2(1,0)),u.x),
+                   mix(hash2(i+vec2(0,1)),hash2(i+vec2(1,1)),u.x),u.y);
+      }
+
+      /* ── 6-octave FBM ── */
+      float fbm3(vec3 p) {
+        float v=0.,a=.5;
+        for(int i=0;i<6;i++){v+=a*noise3(p);p*=2.03;a*=.48;}
+        return v;
+      }
+      float fbm2(vec2 p) {
+        float v=0.,a=.5;
+        for(int i=0;i<5;i++){v+=a*noise2(p);p*=2.07;a*=.48;}
         return v;
       }
 
-      float hash2d(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-      }
-
-      float noise2d(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(mix(hash2d(i + vec2(0.0,0.0)), hash2d(i + vec2(1.0,0.0)), u.x),
-                   mix(hash2d(i + vec2(0.0,1.0)), hash2d(i + vec2(1.0,1.0)), u.x), u.y);
-      }
-
-      float fbm2d(vec2 p) {
-        float v = 0.0;
-        float a = 0.5;
-        for (int i = 0; i < 3; ++i) {
-          v += a * noise2d(p);
-          p = p * 2.0;
-          a *= 0.5;
-        }
-        return v;
-      }
+      /* ── Rotation helpers ── */
+      mat2 rot2(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
 
       void main() {
-        vec2 p = v_texCoord * 2.0 - 1.0;
+        vec2 p  = v_uv * 2.0 - 1.0;         /* [-1,+1] NDC              */
         float d = length(p);
-        
-        float r_sun = 0.55;
-        float d_normalized = d / r_sun;
-        
-        float diskAlpha = smoothstep(1.0, 0.96, d_normalized);
-        
+
+        /* ─── Sun disk radius in NDC ─── */
+        float R = 0.58;
+        float dn = d / R;                    /* 1.0 = edge of disk       */
+
+        /* ─── Sharp anti-aliased disk mask ─── */
+        float diskMask = smoothstep(1.02, 0.97, dn);
+
+        /* ─────────────────────────────────────
+           PHOTOSPHERE — 3-D sphere shading
+        ───────────────────────────────────────*/
         vec3 diskColor = vec3(0.0);
-        if (d_normalized < 1.05) {
-          float z = sqrt(max(0.0, 1.0 - min(1.0, d_normalized * d_normalized)));
-          vec3 normal = vec3(p.x / r_sun, p.y / r_sun, z);
-          
-          float angle_rot = u_time * 0.012;
-          mat3 rotY = mat3(
-            cos(angle_rot), 0.0, sin(angle_rot),
-            0.0, 1.0, 0.0,
-            -sin(angle_rot), 0.0, cos(angle_rot)
-          );
-          vec3 rotatedNormal = rotY * normal;
-          
-          float plasma = fbm3d(rotatedNormal * 6.5 + vec3(0.0, 0.0, u_time * 0.08));
-          float limb = pow(1.0 - normal.z, 2.2);
-          
-          float temp = normal.z * 1.35 - limb * 0.9 + (plasma - 0.5) * 0.38;
+        if (dn < 1.06) {
+          /* reconstruct sphere normal */
+          float zRaw = sqrt(max(0.0, 1.0 - min(1.0, dn*dn)));
+          vec3 N = normalize(vec3(p.x/R, p.y/R, zRaw));
+
+          /* differential rotation: equator faster (solar-like 25-35 day) */
+          float latFade  = abs(N.y);
+          float rotSpeed = mix(0.018, 0.011, latFade);
+          float angle    = u_time * rotSpeed;
+          mat3 rotY = mat3(cos(angle),0,sin(angle), 0,1,0, -sin(angle),0,cos(angle));
+          vec3 rN = rotY * N;
+
+          /* ── Plasma / granulation turbulence ── */
+          float plasma = fbm3(rN * 5.5  + vec3(0, 0, u_time * 0.09));
+          float gran   = fbm3(rN * 14.0 + vec3(u_time*0.07, 0, u_time*0.05));
+
+          /* ── Limb darkening (physically based, 5-term) ── */
+          float cosT   = N.z;
+          float limb   = 1.0
+                       - 0.47*(1.0-cosT)
+                       - 0.23*(1.0-cosT)*(1.0-cosT)
+                       - 0.06*pow(1.0-cosT,3.0)
+                       - 0.03*pow(1.0-cosT,4.0);
+          limb = clamp(limb, 0.0, 1.0);
+
+          /* ── Sunspots ── */
+          vec3 sN2 = rN * 4.2 + vec3(1.3, 0.7, u_time*0.005);
+          float spotNoise = fbm3(sN2);
+          float spotMask  = smoothstep(0.61, 0.54, spotNoise) * smoothstep(0.3, 0.7, cosT);
+          float spotDepth = smoothstep(0.54, 0.45, spotNoise);
+          vec3  umbraColor   = vec3(0.12, 0.05, 0.02);
+          vec3  penumbraColor= vec3(0.45, 0.18, 0.04);
+          vec3  spotColor    = mix(umbraColor, penumbraColor, spotDepth);
+
+          /* ── Surface temperature field → colour ── */
+          float temp = cosT * 1.3 + (plasma - 0.5)*0.45 + (gran - 0.5)*0.18;
           temp = clamp(temp, 0.0, 1.0);
-          
-          vec3 c_darkRed = vec3(0.85, 0.08, 0.0);
-          vec3 c_gold = vec3(1.0, 0.65, 0.02);
-          vec3 c_white = vec3(1.0, 1.0, 0.90);
-          
-          diskColor = mix(c_darkRed, c_gold, smoothstep(0.0, 0.45, temp));
-          diskColor = mix(diskColor, c_white, smoothstep(0.45, 1.0, temp));
-          
-          float hotspot = smoothstep(0.72, 0.90, plasma);
-          diskColor += vec3(0.22, 0.15, 0.08) * hotspot;
+
+          vec3 c_dark  = vec3(0.80, 0.06, 0.00);
+          vec3 c_warm  = vec3(1.00, 0.55, 0.02);
+          vec3 c_gold  = vec3(1.00, 0.82, 0.18);
+          vec3 c_white = vec3(1.00, 0.98, 0.90);
+
+          vec3 surfColor = mix(c_dark, c_warm,  smoothstep(0.00, 0.30, temp));
+               surfColor = mix(surfColor, c_gold,  smoothstep(0.30, 0.65, temp));
+               surfColor = mix(surfColor, c_white, smoothstep(0.65, 1.00, temp));
+
+          /* ── Chromospheric spicules at limb (thin bright needles) ── */
+          float limbEdge = smoothstep(0.72, 0.94, cosT < 0.001 ? 0.0 : cosT);
+          limbEdge = 1.0 - limbEdge;  /* bright near edge */
+          float spicule = pow(fbm3(rN * 22.0 + vec3(u_time * 0.14,0,0)), 3.0) * limbEdge * 0.8;
+          surfColor += vec3(1.0, 0.92, 0.7) * spicule;
+
+          /* ── Merge spots ── */
+          surfColor = mix(surfColor, spotColor, spotMask * (1.0 - spicule));
+
+          /* ── Apply limb darkening ── */
+          surfColor *= limb;
+
+          /* ── Photosphere hot core (blue-white centre) ── */
+          float hotCore = smoothstep(0.45, 0.0, dn) * 0.22;
+          surfColor    += vec3(0.18, 0.22, 0.30) * hotCore;
+
+          diskColor = surfColor;
         }
-        
-        float angle = atan(p.y, p.x);
-        vec2 flareUV1 = vec2(angle * 3.0 / 3.14159, d_normalized * 1.8 - u_time * 0.25);
-        vec2 flareUV2 = vec2(angle * 2.0 / 3.14159 + 5.0, d_normalized * 1.4 - u_time * 0.12);
-        
-        float flare1 = fbm2d(flareUV1 * 2.2);
-        float flare2 = fbm2d(flareUV2 * 3.2);
-        float flare = mix(flare1, flare2, 0.55);
-        
-        float coronaFade = exp(-4.6 * (d_normalized - 0.92));
-        float prominence = smoothstep(0.85, 1.0, d_normalized) * smoothstep(1.35, 1.0, d_normalized);
-        
-        float coronaIntensity = coronaFade * (0.35 + flare * 0.85) + prominence * flare * 0.4;
-        coronaIntensity = clamp(coronaIntensity, 0.0, 1.0);
-        
-        vec3 c_coronaOuter = vec3(0.95, 0.12, 0.0);
-        vec3 c_coronaInner = vec3(1.0, 0.70, 0.08);
-        vec3 coronaColor = mix(c_coronaOuter, c_coronaInner, coronaFade);
-        
-        vec3 finalColor = mix(coronaColor * coronaIntensity, diskColor, diskAlpha);
-        float finalAlpha = mix(coronaIntensity, 1.0, diskAlpha);
-        
-        float edgeFringe = smoothstep(2.5, 1.0, d_normalized);
-        finalAlpha *= edgeFringe;
-        
-        gl_FragColor = vec4(finalColor, finalAlpha * 0.98);
+
+        /* ─────────────────────────────────────
+           CORONA — structured streamer rays
+        ───────────────────────────────────────*/
+        float angle2d    = atan(p.y, p.x);
+
+        /* slow rotating wind streams */
+        float streamerRot = u_time * 0.006;
+        vec2  streamerUV  = vec2(
+          (angle2d + streamerRot) / (2.0*3.14159),
+          (dn - 0.90) * 2.2
+        );
+        float streamer = fbm2(streamerUV * vec2(8.0, 1.8));
+
+        /* radial fast-wind plumes */
+        vec2 plume1UV = vec2(angle2d*4.0/3.14159 + u_time*0.04, dn*2.5);
+        vec2 plume2UV = vec2(angle2d*3.0/3.14159 - u_time*0.03, dn*1.8);
+        float plume = mix(fbm2(plume1UV*2.0), fbm2(plume2UV*2.5), 0.45);
+
+        float coronaFade = exp(-5.5*(dn - 0.88)) * step(0.88, dn) * (1.0 - step(3.0, dn));
+        float coronaStr  = (0.28 + streamer*0.6 + plume*0.35) * coronaFade;
+        coronaStr = clamp(coronaStr, 0.0, 1.0);
+
+        vec3 cInner = vec3(1.00, 0.82, 0.22);
+        vec3 cMid   = vec3(1.00, 0.35, 0.04);
+        vec3 cOuter = vec3(0.60, 0.10, 0.02);
+        vec3 coronaColor = mix(cOuter, cMid, smoothstep(1.3, 1.0, dn));
+             coronaColor = mix(coronaColor, cInner, smoothstep(1.05, 0.92, dn));
+
+        /* ─────────────────────────────────────
+           SOLAR PROMINENCES — looping arcs
+        ───────────────────────────────────────*/
+        float prom = 0.0;
+        for(int k=0;k<3;k++){
+          float kf    = float(k);
+          float pBase = 0.9 + kf*0.07;
+          float aOff  = 1.05 + kf*2.09;
+          float pAng  = angle2d - aOff - u_time*(0.008+kf*0.003);
+          /* torus cross-section */
+          vec2  torusP= vec2(pBase*cos(pAng)-d*cos(angle2d-aOff),
+                             pBase*sin(pAng)-d*sin(angle2d-aOff));
+          float torusD = length(vec2(length(vec2(d,0.))-pBase, p.y));
+          float arc = smoothstep(0.12+kf*0.015, 0.0, torusD)
+                    * smoothstep(0.88, 1.10, dn)
+                    * (0.5+0.5*sin(u_time*0.4+kf*1.3));
+          prom = max(prom, arc);
+        }
+        vec3 promColor = mix(vec3(1.0,0.55,0.1), vec3(1.0,0.9,0.5), prom);
+
+        /* ─────────────────────────────────────
+           COMPOSE
+        ───────────────────────────────────────*/
+        vec3 finalColor  = coronaColor * coronaStr;
+             finalColor  = mix(finalColor, promColor, prom * 0.85);
+             finalColor  = mix(finalColor, diskColor, diskMask);
+
+        float finalAlpha = mix(coronaStr, 1.0, diskMask);
+             finalAlpha += prom * 0.9;
+             finalAlpha *= smoothstep(2.8, 0.9, dn);
+             finalAlpha  = clamp(finalAlpha, 0.0, 1.0);
+
+        gl_FragColor = vec4(finalColor, finalAlpha);
       }
     `;
 
-    const compileShader = (source: string, type: number): WebGLShader | null => {
-      const shader = gl!.createShader(type);
-      if (!shader) return null;
-      gl!.shaderSource(shader, source);
-      gl!.compileShader(shader);
-      if (!gl!.getShaderParameter(shader, gl!.COMPILE_STATUS)) {
-        console.error("SunOrb shader compile error:", gl!.getShaderInfoLog(shader));
-        gl!.deleteShader(shader);
+    const compile = (src: string, type: number): WebGLShader | null => {
+      const sh = gl!.createShader(type);
+      if (!sh) return null;
+      gl!.shaderSource(sh, src);
+      gl!.compileShader(sh);
+      if (!gl!.getShaderParameter(sh, gl!.COMPILE_STATUS)) {
+        console.error("SunOrb shader error:", gl!.getShaderInfoLog(sh));
+        gl!.deleteShader(sh);
         return null;
       }
-      return shader;
+      return sh;
     };
 
-    const vs = compileShader(vsSource, gl.VERTEX_SHADER);
-    const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
+    const vs = compile(vsSource, gl.VERTEX_SHADER);
+    const fs = compile(fsSource, gl.FRAGMENT_SHADER);
     if (!vs || !fs) return;
 
-    const program = gl.createProgram();
-    if (!program) return;
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("SunOrb program link error:", gl.getProgramInfoLog(program));
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.error("SunOrb link error:", gl.getProgramInfoLog(prog));
       return;
     }
+    gl.useProgram(prog);
 
-    gl.useProgram(program);
+    const posLoc  = gl.getAttribLocation(prog, "a_position");
+    const timeLoc = gl.getUniformLocation(prog, "u_time");
 
-    const positionLoc = gl.getAttribLocation(program, "a_position");
-    const timeLoc = gl.getUniformLocation(program, "u_time");
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
-    const positions = new Float32Array([
-      -1, -1,
-       1, -1,
-      -1,  1,
-      -1,  1,
-       1, -1,
-       1,  1,
-    ]);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(positionLoc);
-    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-
-    let startTime = Date.now();
-    let animId: number;
-
+    let t0 = Date.now(), raf: number;
     const tick = () => {
       if (!gl) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-
-      gl.useProgram(program);
-
-      const elapsed = (Date.now() - startTime) / 1000;
-      gl.uniform1f(timeLoc, elapsed);
-
+      gl.uniform1f(timeLoc, (Date.now() - t0) / 1000);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-      animId = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     };
-    animId = requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
 
     return () => {
-      cancelAnimationFrame(animId);
-      if (gl) {
-        gl.deleteProgram(program);
-        gl.deleteShader(vs);
-        gl.deleteShader(fs);
-        gl.deleteBuffer(buffer);
-      }
+      cancelAnimationFrame(raf);
+      gl?.deleteProgram(prog);
+      gl?.deleteShader(vs);
+      gl?.deleteShader(fs);
+      gl?.deleteBuffer(buf);
     };
   }, []);
 
@@ -1313,7 +1348,7 @@ function SunOrb() {
       className="pointer-events-none select-none"
       aria-hidden
     >
-      {/* ── Layer 1: far outer diffuse corona (420px) ── */}
+      {/* ── Outer diffuse glow halo ── */}
       <motion.div
         style={{
           scale: glowScale,
@@ -1322,44 +1357,45 @@ function SunOrb() {
           left: 0,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,180,30,0.14) 0%, rgba(255,100,10,0.04) 45%, transparent 70%)",
-          filter: "blur(20px)",
+          background: "radial-gradient(circle, rgba(255,160,20,0.18) 0%, rgba(255,80,10,0.06) 40%, transparent 70%)",
+          filter: "blur(28px)",
         }}
-        className="w-[280px] h-[280px] md:w-[420px] md:h-[420px]"
+        className="w-[340px] h-[340px] md:w-[560px] md:h-[560px]"
       />
 
-      {/* ── Layer 2: animated breathing corona (260px) ── */}
+      {/* ── Breathing inner corona ── */}
       <motion.div
-        animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.9, 0.5] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ scale: [1, 1.12, 1], opacity: [0.55, 1.0, 0.55] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,210,50,0.18) 0%, rgba(255,130,10,0.08) 50%, transparent 75%)",
-          filter: "blur(10px)",
+          background: "radial-gradient(circle, rgba(255,220,60,0.22) 0%, rgba(255,140,10,0.10) 48%, transparent 72%)",
+          filter: "blur(12px)",
         }}
-        className="w-[180px] h-[180px] md:w-[260px] md:h-[260px]"
+        className="w-[220px] h-[220px] md:w-[340px] md:h-[340px]"
       />
 
-      {/* ── Layer 3: Interactive WebGL 3D Sun Sphere ── */}
+      {/* ── WebGL hyper-realistic 3-D Sun ── */}
       <canvas
         ref={canvasRef}
-        width={300}
-        height={300}
+        width={500}
+        height={500}
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
         }}
-        className="w-[200px] h-[200px] md:w-[300px] md:h-[300px]"
+        className="w-[260px] h-[260px] md:w-[400px] md:h-[400px]"
       />
     </motion.div>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    SECTION REVEAL — scroll-triggered entrance
