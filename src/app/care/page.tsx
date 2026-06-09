@@ -63,6 +63,191 @@ function StarField({ count = 220 }: { count?: number }) {
    ANIMATED EARTH SVG
 ───────────────────────────────────────────── */
 function EarthOrb() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let gl: WebGLRenderingContext | null = null;
+    try {
+      gl =
+        canvas.getContext("webgl", { alpha: true, antialias: true }) ||
+        (canvas.getContext("experimental-webgl", {
+          alpha: true,
+          antialias: true,
+        }) as WebGLRenderingContext | null);
+    } catch (e) {
+      console.error("WebGL support checking failed", e);
+    }
+
+    if (!gl) {
+      console.warn("WebGL not supported. Fallback to simple globe.");
+      return;
+    }
+
+    const vsSource = `
+      attribute vec2 a_position;
+      varying vec2 v_texCoord;
+      void main() {
+        v_texCoord = a_position * 0.5 + 0.5;
+        v_texCoord.y = 1.0 - v_texCoord.y;
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+
+    const fsSource = `
+      precision mediump float;
+      varying vec2 v_texCoord;
+      uniform sampler2D u_texture;
+      uniform float u_rotation;
+      uniform vec3 u_lightDirection;
+
+      void main() {
+        vec2 p = v_texCoord * 2.0 - 1.0;
+        float r2 = dot(p, p);
+        if (r2 > 1.0) {
+          discard;
+        }
+        
+        float z = sqrt(1.0 - r2);
+        vec3 normal = vec3(p.x, p.y, z);
+        
+        float pi = 3.141592653589793;
+        float lat = asin(normal.y);
+        float lon = atan(normal.x, normal.z) - u_rotation;
+        
+        float u = (lon + pi) / (2.0 * pi);
+        float v = (lat + pi / 2.0) / pi;
+        u = fract(u);
+        
+        vec4 texColor = texture2D(u_texture, vec2(u, v));
+        
+        // Soft cinematic lighting
+        vec3 lightDir = normalize(u_lightDirection);
+        float diffuse = max(dot(normal, lightDir), 0.0);
+        float ambient = 0.04;
+        float intensity = ambient + diffuse * 0.96;
+        
+        // Atmosphere blue rim glow
+        float rim = 1.0 - z;
+        rim = pow(rim, 4.0) * 0.55;
+        vec4 rimColor = vec4(0.3, 0.6, 1.0, 1.0) * rim;
+        
+        gl_FragColor = vec4(texColor.rgb * intensity, texColor.a) + rimColor * (diffuse * 0.7 + 0.3);
+      }
+    `;
+
+    const compileShader = (source: string, type: number): WebGLShader | null => {
+      const shader = gl!.createShader(type);
+      if (!shader) return null;
+      gl!.shaderSource(shader, source);
+      gl!.compileShader(shader);
+      if (!gl!.getShaderParameter(shader, gl!.COMPILE_STATUS)) {
+        console.error("Shader compile error:", gl!.getShaderInfoLog(shader));
+        gl!.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    };
+
+    const vs = compileShader(vsSource, gl.VERTEX_SHADER);
+    const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
+    if (!vs || !fs) return;
+
+    const program = gl.createProgram();
+    if (!program) return;
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error("Program link error:", gl.getProgramInfoLog(program));
+      return;
+    }
+
+    gl.useProgram(program);
+
+    const positionLoc = gl.getAttribLocation(program, "a_position");
+    const rotationLoc = gl.getUniformLocation(program, "u_rotation");
+    const lightDirLoc = gl.getUniformLocation(program, "u_lightDirection");
+
+    const positions = new Float32Array([
+      -1, -1,
+       1, -1,
+      -1,  1,
+      -1,  1,
+       1, -1,
+       1,  1,
+    ]);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionLoc);
+    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+    // Create texture
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Temp 1x1 pixel while loading
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([5, 10, 25, 255])
+    );
+
+    const img = new Image();
+    img.onload = () => {
+      if (!gl) return;
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    };
+    img.src = "/earth-map.jpg";
+
+    let rotation = 0;
+    let animId: number;
+
+    const tick = () => {
+      if (!gl) return;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.useProgram(program);
+      rotation += 0.0006; // Slow rotation
+
+      gl.uniform1f(rotationLoc, rotation);
+      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0); // Cinematic light source
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      animId = requestAnimationFrame(tick);
+    };
+    animId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      if (gl) {
+        gl.deleteProgram(program);
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+        gl.deleteBuffer(buffer);
+        gl.deleteTexture(texture);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative flex items-center justify-center select-none">
       {/* Outer glow ring */}
@@ -95,140 +280,23 @@ function EarthOrb() {
         />
       </div>
 
-      {/* Earth SVG */}
-      <motion.svg
-        width={380}
-        height={380}
-        viewBox="0 0 380 380"
-        style={{ animation: "spin 60s linear infinite" }}
-      >
-        <defs>
-          <radialGradient id="earthGrad" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#1d4ed8" />
-            <stop offset="35%" stopColor="#1e40af" />
-            <stop offset="70%" stopColor="#1e3a8a" />
-            <stop offset="100%" stopColor="#0f172a" />
-          </radialGradient>
-          <radialGradient id="atmosphereGrad" cx="30%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
-          </radialGradient>
-          <filter id="earthShadow">
-            <feDropShadow
-              dx="0"
-              dy="0"
-              stdDeviation="20"
-              floodColor="#1d4ed8"
-              floodOpacity="0.4"
-            />
-          </filter>
-          <clipPath id="earthClip">
-            <circle cx="190" cy="190" r="180" />
-          </clipPath>
-        </defs>
-
-        {/* Base sphere */}
-        <circle
-          cx="190"
-          cy="190"
-          r="180"
-          fill="url(#earthGrad)"
-          filter="url(#earthShadow)"
+      {/* WebGL Real Earth Globe */}
+      <div className="relative rounded-full overflow-hidden w-[300px] h-[300px] md:w-[380px] md:h-[380px] flex items-center justify-center">
+        {/* Shadow Overlay for extra depth */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-full z-20"
+          style={{
+            boxShadow:
+              "inset -20px -20px 40px rgba(0,0,0,0.8), inset 20px 20px 40px rgba(255,255,255,0.05)",
+          }}
         />
-
-        {/* Land masses */}
-        <g clipPath="url(#earthClip)" opacity="0.9">
-          {/* North America */}
-          <path
-            d="M70 100 C90 90,120 95,140 110 C155 120,160 140,150 160 C140 180,115 190,100 185 C80 178,65 165,60 145 C55 125,60 108,70 100Z"
-            fill="#166534"
-            opacity="0.7"
-          />
-          {/* South America */}
-          <path
-            d="M120 210 C135 205,145 215,148 235 C150 255,140 275,128 285 C118 292,108 285,105 268 C102 250,108 215,120 210Z"
-            fill="#15803d"
-            opacity="0.65"
-          />
-          {/* Europe / Africa */}
-          <path
-            d="M195 85 C215 80,235 90,240 110 C245 128,232 140,220 148 C208 155,195 150,190 138 C185 125,188 95,195 85Z"
-            fill="#14532d"
-            opacity="0.7"
-          />
-          <path
-            d="M192 160 C210 158,228 172,232 195 C236 218,222 245,205 258 C190 268,175 260,172 240 C168 218,178 162,192 160Z"
-            fill="#166534"
-            opacity="0.65"
-          />
-          {/* Asia */}
-          <path
-            d="M250 75 C278 65,320 70,340 90 C355 106,352 130,335 145 C318 158,290 155,268 145 C248 136,238 115,242 95 C244 85,248 77,250 75Z"
-            fill="#15803d"
-            opacity="0.7"
-          />
-          {/* Australia */}
-          <path
-            d="M305 225 C322 218,340 228,345 248 C350 265,338 278,322 278 C308 278,298 265,300 248 C301 238,303 228,305 225Z"
-            fill="#14532d"
-            opacity="0.65"
-          />
-          {/* Cloud streaks */}
-          <ellipse
-            cx="150"
-            cy="120"
-            rx="60"
-            ry="8"
-            fill="white"
-            opacity="0.12"
-            transform="rotate(-20 150 120)"
-          />
-          <ellipse
-            cx="280"
-            cy="200"
-            rx="70"
-            ry="7"
-            fill="white"
-            opacity="0.1"
-            transform="rotate(15 280 200)"
-          />
-          <ellipse
-            cx="190"
-            cy="280"
-            rx="50"
-            ry="6"
-            fill="white"
-            opacity="0.09"
-            transform="rotate(-10 190 280)"
-          />
-        </g>
-
-        {/* Atmosphere glow */}
-        <circle
-          cx="190"
-          cy="190"
-          r="182"
-          fill="url(#atmosphereGrad)"
+        <canvas
+          ref={canvasRef}
+          width={600}
+          height={600}
+          className="w-full h-full relative z-10 block"
         />
-
-        {/* Terminator line */}
-        <path
-          d="M190 10 C280 60, 285 320, 190 370"
-          fill="rgba(0,0,0,0.35)"
-          clipPath="url(#earthClip)"
-        />
-
-        {/* Highlight */}
-        <ellipse
-          cx="148"
-          cy="148"
-          rx="55"
-          ry="38"
-          fill="white"
-          opacity="0.06"
-          transform="rotate(-30 148 148)"
-        />
-      </motion.svg>
+      </div>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
