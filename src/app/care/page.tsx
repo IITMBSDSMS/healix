@@ -314,7 +314,7 @@ function EarthOrb() {
       rotation += 0.0005; // Slower, more cinematic speed
 
       gl.uniform1f(rotationLoc, rotation);
-      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0); // Light source
+      gl.uniform3f(lightDirLoc, 0.8, 0.4, 1.0); // Light from upper-right (matches sun position)
 
       // Bind active textures
       gl.activeTexture(gl.TEXTURE0);
@@ -996,6 +996,95 @@ function AvennixNav() {
   );
 }
 
+/* ─────────────────────────────────────────────
+   SUN ORB — scroll-linked glow with animated corona
+───────────────────────────────────────────── */
+function SunOrb() {
+  const { scrollYProgress } = useScroll();
+  const opacity = useTransform(scrollYProgress, [0, 0.14], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.14], [1, 0.3]);
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.09], [1, 0]);
+
+  return (
+    <motion.div
+      style={{ opacity, scale }}
+      className="pointer-events-none select-none"
+      aria-hidden
+    >
+      {/* Wide outer corona */}
+      <motion.div
+        style={{ opacity: glowOpacity }}
+        className="absolute rounded-full"
+        css={undefined}
+        aria-hidden
+      >
+        <div style={{
+          width: 340, height: 340,
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          background: "radial-gradient(circle, rgba(255,210,80,0.07) 0%, transparent 70%)",
+          borderRadius: "50%",
+        }} />
+      </motion.div>
+
+      {/* Mid corona — breathes */}
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          width: 180, height: 180,
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,220,100,0.18) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Inner glow */}
+      <motion.div
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        style={{
+          position: "absolute",
+          width: 90, height: 90,
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,240,140,0.55) 0%, rgba(255,200,60,0.2) 60%, transparent 100%)",
+          filter: "blur(4px)",
+        }}
+      />
+
+      {/* Sun core */}
+      <div style={{
+        position: "relative",
+        width: 42, height: 42,
+        borderRadius: "50%",
+        background: "radial-gradient(circle at 38% 38%, #fff 20%, #ffe566 55%, #ffaa20 100%)",
+        boxShadow: "0 0 30px 12px rgba(255,210,60,0.55), 0 0 70px 30px rgba(255,170,20,0.25), 0 0 140px 60px rgba(255,140,0,0.1)",
+      }} />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SECTION REVEAL — scroll-triggered entrance
+───────────────────────────────────────────── */
+function SectionReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 70 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.12 }}
+      transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function AvenixCarePage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -1013,12 +1102,28 @@ export default function AvenixCarePage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 60% 60% at 50% 45%, rgba(59,130,246,0.12) 0%, transparent 75%)",
+              "radial-gradient(ellipse 60% 60% at 50% 45%, rgba(59,130,246,0.10) 0%, transparent 75%)",
+          }}
+        />
+
+        {/* ☀️ Sun — upper-right, scroll-linked glow */}
+        <div className="absolute inset-0 pointer-events-none" style={{ position: "relative" }}>
+          <div style={{ position: "absolute", top: "9%", right: "11%", zIndex: 6 }}>
+            {mounted && <SunOrb />}
+          </div>
+        </div>
+
+        {/* Warm sun ray tint on Earth — upper-right radial */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[5]"
+          style={{
+            background:
+              "radial-gradient(ellipse 45% 45% at 72% 18%, rgba(255,200,60,0.08) 0%, transparent 70%)",
           }}
         />
 
         {/* Real rotating Earth globe */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-50 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-55 pointer-events-none z-[4]">
           <EarthOrb />
         </div>
 
@@ -1077,16 +1182,24 @@ export default function AvenixCarePage() {
       </div>
 
       {/* ──────── SECTION 3: CELLS TO SPACE ──────── */}
-      <CellsToSpaceSection />
+      <SectionReveal>
+        <CellsToSpaceSection />
+      </SectionReveal>
 
       {/* ──────── SECTION 4: THREE PILLARS ──────── */}
-      <PillarsSection />
+      <SectionReveal delay={0.05}>
+        <PillarsSection />
+      </SectionReveal>
 
       {/* ──────── SECTION 5: ORBITAL TRAJECTORY STATEMENT ──────── */}
-      <FutureMedicineSection />
+      <SectionReveal delay={0.05}>
+        <FutureMedicineSection />
+      </SectionReveal>
 
       {/* ──────── SECTION 6: WHAT WE ARE BUILDING ──────── */}
-      <WhatWeAreBuildingSection />
+      <SectionReveal delay={0.05}>
+        <WhatWeAreBuildingSection />
+      </SectionReveal>
 
       {/* ──────── SECTION 7: VISION STATEMENT ──────── */}
       <VisionStatementSection />
