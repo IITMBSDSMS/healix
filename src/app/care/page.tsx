@@ -4,9 +4,49 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 /* ─────────────────────────────────────────────
+   AESTHETIC AVENNIX LOGO
+   Custom letter X representing an orbital trajectory
+───────────────────────────────────────────── */
+function AvennixLogo({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center gap-2 select-none ${className}`}>
+      <span className="text-white font-extrabold tracking-[0.3em] text-lg md:text-xl font-mono">
+        AVENNI
+      </span>
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="inline-block"
+      >
+        {/* Straight trajectory line */}
+        <line
+          x1="15"
+          y1="85"
+          x2="85"
+          y2="15"
+          stroke="white"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        {/* Orbital curved path intersecting */}
+        <path
+          d="M 15 15 C 35 40 65 60 85 85"
+          stroke="white"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    STAR FIELD (canvas-based, performant)
 ───────────────────────────────────────────── */
-function StarField({ count = 220 }: { count?: number }) {
+function StarField({ count = 280 }: { count?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -27,7 +67,7 @@ function StarField({ count = 220 }: { count?: number }) {
       y: Math.random() * canvas.height,
       r: Math.random() * 1.2 + 0.2,
       a: Math.random(),
-      speed: Math.random() * 0.004 + 0.001,
+      speed: Math.random() * 0.003 + 0.001,
       phase: Math.random() * Math.PI * 2,
     }));
 
@@ -35,7 +75,7 @@ function StarField({ count = 220 }: { count?: number }) {
     const draw = (t: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       stars.forEach((s) => {
-        const alpha = s.a * 0.6 + 0.4 * Math.sin(t * s.speed + s.phase);
+        const alpha = s.a * 0.5 + 0.5 * Math.sin(t * s.speed + s.phase);
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
@@ -54,13 +94,13 @@ function StarField({ count = 220 }: { count?: number }) {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.55 }}
+      style={{ opacity: 0.45 }}
     />
   );
 }
 
 /* ─────────────────────────────────────────────
-   ANIMATED EARTH SVG
+   WEBGL REAL EARTH GLOBE
 ───────────────────────────────────────────── */
 function EarthOrb() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,7 +122,7 @@ function EarthOrb() {
     }
 
     if (!gl) {
-      console.warn("WebGL not supported. Fallback to simple globe.");
+      console.warn("WebGL not supported. Fallback.");
       return;
     }
 
@@ -186,11 +226,9 @@ function EarthOrb() {
     gl.enableVertexAttribArray(positionLoc);
     gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
 
-    // Create texture
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    // Temp 1x1 pixel while loading
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
@@ -225,10 +263,10 @@ function EarthOrb() {
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.useProgram(program);
-      rotation += 0.0006; // Slow rotation
+      rotation += 0.0006;
 
       gl.uniform1f(rotationLoc, rotation);
-      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0); // Cinematic light source
+      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0);
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -282,7 +320,6 @@ function EarthOrb() {
 
       {/* WebGL Real Earth Globe */}
       <div className="relative rounded-full overflow-hidden w-[300px] h-[300px] md:w-[380px] md:h-[380px] flex items-center justify-center">
-        {/* Shadow Overlay for extra depth */}
         <div
           className="absolute inset-0 pointer-events-none rounded-full z-20"
           style={{
@@ -310,47 +347,158 @@ function EarthOrb() {
 }
 
 /* ─────────────────────────────────────────────
-   SCROLL-TRIGGERED WORD REVEAL
+   DYNAMIC BACKGROUND PATTERNS
 ───────────────────────────────────────────── */
-function WordReveal({
-  text,
-  className,
-  delay = 0,
-}: {
-  text: string;
-  className?: string;
-  delay?: number;
-}) {
-  const words = text.split(" ");
+function CellPattern() {
   return (
-    <span className={className}>
-      {words.map((word, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 0.7, delay: delay + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-block mr-[0.25em]"
-        >
-          {word}
-        </motion.span>
-      ))}
-    </span>
+    <svg className="w-full h-full max-w-lg opacity-25" viewBox="0 0 400 400" fill="none">
+      <defs>
+        <radialGradient id="cellGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <motion.circle
+        cx="200"
+        cy="200"
+        r="110"
+        stroke="#3b82f6"
+        strokeWidth="1"
+        strokeDasharray="6 6"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.circle
+        cx="200"
+        cy="200"
+        r="75"
+        stroke="#3b82f6"
+        strokeWidth="0.5"
+        animate={{ scale: [1, 1.06, 1] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {Array.from({ length: 8 }).map((_, i) => {
+        const angle = (i * Math.PI) / 4;
+        const cx = 200 + Math.cos(angle) * 75;
+        const cy = 200 + Math.sin(angle) * 75;
+        return (
+          <motion.circle
+            key={i}
+            cx={cx}
+            cy={cy}
+            r="7"
+            fill="url(#cellGlow)"
+            stroke="#3b82f6"
+            strokeWidth="0.5"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 3.5, delay: i * 0.4, repeat: Infinity }}
+          />
+        );
+      })}
+      <circle cx="200" cy="200" r="18" fill="none" stroke="#3b82f6" strokeWidth="1.5" />
+    </svg>
   );
 }
 
-/* ─────────────────────────────────────────────
-   ORBITAL LINE SVG BACKGROUND
-───────────────────────────────────────────── */
+function NeuralPattern() {
+  return (
+    <svg className="w-full h-full opacity-20" viewBox="0 0 800 600" fill="none">
+      {[
+        { id: 1, x: 200, y: 150 },
+        { id: 2, x: 450, y: 120 },
+        { id: 3, x: 620, y: 220 },
+        { id: 4, x: 280, y: 380 },
+        { id: 5, x: 520, y: 420 },
+        { id: 6, x: 210, y: 480 },
+        { id: 7, x: 580, y: 490 },
+      ].map((node) => (
+        <g key={node.id}>
+          <motion.circle
+            cx={node.x}
+            cy={node.y}
+            r="4"
+            fill="#3b82f6"
+            animate={{ r: [4, 7, 4], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 3.5 + (node.id % 2), repeat: Infinity, ease: "easeInOut" }}
+          />
+          <circle cx={node.x} cy={node.y} r="14" stroke="#3b82f6" strokeWidth="0.5" opacity="0.25" />
+        </g>
+      ))}
+      <line x1="200" y1="150" x2="450" y2="120" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="450" y1="120" x2="620" y2="220" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="200" y1="150" x2="280" y2="380" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="450" y1="120" x2="280" y2="380" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="280" y1="380" x2="520" y2="420" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="620" y1="220" x2="520" y2="420" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="280" y1="380" x2="210" y2="480" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="520" y1="420" x2="580" y2="490" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+      <line x1="210" y1="480" x2="580" y2="490" stroke="#3b82f6" strokeWidth="0.5" opacity="0.3" />
+    </svg>
+  );
+}
+
+function HumanBodyPattern() {
+  return (
+    <svg className="w-full h-full max-w-sm opacity-25" viewBox="0 0 400 400" fill="none">
+      <motion.circle
+        cx="200"
+        cy="200"
+        r="140"
+        stroke="#3b82f6"
+        strokeWidth="0.8"
+        strokeDasharray="12 45"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.circle
+        cx="200"
+        cy="200"
+        r="120"
+        stroke="#3b82f6"
+        strokeWidth="0.5"
+        strokeDasharray="4 4"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+      />
+      <circle cx="200" cy="200" r="95" stroke="#3b82f6" strokeWidth="0.5" opacity="0.4" />
+      
+      <g transform="translate(200, 200)">
+        {Array.from({ length: 16 }).map((_, i) => {
+          const y = -90 + i * 12;
+          const width = Math.sin(i * 0.6) * 40;
+          return (
+            <g key={i}>
+              <circle cx={width} cy={y} r="2" fill="#3b82f6" />
+              <circle cx={-width} cy={y} r="2" fill="#93c5fd" />
+              <line x1={-width} y1={y} x2={width} y2={y} stroke="#3b82f6" strokeWidth="0.4" opacity="0.25" />
+            </g>
+          );
+        })}
+      </g>
+
+      <motion.line
+        x1="60"
+        y1="200"
+        x2="340"
+        y2="200"
+        stroke="#3b82f6"
+        strokeWidth="1"
+        opacity="0.5"
+        animate={{ y: [-90, 90, -90] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </svg>
+  );
+}
+
 function OrbitalLines() {
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none opacity-10"
+      className="absolute inset-0 w-full h-full pointer-events-none opacity-20"
       viewBox="0 0 1440 900"
       preserveAspectRatio="xMidYMid slice"
     >
-      {[280, 380, 480, 600].map((r, i) => (
+      {[300, 400, 500, 620].map((r, i) => (
         <ellipse
           key={i}
           cx="720"
@@ -358,11 +506,11 @@ function OrbitalLines() {
           rx={r * 1.8}
           ry={r * 0.55}
           fill="none"
-          stroke="white"
-          strokeWidth="0.6"
-          strokeDasharray={i % 2 === 0 ? "4 12" : "2 8"}
-          transform={`rotate(${i * 18} 720 450)`}
-          opacity={0.5 - i * 0.08}
+          stroke="#3b82f6"
+          strokeWidth="0.7"
+          strokeDasharray={i % 2 === 0 ? "5 15" : "2 10"}
+          transform={`rotate(${i * 20} 720 450)`}
+          opacity={0.4 - i * 0.08}
         />
       ))}
     </svg>
@@ -370,85 +518,393 @@ function OrbitalLines() {
 }
 
 /* ─────────────────────────────────────────────
-   PILLAR CARD
+   SCROLL-LINKED WORD/STATEMENT REVEAL
 ───────────────────────────────────────────── */
-function PillarCard({
-  index,
-  icon,
-  title,
-  subtitle,
-}: {
-  index: number;
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-}) {
+function ScrollSequence() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const opacity1 = useTransform(scrollYProgress, [0.0, 0.15, 0.28, 0.38], [0, 1, 1, 0]);
+  const opacity2 = useTransform(scrollYProgress, [0.38, 0.48, 0.62, 0.72], [0, 1, 1, 0]);
+  const opacity3 = useTransform(scrollYProgress, [0.72, 0.82, 0.95, 1.0], [0, 1, 1, 1]);
+
+  const y1 = useTransform(scrollYProgress, [0.0, 0.15, 0.28, 0.38], [30, 0, 0, -30]);
+  const y2 = useTransform(scrollYProgress, [0.38, 0.48, 0.62, 0.72], [30, 0, 0, -30]);
+  const y3 = useTransform(scrollYProgress, [0.72, 0.82, 0.95, 1.0], [30, 0, 0, 0]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-15% 0px" }}
-      transition={{ duration: 0.8, delay: index * 0.18, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative border border-white/8 bg-white/[0.03] backdrop-blur-sm p-10 flex flex-col gap-6 hover:border-blue-500/30 hover:bg-white/[0.06] transition-all duration-700 cursor-default"
-    >
-      <div className="text-blue-400 w-10 h-10">{icon}</div>
-      <div>
-        <p className="text-[10px] tracking-[0.25em] uppercase text-white/30 font-mono mb-3">
-          0{index + 1}
-        </p>
-        <h3 className="text-2xl md:text-3xl font-black tracking-tighter text-white mb-3 leading-none">
-          {title}
-        </h3>
-        <p className="text-white/40 text-sm leading-relaxed font-light">
-          {subtitle}
-        </p>
+    <div ref={containerRef} className="relative h-[250vh] bg-black">
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden px-6">
+        <div className="max-w-5xl mx-auto text-center relative w-full h-full flex items-center justify-center">
+          <motion.div
+            style={{ opacity: opacity1, y: y1 }}
+            className="absolute w-full px-4"
+          >
+            <p className="text-[clamp(1.8rem,4.5vw,4.5rem)] font-light tracking-tight text-white leading-snug">
+              Humanity is preparing to travel farther than ever before.
+            </p>
+          </motion.div>
+          <motion.div
+            style={{ opacity: opacity2, y: y2 }}
+            className="absolute w-full px-4"
+          >
+            <p className="text-[clamp(1.8rem,4.5vw,4.5rem)] font-light tracking-tight text-white/50 leading-snug">
+              The challenge is not reaching new frontiers.
+            </p>
+          </motion.div>
+          <motion.div
+            style={{ opacity: opacity3, y: y3 }}
+            className="absolute w-full px-4"
+          >
+            <p className="text-[clamp(1.8rem,4.5vw,4.5rem)] font-extrabold tracking-tight text-white leading-snug">
+              The challenge is surviving them.
+            </p>
+          </motion.div>
+        </div>
       </div>
-      <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-blue-400 group-hover:w-full transition-all duration-700" />
-    </motion.div>
+    </div>
   );
 }
 
 /* ─────────────────────────────────────────────
-   RESEARCH STAT
+   CELLS TO SPACE BACKGROUND TRANSITION
 ───────────────────────────────────────────── */
-function ResearchStat({
-  label,
-  index,
-}: {
-  label: string;
-  index: number;
-}) {
-  const [active, setActive] = useState(false);
+function CellsToSpaceSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const cellOpacity = useTransform(scrollYProgress, [0.0, 0.15, 0.25, 0.35], [0, 1, 1, 0]);
+  const neuralOpacity = useTransform(scrollYProgress, [0.3, 0.4, 0.5, 0.6], [0, 1, 1, 0]);
+  const bodyOpacity = useTransform(scrollYProgress, [0.55, 0.65, 0.75, 0.85], [0, 1, 1, 0]);
+  const orbitOpacity = useTransform(scrollYProgress, [0.8, 0.9, 1.0], [0, 1, 1]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -30 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      onHoverStart={() => setActive(true)}
-      onHoverEnd={() => setActive(false)}
-      className="flex items-center gap-5 py-6 border-b border-white/6 cursor-default group"
-    >
-      <motion.div
-        animate={{ width: active ? 48 : 8 }}
-        transition={{ duration: 0.4 }}
-        className="h-[1px] bg-blue-400"
-      />
-      <span
-        className={`text-lg md:text-2xl font-black tracking-tight transition-colors duration-300 ${
-          active ? "text-white" : "text-white/40"
-        }`}
-      >
-        {label}
-      </span>
-    </motion.div>
+    <div ref={containerRef} className="relative h-[250vh] bg-black">
+      {/* Background Visual Layer */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[#000]" />
+        
+        {/* Subtle radial spotlight */}
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(59,130,246,0.08) 0%, transparent 80%)",
+          }}
+        />
+
+        <motion.div style={{ opacity: cellOpacity }} className="absolute inset-0 flex items-center justify-center">
+          <CellPattern />
+        </motion.div>
+
+        <motion.div style={{ opacity: neuralOpacity }} className="absolute inset-0 flex items-center justify-center">
+          <NeuralPattern />
+        </motion.div>
+
+        <motion.div style={{ opacity: bodyOpacity }} className="absolute inset-0 flex items-center justify-center">
+          <HumanBodyPattern />
+        </motion.div>
+
+        <motion.div style={{ opacity: orbitOpacity }} className="absolute inset-0">
+          <OrbitalLines />
+        </motion.div>
+
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black to-transparent" />
+      </div>
+
+      {/* Foreground Content */}
+      <div className="absolute inset-0 pointer-events-none z-10">
+        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center text-center px-6 pointer-events-auto">
+          <div className="max-w-4xl mx-auto flex flex-col gap-6">
+            <motion.p
+              initial={{ opacity: 0, letterSpacing: "0.4em" }}
+              whileInView={{ opacity: 1, letterSpacing: "0.25em" }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="text-[10px] tracking-[0.25em] text-blue-400 font-mono uppercase"
+            >
+              Spectrum
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, delay: 0.2 }}
+              className="text-[clamp(2.5rem,7vw,5.5rem)] font-extrabold tracking-tighter leading-none text-white"
+            >
+              FROM CELLS TO SPACE
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, delay: 0.4 }}
+              className="text-white/60 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto"
+            >
+              Avennix develops next-generation technologies at the intersection of biotechnology, intelligence, and human exploration.
+            </motion.p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 /* ─────────────────────────────────────────────
-   NAV
+   SECTION 4: THREE GIANT PILLARS
 ───────────────────────────────────────────── */
-function AvenixNav() {
+function PillarsSection() {
+  const pillars = [
+    {
+      title: "BIOTECHNOLOGY",
+      desc: "Understanding life at its foundation.",
+      number: "01",
+      glow: "group-hover:shadow-[0_0_50px_rgba(59,130,246,0.15)]",
+    },
+    {
+      title: "ARTIFICIAL INTELLIGENCE",
+      desc: "Transforming complexity into insight.",
+      number: "02",
+      glow: "group-hover:shadow-[0_0_50px_rgba(147,197,253,0.12)]",
+    },
+    {
+      title: "SPACE MEDICINE",
+      desc: "Preparing humanity for extreme environments.",
+      number: "03",
+      glow: "group-hover:shadow-[0_0_50px_rgba(59,130,246,0.15)]",
+    },
+  ];
+
+  return (
+    <section className="relative bg-black min-h-screen flex flex-col justify-center py-24 px-6 md:px-16 z-10 border-t border-white/5">
+      <div className="max-w-7xl mx-auto w-full">
+        <div className="grid md:grid-cols-3 gap-6">
+          {pillars.map((pillar, i) => (
+            <motion.div
+              key={pillar.title}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10% 0px" }}
+              transition={{ duration: 0.8, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative border border-white/5 bg-white/[0.01] hover:border-blue-500/20 hover:bg-white/[0.03] transition-all duration-700 p-12 flex flex-col justify-between h-[380px] md:h-[450px] overflow-hidden"
+            >
+              <div className="flex justify-between items-start">
+                <span className="font-mono text-xs tracking-widest text-white/20">
+                  {pillar.number}
+                </span>
+                <div className={`w-2 h-2 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${pillar.glow}`} />
+              </div>
+
+              <div>
+                <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white mb-4 leading-none">
+                  {pillar.title}
+                </h3>
+                <p className="text-white/45 text-sm md:text-base font-light leading-relaxed">
+                  {pillar.desc}
+                </p>
+              </div>
+
+              {/* Bottom active animation line */}
+              <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-gradient-to-r from-blue-500 to-transparent group-hover:w-full transition-all duration-700" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 5: ORBITAL TRAJECTORY STATEMENT
+───────────────────────────────────────────── */
+function FutureMedicineSection() {
+  return (
+    <section className="relative bg-black min-h-screen flex items-center justify-center overflow-hidden z-10 border-t border-white/5">
+      {/* Background Orbital trajectory lines */}
+      <div className="absolute inset-0 opacity-15 pointer-events-none flex items-center justify-center">
+        <svg className="w-[120%] h-[120%] stroke-blue-500" viewBox="0 0 1000 600" fill="none">
+          <motion.path
+            d="M -50 400 C 300 200 700 200 1050 400"
+            strokeWidth="0.8"
+            strokeDasharray="4 8"
+            animate={{ strokeDashoffset: [0, -40] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.path
+            d="M -50 200 C 350 450 650 450 1050 200"
+            strokeWidth="0.5"
+            strokeDasharray="2 12"
+            animate={{ strokeDashoffset: [0, 40] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          />
+        </svg>
+      </div>
+
+      <div className="relative z-10 text-center px-6 max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col gap-4"
+        >
+          <span className="text-[clamp(2.5rem,7vw,6.5rem)] font-extrabold tracking-tight leading-[0.95] text-white block">
+            THE FUTURE OF MEDICINE
+          </span>
+          <span className="text-[clamp(2.5rem,7vw,6.5rem)] font-light tracking-tight leading-[0.95] text-white/40 block">
+            WILL NOT BE CONFINED TO EARTH.
+          </span>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 6: WHAT WE ARE BUILDING (RESEARCH)
+───────────────────────────────────────────── */
+function WhatWeAreBuildingSection() {
+  const cards = [
+    {
+      title: "Human Performance Systems",
+      desc: "Monitoring cognition, resilience, and physiological readiness.",
+    },
+    {
+      title: "Autonomous Health Technologies",
+      desc: "Supporting healthcare where immediate medical access is impossible.",
+    },
+    {
+      title: "Precision Biotechnology",
+      desc: "Advancing next-generation health solutions.",
+    },
+    {
+      title: "Space Health Research",
+      desc: "Studying the biological challenges of human exploration.",
+    },
+  ];
+
+  return (
+    <section className="relative bg-black min-h-screen flex flex-col justify-center py-28 px-6 md:px-16 z-10 border-t border-white/5">
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="mb-20">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-[10px] tracking-[0.3em] uppercase text-blue-400 font-mono mb-4"
+          >
+            Research & Innovation
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, delay: 0.1 }}
+            className="text-4xl md:text-5xl font-extrabold tracking-tight text-white"
+          >
+            WHAT WE ARE BUILDING
+          </motion.h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-[1px] bg-white/5">
+          {cards.map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: i * 0.1 }}
+              className="bg-black hover:bg-white/[0.02] p-12 transition-colors duration-500 flex flex-col gap-4 border border-white/5"
+            >
+              <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+                {card.title}
+              </h3>
+              <p className="text-white/45 text-sm md:text-base font-light leading-relaxed">
+                {card.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 7: VISION STATEMENT
+───────────────────────────────────────────── */
+function VisionStatementSection() {
+  return (
+    <section className="relative bg-black min-h-screen flex items-center justify-center px-6 z-10 border-t border-white/5">
+      <div className="max-w-4xl mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.5 }}
+          className="flex flex-col gap-8 text-[clamp(1.5rem,4vw,3.2rem)] font-light leading-[1.3] text-white/50"
+        >
+          <p>
+            "Every great era of exploration required{" "}
+            <span className="text-white font-medium">new technologies.</span>"
+          </p>
+          <p className="text-white font-bold">
+            "The next era will require{" "}
+            <span className="text-blue-400">new biology.</span>"
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 8: ABOUT AVENNIX
+───────────────────────────────────────────── */
+function AboutSection() {
+  return (
+    <section className="relative bg-black min-h-[80vh] flex items-center justify-center px-6 md:px-16 z-10 border-t border-white/5">
+      <div className="max-w-3xl mx-auto text-center flex flex-col gap-10">
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono"
+        >
+          About Avennix
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="flex flex-col gap-6 text-base md:text-lg text-white/60 font-light leading-relaxed"
+        >
+          <p>
+            We believe the future of human health will be shaped by the convergence of biotechnology, artificial intelligence, and space medicine.
+          </p>
+          <p>
+            Our mission is to create technologies that enable healthier lives, stronger performance, and sustainable human exploration beyond Earth.
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   FINAL SECTION & NAVIGATION
+───────────────────────────────────────────── */
+function AvennixNav() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
@@ -460,21 +916,19 @@ function AvenixNav() {
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, delay: 0.5 }}
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 md:px-14 h-16 transition-all duration-500 ${
-        scrolled ? "bg-black/70 backdrop-blur-xl border-b border-white/5" : ""
+      transition={{ duration: 1, delay: 0.3 }}
+      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 md:px-14 h-20 transition-all duration-500 ${
+        scrolled ? "bg-black/90 backdrop-blur-xl border-b border-white/5" : ""
       }`}
     >
-      <span className="text-white font-black tracking-[0.15em] text-sm uppercase">
-        AVENNIX
-      </span>
+      <AvennixLogo />
       <div className="hidden md:flex items-center gap-10">
         {["Mission", "Research", "Technology", "BioLabs", "Careers"].map(
           (item) => (
             <a
               key={item}
               href="#"
-              className="text-[11px] tracking-[0.2em] uppercase text-white/40 hover:text-white transition-colors duration-300 font-medium"
+              className="text-[10px] tracking-[0.25em] uppercase text-white/40 hover:text-white transition-colors duration-300 font-semibold font-mono"
             >
               {item}
             </a>
@@ -485,493 +939,160 @@ function AvenixNav() {
   );
 }
 
-/* ─────────────────────────────────────────────
-   MAIN PAGE
-───────────────────────────────────────────── */
 export default function AvenixCarePage() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative bg-[#030508] text-white overflow-x-hidden font-sans selection:bg-blue-500/30"
-    >
-      {/* Global star field */}
-      {mounted && <StarField count={260} />}
+    <div className="relative bg-black text-white overflow-x-hidden font-sans selection:bg-blue-500/20">
+      {mounted && <StarField count={280} />}
 
-      {/* Nav */}
-      <AvenixNav />
+      <AvennixNav />
 
-      {/* ──────── SECTION 1 — HERO ──────── */}
+      {/* ──────── SECTION 1: HERO ──────── */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
-        {/* Radial spotlight */}
+        {/* Subtle radial spotlight */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 60% 60% at 50% 40%, rgba(29,78,216,0.15) 0%, transparent 70%)",
+              "radial-gradient(ellipse 60% 60% at 50% 45%, rgba(59,130,246,0.12) 0%, transparent 75%)",
           }}
         />
 
-        {/* Earth */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+        {/* Real rotating Earth globe */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-50 pointer-events-none">
           <EarthOrb />
         </div>
 
         {/* Bottom fade */}
-        <div className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-[#030508] to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
 
         {/* Content */}
-        <div className="relative z-20 flex flex-col items-center gap-6 px-6">
-          <motion.p
-            initial={{ opacity: 0, letterSpacing: "0.6em" }}
-            animate={{ opacity: 1, letterSpacing: "0.35em" }}
-            transition={{ duration: 1.8, delay: 0.2 }}
-            className="text-[10px] md:text-xs tracking-[0.35em] text-white/30 uppercase font-mono"
-          >
-            Avenix Pharmaceuticals · Est. 2024
-          </motion.p>
-
+        <div className="relative z-20 flex flex-col items-center gap-6 px-6 mt-16">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(3.5rem,10vw,9rem)] font-black tracking-[-0.04em] leading-none"
-            style={{
-              background:
-                "linear-gradient(160deg, #ffffff 30%, rgba(255,255,255,0.45) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
+            transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[clamp(2.5rem,7vw,7rem)] font-extrabold tracking-tight leading-none text-white max-w-4xl"
           >
-            AVENNIX
+            THE NEXT FRONTIER OF HUMAN HEALTH
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.4, delay: 1 }}
-            className="text-base md:text-lg text-white/40 tracking-[0.05em] font-light max-w-sm"
+            transition={{ duration: 1.4, delay: 0.7 }}
+            className="text-base md:text-xl text-white/50 tracking-[0.05em] font-light max-w-xl"
           >
-            Advancing Human Health,{" "}
-            <span className="text-white/70">On Earth and Beyond.</span>
+            Advancing Human Health, <span className="text-white">On Earth and Beyond.</span>
           </motion.p>
 
           <motion.a
-            href="#section2"
+            href="#sequence"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.5 }}
-            className="mt-6 text-[11px] tracking-[0.3em] uppercase text-white/60 hover:text-white border-b border-white/20 hover:border-white pb-1 transition-all duration-300"
+            transition={{ duration: 1, delay: 1.1 }}
+            className="mt-6 text-[10px] tracking-[0.3em] uppercase text-white hover:text-blue-300 border border-white/20 hover:border-blue-400 px-8 py-3.5 transition-all duration-300 font-mono font-semibold"
           >
-            EXPLORE
+            EXPLORE THE MISSION
           </motion.a>
-        </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.2, duration: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3"
-        >
-          <div className="w-[1px] h-14 bg-gradient-to-b from-transparent via-white/40 to-transparent animate-pulse" />
-        </motion.div>
-      </section>
-
-      {/* ──────── SECTION 2 — BIG STATEMENT ──────── */}
-      <section
-        id="section2"
-        className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 md:px-20"
-      >
-        <div className="max-w-5xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.5 }}
-          >
-            <p className="text-[clamp(2rem,5.5vw,5rem)] font-black tracking-[-0.03em] leading-[1.1] text-white/90">
-              <WordReveal text="Humanity's next challenge" />
-              <br />
-              <WordReveal
-                text="is not reaching space."
-                delay={0.3}
-                className="text-white/40"
-              />
-              <br />
-              <WordReveal text="It is surviving there." delay={0.6} />
-            </p>
-          </motion.div>
 
           <motion.p
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: 1.2 }}
-            className="mt-16 text-sm text-white/25 tracking-[0.15em] uppercase font-mono"
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5, delay: 1.4 }}
+            className="mt-12 text-[10px] tracking-[0.25em] text-white/30 uppercase font-mono"
           >
-            The frontier of medicine · 2024 — ∞
+            Biotechnology • Artificial Intelligence • Space Medicine
           </motion.p>
         </div>
-      </section>
 
-      {/* ──────── SECTION 3 — BIOLOGY · INTELLIGENCE · EXPLORATION ──────── */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated mesh background */}
-        <div className="absolute inset-0">
-          <svg
-            className="w-full h-full opacity-[0.04]"
-            viewBox="0 0 1440 900"
-            preserveAspectRatio="xMidYMid slice"
-          >
-            {/* Neural-like connected nodes */}
-            {Array.from({ length: 40 }).map((_, i) => {
-              const x = (i % 8) * 200 + 50;
-              const y = Math.floor(i / 8) * 200 + 80;
-              return (
-                <g key={i}>
-                  <circle cx={x} cy={y} r={2} fill="white" />
-                  {i % 8 < 7 && (
-                    <line
-                      x1={x}
-                      y1={y}
-                      x2={x + 200}
-                      y2={y}
-                      stroke="white"
-                      strokeWidth={0.4}
-                    />
-                  )}
-                  {Math.floor(i / 8) < 4 && (
-                    <line
-                      x1={x}
-                      y1={y}
-                      x2={x}
-                      y2={y + 200}
-                      stroke="white"
-                      strokeWidth={0.4}
-                    />
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 50% 50% at 50% 50%, #030508 30%, transparent 100%)",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 text-center px-6">
-          {[
-            { word: "Biology.", delay: 0, color: "text-white" },
-            { word: "Intelligence.", delay: 0.25, color: "text-blue-400" },
-            { word: "Exploration.", delay: 0.5, color: "text-white/50" },
-          ].map(({ word, delay, color }) => (
-            <motion.div
-              key={word}
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
-              className={`text-[clamp(3rem,8vw,8rem)] font-black tracking-[-0.04em] leading-tight ${color}`}
-            >
-              {word}
-            </motion.div>
-          ))}
+        {/* Scroll indicator line */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+          <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-blue-500/50 to-transparent animate-pulse" />
         </div>
       </section>
 
-      {/* ──────── SECTION 4 — FULL SCREEN STATEMENT ──────── */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center px-6 md:px-20">
+      {/* ──────── SECTION 2: CINEMATIC SEQUENCE ──────── */}
+      <div id="sequence">
+        <ScrollSequence />
+      </div>
+
+      {/* ──────── SECTION 3: CELLS TO SPACE ──────── */}
+      <CellsToSpaceSection />
+
+      {/* ──────── SECTION 4: THREE PILLARS ──────── */}
+      <PillarsSection />
+
+      {/* ──────── SECTION 5: ORBITAL TRAJECTORY STATEMENT ──────── */}
+      <FutureMedicineSection />
+
+      {/* ──────── SECTION 6: WHAT WE ARE BUILDING ──────── */}
+      <WhatWeAreBuildingSection />
+
+      {/* ──────── SECTION 7: VISION STATEMENT ──────── */}
+      <VisionStatementSection />
+
+      {/* ──────── SECTION 8: ABOUT ──────── */}
+      <AboutSection />
+
+      {/* ──────── SECTION 9: FINAL CTA ──────── */}
+      <section className="relative bg-black min-h-screen flex flex-col items-center justify-center overflow-hidden z-10 border-t border-white/5">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 70% 50% at 50% 50%, rgba(59,130,246,0.05) 0%, transparent 70%)",
+              "radial-gradient(ellipse 65% 65% at 50% 45%, rgba(59,130,246,0.12) 0%, transparent 75%)",
           }}
         />
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.5 }}
-            className="text-[clamp(2.2rem,5vw,4.5rem)] font-black tracking-[-0.03em] leading-[1.1] text-white"
-          >
-            <WordReveal text="We are building technologies" />
-            <br />
-            <WordReveal
-              text="for the future of"
-              delay={0.2}
-              className="text-white/40"
-            />{" "}
-            <WordReveal text="human health." delay={0.5} />
-          </motion.h2>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2, delay: 0.8 }}
-            className="mx-auto mt-12 w-24 h-[1px] bg-gradient-to-r from-transparent via-blue-400 to-transparent"
-          />
-        </div>
-      </section>
-
-      {/* ──────── SECTION 5 — THREE PILLARS ──────── */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center py-24 px-6">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="text-[10px] tracking-[0.3em] text-white/25 uppercase font-mono mb-16"
-        >
-          Core Disciplines
-        </motion.p>
-
-        <div className="w-full max-w-6xl mx-auto grid md:grid-cols-3 gap-[1px] bg-white/5">
-          <PillarCard
-            index={0}
-            title="Biotechnology"
-            subtitle="Understanding life at its molecular foundation — from genomics to protein folding."
-            icon={
-              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                <circle cx="20" cy="20" r="4" />
-                <path d="M20 4 C28 8, 32 14, 28 20 C24 26, 12 28, 8 24 C4 20, 8 12, 20 4Z" />
-                <circle cx="20" cy="4" r="2" />
-                <circle cx="28" cy="20" r="2" />
-                <circle cx="8" cy="24" r="2" />
-              </svg>
-            }
-          />
-          <PillarCard
-            index={1}
-            title="Artificial Intelligence"
-            subtitle="Transforming vast clinical data into precise, actionable health intelligence."
-            icon={
-              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                <rect x="8" y="8" width="24" height="24" rx="3" />
-                <line x1="20" y1="2" x2="20" y2="8" />
-                <line x1="20" y1="32" x2="20" y2="38" />
-                <line x1="2" y1="20" x2="8" y2="20" />
-                <line x1="32" y1="20" x2="38" y2="20" />
-                <circle cx="20" cy="20" r="4" />
-              </svg>
-            }
-          />
-          <PillarCard
-            index={2}
-            title="Space Medicine"
-            subtitle="Preparing the human body for the physiological extremes of deep-space exploration."
-            icon={
-              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                <circle cx="20" cy="20" r="10" />
-                <ellipse cx="20" cy="20" rx="20" ry="7" />
-                <circle cx="20" cy="6" r="2" fill="currentColor" />
-              </svg>
-            }
-          />
-        </div>
-      </section>
-
-      {/* ──────── SECTION 6 — FROM EARTH. TO ORBIT. TO MARS. ──────── */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center overflow-hidden">
-        <OrbitalLines />
-
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(29,78,216,0.08) 0%, transparent 70%)",
-          }}
-        />
-
-        <div className="relative z-10 text-center px-6">
-          {[
-            { line: "FROM EARTH.", delay: 0 },
-            { line: "TO ORBIT.", delay: 0.2 },
-            { line: "TO MARS.", delay: 0.4 },
-          ].map(({ line, delay }) => (
-            <motion.div
-              key={line}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay, ease: [0.22, 1, 0.36, 1] }}
-              className="block text-[clamp(3.5rem,9vw,10rem)] font-black tracking-[-0.04em] leading-[0.95]"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.25) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {line}
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ──────── SECTION 7 — RESEARCH DOMAINS ──────── */}
-      <section className="relative z-10 min-h-screen flex flex-col justify-center py-24 px-6 md:px-20">
-        <div className="max-w-4xl mx-auto w-full">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
-            <div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1 }}
-                className="text-[10px] tracking-[0.3em] uppercase text-blue-400/70 font-mono mb-6"
-              >
-                Research Domains
-              </motion.p>
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.9 }}
-                className="text-[clamp(2rem,4vw,4rem)] font-black tracking-[-0.03em] leading-none text-white"
-              >
-                Where science meets the impossible.
-              </motion.h2>
-            </div>
-
-            <div className="pt-2">
-              {[
-                "Clinical Research",
-                "Neuroscience",
-                "Human Performance",
-                "Aerospace Medicine",
-                "Digital Health",
-              ].map((label, i) => (
-                <ResearchStat key={label} label={label} index={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ──────── SECTION 8 — THE MISSION ──────── */}
-      <section className="relative z-10 min-h-[70vh] flex items-center justify-center px-6 md:px-20">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(59,130,246,0.06) 0%, transparent 70%)",
-          }}
-        />
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono mb-10"
-          >
-            The Mission
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(1.4rem,3.5vw,3rem)] font-light tracking-[-0.01em] leading-[1.4] text-white/70"
-          >
-            The future of medicine will not be confined by{" "}
-            <span className="text-white font-medium">geography.</span>
-            <br />
-            It will travel wherever{" "}
-            <span className="text-white font-medium">humanity goes.</span>
-          </motion.p>
-        </div>
-      </section>
-
-      {/* ──────── SECTION 9 — FINAL CTA ──────── */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Deep background fade */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 60% at 50% 40%, rgba(29,78,216,0.12) 0%, transparent 70%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#030508]/80 pointer-events-none" />
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 flex flex-col items-center gap-8 text-center px-6"
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 flex flex-col items-center gap-10 text-center px-6"
         >
-          {/* Glowing logo */}
-          <div className="relative">
-            <div
-              className="absolute inset-0 blur-[60px] opacity-40"
-              style={{ background: "rgba(59,130,246,0.6)" }}
-            />
-            <h2
-              className="relative text-[clamp(3rem,10vw,9rem)] font-black tracking-[-0.04em] leading-none"
-              style={{
-                background:
-                  "linear-gradient(160deg, #ffffff 20%, rgba(147,197,253,0.6) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              AVENNIX
+          <AvennixLogo className="scale-125 mb-4" />
+
+          <div className="flex flex-col gap-3">
+            <h2 className="text-[clamp(2rem,5vw,4.5rem)] font-extrabold tracking-tight leading-none text-white">
+              ADVANCING HUMAN HEALTH,
+            </h2>
+            <h2 className="text-[clamp(2rem,5vw,4.5rem)] font-light tracking-tight leading-none text-white/40">
+              ON EARTH AND BEYOND.
             </h2>
           </div>
-
-          <p className="text-white/35 text-base md:text-lg tracking-[0.05em] font-light">
-            Advancing Human Health,{" "}
-            <span className="text-white/60">On Earth and Beyond.</span>
-          </p>
 
           <motion.a
             href="https://www.avennixpharma.in"
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="mt-4 inline-flex items-center gap-3 px-10 py-4 bg-white text-black text-[11px] tracking-[0.3em] uppercase font-black hover:bg-blue-50 transition-colors duration-300"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="mt-6 inline-flex items-center gap-3 px-12 py-4.5 bg-white text-black text-[10px] tracking-[0.3em] uppercase font-black hover:bg-blue-50 transition-colors duration-300 font-mono"
           >
             JOIN THE MISSION
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
               <path
                 d="M1 7h12M7 1l6 6-6 6"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </motion.a>
-
-          <p className="text-white/15 text-[10px] tracking-[0.2em] uppercase font-mono mt-4">
-            avennixpharma.in
-          </p>
         </motion.div>
       </section>
 
       {/* ──────── FOOTER ──────── */}
-      <footer className="relative z-10 border-t border-white/5 px-8 md:px-14 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <span className="text-white/20 text-[10px] tracking-[0.2em] uppercase font-mono">
-          © 2024 Avenix Pharmaceuticals Ltd.
+      <footer className="relative bg-black z-10 border-t border-white/5 px-8 md:px-14 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <span className="text-white/20 text-[9px] tracking-[0.2em] uppercase font-mono">
+          © 2024 Avennix Pharmaceuticals Ltd. All Rights Reserved.
         </span>
-        <span className="text-white/15 text-[10px] tracking-[0.15em] uppercase font-mono">
+        <span className="text-white/15 text-[9px] tracking-[0.15em] uppercase font-mono">
           CDSCO Compliant · WHO-GMP Certified
         </span>
       </footer>
