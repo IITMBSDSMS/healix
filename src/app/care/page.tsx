@@ -139,7 +139,8 @@ function EarthOrb() {
     const fsSource = `
       precision mediump float;
       varying vec2 v_texCoord;
-      uniform sampler2D u_texture;
+      uniform sampler2D u_dayTexture;
+      uniform sampler2D u_nightTexture;
       uniform float u_rotation;
       uniform vec3 u_lightDirection;
 
@@ -161,20 +162,31 @@ function EarthOrb() {
         float v = (lat + pi / 2.0) / pi;
         u = fract(u);
         
-        vec4 texColor = texture2D(u_texture, vec2(u, v));
+        vec4 dayColor = texture2D(u_dayTexture, vec2(u, v));
+        vec4 nightColor = texture2D(u_nightTexture, vec2(u, v));
         
-        // Soft cinematic lighting
         vec3 lightDir = normalize(u_lightDirection);
-        float diffuse = max(dot(normal, lightDir), 0.0);
-        float ambient = 0.04;
-        float intensity = ambient + diffuse * 0.96;
+        float dotNL = dot(normal, lightDir);
         
-        // Atmosphere blue rim glow
+        // Dynamic day/night blending across terminator
+        float dayWeight = smoothstep(-0.15, 0.15, dotNL);
+        
+        float ambient = 0.03;
+        float intensity = ambient + max(dotNL, 0.0) * 0.97;
+        vec3 litDay = dayColor.rgb * intensity;
+        
+        // Boost night city lights for high-end cinematic visibility
+        vec3 litNight = nightColor.rgb * 1.8;
+        
+        vec3 finalColor = mix(litNight, litDay, dayWeight);
+        
+        // Atmosphere scattering rim glow
         float rim = 1.0 - z;
-        rim = pow(rim, 4.0) * 0.55;
-        vec4 rimColor = vec4(0.3, 0.6, 1.0, 1.0) * rim;
+        rim = pow(rim, 4.0) * 0.65;
+        float rimWeight = smoothstep(-0.3, 0.2, dotNL);
+        vec4 rimColor = vec4(0.35, 0.65, 1.0, 1.0) * rim * (rimWeight * 0.8 + 0.2);
         
-        gl_FragColor = vec4(texColor.rgb * intensity, texColor.a) + rimColor * (diffuse * 0.7 + 0.3);
+        gl_FragColor = vec4(finalColor + rimColor.rgb, dayColor.a);
       }
     `;
 
@@ -210,6 +222,11 @@ function EarthOrb() {
     const positionLoc = gl.getAttribLocation(program, "a_position");
     const rotationLoc = gl.getUniformLocation(program, "u_rotation");
     const lightDirLoc = gl.getUniformLocation(program, "u_lightDirection");
+    const dayTexLoc = gl.getUniformLocation(program, "u_dayTexture");
+    const nightTexLoc = gl.getUniformLocation(program, "u_nightTexture");
+
+    gl.uniform1i(dayTexLoc, 0); // Unit 0
+    gl.uniform1i(nightTexLoc, 1); // Unit 1
 
     const positions = new Float32Array([
       -1, -1,
@@ -226,9 +243,10 @@ function EarthOrb() {
     gl.enableVertexAttribArray(positionLoc);
     gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
 
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
+    // Day Texture
+    const dayTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, dayTexture);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
@@ -241,17 +259,47 @@ function EarthOrb() {
       new Uint8Array([5, 10, 25, 255])
     );
 
-    const img = new Image();
-    img.onload = () => {
+    const dayImg = new Image();
+    dayImg.onload = () => {
       if (!gl) return;
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, dayTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, dayImg);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     };
-    img.src = "/earth-map.jpg";
+    dayImg.src = "/earth-map.jpg";
+
+    // Night Texture
+    const nightTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, nightTexture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([2, 4, 8, 255])
+    );
+
+    const nightImg = new Image();
+    nightImg.onload = () => {
+      if (!gl) return;
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, nightTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, nightImg);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    };
+    nightImg.src = "/earth-night.jpg";
 
     let rotation = 0;
     let animId: number;
@@ -263,10 +311,16 @@ function EarthOrb() {
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.useProgram(program);
-      rotation += 0.0006;
+      rotation += 0.0005; // Slower, more cinematic speed
 
       gl.uniform1f(rotationLoc, rotation);
-      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0);
+      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0); // Light source
+
+      // Bind active textures
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, dayTexture);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, nightTexture);
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -281,34 +335,39 @@ function EarthOrb() {
         gl.deleteShader(vs);
         gl.deleteShader(fs);
         gl.deleteBuffer(buffer);
-        gl.deleteTexture(texture);
+        gl.deleteTexture(dayTexture);
+        gl.deleteTexture(nightTexture);
       }
     };
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center select-none">
+    <div className="relative flex items-center justify-center select-none w-full h-full">
       {/* Outer glow ring */}
       <div
-        className="absolute rounded-full"
+        className="absolute rounded-full pointer-events-none"
         style={{
-          width: 560,
-          height: 560,
+          width: "140%",
+          height: "140%",
+          maxWidth: 900,
+          maxHeight: 900,
           background:
-            "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
           animation: "pulse 6s ease-in-out infinite",
         }}
       />
       {/* Orbit ring */}
       <div
-        className="absolute rounded-full border border-blue-500/10"
-        style={{ width: 500, height: 500 }}
+        className="absolute rounded-full border border-blue-500/10 pointer-events-none"
+        style={{ width: "125%", height: "125%", maxWidth: 800, maxHeight: 800 }}
       />
       <div
-        className="absolute rounded-full border border-blue-500/5"
+        className="absolute rounded-full border border-blue-500/5 pointer-events-none"
         style={{
-          width: 580,
-          height: 580,
+          width: "135%",
+          height: "135%",
+          maxWidth: 860,
+          maxHeight: 860,
           animation: "spin 80s linear infinite",
         }}
       >
@@ -319,18 +378,19 @@ function EarthOrb() {
       </div>
 
       {/* WebGL Real Earth Globe */}
-      <div className="relative rounded-full overflow-hidden w-[300px] h-[300px] md:w-[380px] md:h-[380px] flex items-center justify-center">
+      <div className="relative rounded-full overflow-hidden w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] md:w-[600px] md:h-[600px] lg:w-[680px] lg:h-[680px] flex items-center justify-center">
+        {/* Shadow Overlay for extra depth */}
         <div
           className="absolute inset-0 pointer-events-none rounded-full z-20"
           style={{
             boxShadow:
-              "inset -20px -20px 40px rgba(0,0,0,0.8), inset 20px 20px 40px rgba(255,255,255,0.05)",
+              "inset -30px -30px 60px rgba(0,0,0,0.95), inset 25px 25px 50px rgba(255,255,255,0.06)",
           }}
         />
         <canvas
           ref={canvasRef}
-          width={600}
-          height={600}
+          width={1024}
+          height={1024}
           className="w-full h-full relative z-10 block"
         />
       </div>
