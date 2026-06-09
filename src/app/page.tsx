@@ -1469,7 +1469,7 @@ export default function Home() {
               <div className="grid md:grid-cols-[1fr_300px]">
 
                 {/* LEFT — Letter */}
-                <div className="p-8 md:p-12 border-r border-zinc-100">
+                <div className="p-8 md:p-12">
                   {/* Heading */}
                   <p className="text-xs text-zinc-400 uppercase tracking-widest font-mono mb-1">A message from</p>
                   <h2 className="text-2xl md:text-3xl font-black text-zinc-950 leading-tight mb-1">
@@ -1494,38 +1494,50 @@ export default function Home() {
                 </div>
 
                 {/* RIGHT — Floating photo panel */}
-                <div className="hidden md:flex flex-col bg-gradient-to-br from-[#fdf6f0] to-[#fce8dc] relative overflow-hidden min-h-[420px]">
-                  {/* Coral blob — top right */}
-                  <svg className="absolute -top-12 -right-12 w-52 h-52 opacity-75 pointer-events-none" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M 45,150 C 15,130 10,80 35,50 C 60,20 110,10 145,30 C 180,50 190,100 175,135 C 160,170 120,190 85,185 C 60,180 55,160 45,150 Z"
-                      fill="#f4a58a"
-                    />
-                  </svg>
+                <div className="hidden md:flex flex-col bg-white relative overflow-hidden min-h-[420px]">
+                  {/* Coral blob — upper-right behind photo */}
+                  <div className="absolute top-8 right-0 w-64 h-64 opacity-90 pointer-events-none z-0">
+                    <svg viewBox="0 0 200 200" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M 50,150 C 10,130 15,70 45,40 C 75,10 130,5 160,35 C 190,65 185,120 170,145 C 150,175 100,185 80,180 C 60,175 55,160 50,150 Z"
+                        fill="#f4a58a"
+                      />
+                    </svg>
+                  </div>
 
                   {/* Photo with mix-blend-mode: multiply for transparent bg effect */}
-                  <div className="flex-1 flex items-end justify-center pt-12 px-6 pb-20 relative">
+                  <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none">
                     {(selectedFounderForMsg.photo || selectedFounderForMsg.photo_url) ? (
                       <img
                         src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
                         alt={selectedFounderForMsg.name}
-                        className="w-56 h-auto max-h-[320px] object-contain object-bottom relative z-10 transition-transform duration-500 hover:scale-105"
+                        className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
                         style={{ mixBlendMode: 'multiply' }}
                       />
                     ) : (
-                      <div className="w-44 h-52 bg-white/60 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase relative z-10 rounded-2xl shadow-sm border border-white/40">
+                      <div className="w-44 h-52 bg-zinc-100 flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase rounded-2xl border border-zinc-200 mr-8 mb-20 pointer-events-auto">
                         {selectedFounderForMsg.name?.[0]}
                       </div>
                     )}
                   </div>
 
-                  {/* Name card — bottom left */}
-                  <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md rounded-xl px-4 py-3 shadow-lg z-20 border border-white/80">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <p className="text-[12px] font-black text-zinc-950 uppercase tracking-tight">{selectedFounderForMsg.name}</p>
-                    </div>
-                    <p className="text-[10px] text-zinc-500 mt-0.5 font-medium">{selectedFounderForMsg.role}</p>
+                  {/* White curved wave mask at the bottom */}
+                  <div className="absolute bottom-0 left-0 w-full h-[150px] z-20 pointer-events-none select-none">
+                    <svg
+                      viewBox="0 0 300 150"
+                      className="w-full h-full block"
+                      preserveAspectRatio="none"
+                      fill="white"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M 0 110 C 90 130, 180 80, 300 40 L 300 150 L 0 150 Z" />
+                    </svg>
+                  </div>
+
+                  {/* Name + Title overlay at bottom-left */}
+                  <div className="absolute bottom-6 left-6 z-30 pointer-events-auto">
+                    <p className="text-zinc-950 font-bold text-base leading-tight tracking-tight">{selectedFounderForMsg.name}</p>
+                    <p className="text-zinc-500 text-xs mt-1 font-medium">{selectedFounderForMsg.role}</p>
                   </div>
                 </div>
 
