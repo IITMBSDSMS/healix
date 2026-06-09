@@ -455,6 +455,22 @@ export default function Home() {
   const [dbMentors, setDbMentors] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
 
+  // If founders exist in the database, use ONLY the database founders to allow removal.
+  // Sort them by display_order. If database is empty, fallback to TEAM_MEMBERS.
+  const displayTeam = founders.length > 0
+    ? [...founders]
+        .filter(f => f.active !== false)
+        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+        .map(f => ({
+          name: f.name,
+          role: f.role,
+          quote: f.quote,
+          photo: f.photo_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+          linkedin: f.linkedin_url || "https://www.linkedin.com/company/quick-healix/",
+          institution: f.institution || "Healix Technologies",
+          active: true
+        }))
+    : TEAM_MEMBERS;
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -589,12 +605,12 @@ export default function Home() {
   }, [brands.length]);
 
   useEffect(() => {
-    if (founders.length <= 1) return;
+    if (displayTeam.length <= 1) return;
     const timer = setInterval(() => {
-      setActiveFounderIndex((prev) => (prev + 1) % founders.length);
+      setActiveFounderIndex((prev) => (prev + 1) % displayTeam.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [founders.length]);
+  }, [displayTeam.length]);
 
   const getEmbedUrl = (url: string) => {
     if (!url) return "";
@@ -615,22 +631,7 @@ export default function Home() {
     "New collaborations and team onboarding updates to be announced soon."
   ];
 
-  // If founders exist in the database, use ONLY the database founders to allow removal.
-  // Sort them by display_order. If database is empty, fallback to TEAM_MEMBERS.
-  const displayTeam = founders.length > 0
-    ? [...founders]
-        .filter(f => f.active !== false)
-        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-        .map(f => ({
-          name: f.name,
-          role: f.role,
-          quote: f.quote,
-          photo: f.photo_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
-          linkedin: f.linkedin_url || "https://www.linkedin.com/company/quick-healix/",
-          institution: f.institution || "Healix Technologies",
-          active: true
-        }))
-    : TEAM_MEMBERS;
+  // displayTeam moved to top of component to prevent TDZ ReferenceError
 
   // Map dynamic advisors (mentors) from database
   // Filter out core team members shown in Section 2
@@ -694,41 +695,130 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Grid of Team Members — matching reference design */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 max-w-7xl mx-auto border border-zinc-200">
-            {displayTeam.map((member, i) => (
-              <div
-                key={i}
-                className="bg-white border-r border-b border-zinc-200 last:border-r-0 flex flex-col"
-                style={{ borderRight: (i + 1) % 4 === 0 ? 'none' : undefined }}
-              >
-                {/* Portrait photo — tall aspect, permanent grayscale */}
-                <div className="relative overflow-hidden bg-zinc-100" style={{ aspectRatio: '4/5' }}>
-                  <img
-                    src={member.photo}
-                    alt={member.name}
-                    className="w-full h-full object-cover object-top grayscale"
-                  />
-                </div>
+          {/* Slideshow panel matching the curve-cut photo style — auto cycles */}
+          <div className="max-w-5xl mx-auto bg-white border border-zinc-100 shadow-xl relative overflow-hidden rounded-2xl">
+            <div className="grid md:grid-cols-[1fr_300px]">
 
-                {/* Card info */}
-                <div className="px-5 pt-5 pb-3 flex-1">
-                  <h3 className="font-black text-[13px] text-zinc-950 uppercase tracking-tight leading-snug">{member.name}</h3>
-                  <p className="text-[11px] text-[#ea580c] font-bold uppercase tracking-wider mt-1 leading-snug">{member.role}</p>
-                  <p className="text-[10px] text-zinc-400 uppercase tracking-widest mt-1 font-mono">{member.institution}</p>
-                </div>
-
-                {/* READ MESSAGE button */}
-                <div className="px-5 pb-5">
-                  <button
-                    onClick={() => setSelectedFounderForMsg(member)}
-                    className="w-full border border-zinc-300 hover:border-zinc-950 hover:bg-zinc-950 hover:text-white text-zinc-800 text-[10px] font-bold uppercase tracking-widest py-2.5 transition-all duration-200 font-mono"
+              {/* LEFT — Letter content with slide/fade animation */}
+              <div className="p-8 md:p-12 min-h-[440px] flex flex-col justify-between relative">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeFounderIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="flex-1 flex flex-col justify-between"
                   >
-                    Read Message
-                  </button>
+                    <div>
+                      {/* Heading */}
+                      <p className="text-xs text-zinc-400 uppercase tracking-widest font-mono mb-1">A message from</p>
+                      <h3 className="text-2xl md:text-3xl font-black text-zinc-950 leading-tight mb-1">
+                        Our <span className="text-[#ea580c]">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).role?.split(' ').slice(-2).join(' ') || 'Leader'}</span>
+                      </h3>
+                      <p className="text-sm text-zinc-500 mb-8 italic">Leading with a vision and compassion</p>
+
+                      {/* Body */}
+                      <div className="text-sm text-zinc-700 leading-[1.85] space-y-4 font-sans max-w-xl">
+                        <p>{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).quote || 'We are driven by a singular mission to make high-quality healthcare understandable, accessible, and affordable for millions across India.'}</p>
+                        <p>We are proud to partner with institutions — both established and emerging — that share our passion for making a meaningful impact. Together, we are transforming lives by delivering exceptional healthcare services that drive positive change.</p>
+                      </div>
+                    </div>
+
+                    {/* Signature */}
+                    <div className="mt-10 text-sm text-zinc-700">
+                      <p>Warm regards,</p>
+                      <p className="font-bold text-zinc-950 mt-0.5">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}</p>
+                      <p className="text-[#ea580c] font-semibold text-xs uppercase tracking-wide">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).role} at {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).institution}</p>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Persistent Pagination Indicator / Navigation Dots */}
+                <div className="flex gap-2.5 mt-8 justify-start z-30">
+                  {displayTeam.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveFounderIndex(idx)}
+                      className={`h-1.5 transition-all duration-300 rounded-full ${
+                        activeFounderIndex === idx ? 'w-6 bg-[#ea580c]' : 'w-1.5 bg-zinc-200 hover:bg-zinc-400'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
                 </div>
               </div>
-            ))}
+
+              {/* RIGHT — Photo with curved wave and peach blob */}
+              <div className="hidden md:flex flex-col bg-white relative overflow-hidden min-h-[420px] border-l border-zinc-50">
+                {/* Coral blob — upper-right behind photo */}
+                <div className="absolute top-8 right-0 w-64 h-64 opacity-90 pointer-events-none z-0">
+                  <svg viewBox="0 0 200 200" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M 50,150 C 10,130 15,70 45,40 C 75,10 130,5 160,35 C 190,65 185,120 170,145 C 150,175 100,185 80,180 C 60,175 55,160 50,150 Z"
+                      fill="#f4a58a"
+                    />
+                  </svg>
+                </div>
+
+                {/* Photo with mix-blend-mode: multiply */}
+                <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none overflow-hidden">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeFounderIndex}
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -15 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="h-full w-full flex justify-end items-end pointer-events-none"
+                    >
+                      {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo ? (
+                        <img
+                          src={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo}
+                          alt={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}
+                          className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
+                          style={{ mixBlendMode: 'multiply' }}
+                        />
+                      ) : (
+                        <div className="w-44 h-52 bg-zinc-100 flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase rounded-2xl border border-zinc-200 mr-8 mb-20 pointer-events-auto">
+                          {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name?.[0]}
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* White curved wave mask at the bottom */}
+                <div className="absolute bottom-0 left-0 w-full h-[150px] z-20 pointer-events-none select-none">
+                  <svg
+                    viewBox="0 0 300 150"
+                    className="w-full h-full block"
+                    preserveAspectRatio="none"
+                    fill="white"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M 0 110 C 90 130, 180 80, 300 40 L 300 150 L 0 150 Z" />
+                  </svg>
+                </div>
+
+                {/* Name + Title overlay at bottom-left */}
+                <div className="absolute bottom-6 left-6 z-30 pointer-events-auto">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeFounderIndex}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <p className="text-zinc-950 font-bold text-base leading-tight tracking-tight">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}</p>
+                      <p className="text-zinc-500 text-xs mt-1 font-medium">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).role}</p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+
+            </div>
           </div>
 
           <div className="text-center mt-10">
