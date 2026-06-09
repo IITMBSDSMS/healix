@@ -1010,67 +1010,92 @@ export default function AvenixCarePage() {
       <AvennixNav />
 
       {/* ──────── SECTION 1: HERO ──────── */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
-        {/* Subtle radial spotlight */}
+      <section className="relative z-10 min-h-screen flex flex-col items-end justify-end overflow-hidden">
+        {/* Full-screen astronaut background image */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0"
           style={{
-            background:
-              "radial-gradient(ellipse 60% 60% at 50% 45%, rgba(59,130,246,0.12) 0%, transparent 75%)",
+            backgroundImage: "url('/astronaut-hero.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+            backgroundRepeat: "no-repeat",
           }}
         />
 
-        {/* Real rotating Earth globe */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-50 pointer-events-none">
-          <EarthOrb />
-        </div>
+        {/* Multi-layer cinematic dark overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.98) 100%)",
+          }}
+        />
+        {/* Left side vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 50%)",
+          }}
+        />
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
-
-        {/* Content */}
-        <div className="relative z-20 flex flex-col items-center gap-6 px-6 mt-16">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.5rem,7vw,7rem)] font-extrabold tracking-tight leading-none text-white max-w-4xl"
+        {/* Bottom text block — left-aligned, cinematic */}
+        <div className="relative z-20 flex flex-col gap-5 px-10 md:px-20 pb-24 max-w-4xl">
+          <motion.p
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="text-[10px] tracking-[0.4em] uppercase text-blue-400 font-mono"
           >
-            THE NEXT FRONTIER OF HUMAN HEALTH
+            AVENNIX · SPACE MEDICINE · INDIA
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[clamp(2.8rem,7vw,7.5rem)] font-extrabold tracking-tight leading-[0.92] text-white"
+          >
+            THE NEXT<br />
+            FRONTIER OF<br />
+            <span className="text-transparent bg-clip-text"
+              style={{ backgroundImage: "linear-gradient(90deg, #fff 60%, rgba(59,130,246,0.7) 100%)" }}>
+              HUMAN HEALTH
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.4, delay: 0.7 }}
-            className="text-base md:text-xl text-white/50 tracking-[0.05em] font-light max-w-xl"
+            transition={{ duration: 1.4, delay: 1.1 }}
+            className="text-base md:text-lg text-white/55 tracking-[0.04em] font-light max-w-lg"
           >
-            Advancing Human Health, <span className="text-white">On Earth and Beyond.</span>
+            Advancing Human Health,{" "}
+            <span className="text-white/90">On Earth and Beyond.</span>
           </motion.p>
 
-          <motion.a
-            href="#sequence"
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.1 }}
-            className="mt-6 text-[10px] tracking-[0.3em] uppercase text-white hover:text-blue-300 border border-white/20 hover:border-blue-400 px-8 py-3.5 transition-all duration-300 font-mono font-semibold"
+            transition={{ duration: 1, delay: 1.4 }}
+            className="flex items-center gap-6 mt-2"
           >
-            EXPLORE THE MISSION
-          </motion.a>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, delay: 1.4 }}
-            className="mt-12 text-[10px] tracking-[0.25em] text-white/30 uppercase font-mono"
-          >
-            Biotechnology • Artificial Intelligence • Space Medicine
-          </motion.p>
+            <a
+              href="#sequence"
+              className="text-[10px] tracking-[0.3em] uppercase text-white hover:text-blue-300 border border-white/25 hover:border-blue-400/60 px-8 py-4 transition-all duration-300 font-mono font-semibold backdrop-blur-sm"
+            >
+              EXPLORE THE MISSION
+            </a>
+            <span className="text-[9px] tracking-[0.2em] text-white/25 uppercase font-mono hidden md:block">
+              Biotechnology · AI · Space Medicine
+            </span>
+          </motion.div>
         </div>
 
-        {/* Scroll indicator line */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
-          <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-blue-500/50 to-transparent animate-pulse" />
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 right-10 z-20 flex flex-col items-center gap-3">
+          <div className="w-[1px] h-14 bg-gradient-to-b from-transparent via-white/30 to-transparent animate-pulse" />
+          <span className="text-[8px] tracking-[0.3em] text-white/20 uppercase font-mono rotate-90 origin-center mt-4">scroll</span>
         </div>
       </section>
 
