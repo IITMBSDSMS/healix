@@ -314,7 +314,7 @@ function EarthOrb() {
       rotation += 0.0005; // Slower, more cinematic speed
 
       gl.uniform1f(rotationLoc, rotation);
-      gl.uniform3f(lightDirLoc, 0.8, 0.4, 1.0); // Light from upper-right (matches sun position)
+      gl.uniform3f(lightDirLoc, -0.8, 0.4, 1.0); // Light from upper-left (matches sun position)
 
       // Bind active textures
       gl.activeTexture(gl.TEXTURE0);
@@ -1001,9 +1001,12 @@ function AvennixNav() {
 ───────────────────────────────────────────── */
 function SunOrb() {
   const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.14], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.14], [1, 0.3]);
-  const glowOpacity = useTransform(scrollYProgress, [0, 0.09], [1, 0]);
+  const opacity   = useTransform(scrollYProgress, [0, 0.14], [1, 0]);
+  const scale     = useTransform(scrollYProgress, [0, 0.14], [1, 0.2]);
+  const glowScale = useTransform(scrollYProgress, [0, 0.09], [1, 0.4]);
+
+  // 16 evenly-spaced corona ray angles
+  const rays = Array.from({ length: 16 }, (_, i) => (i * 360) / 16);
 
   return (
     <motion.div
@@ -1011,59 +1014,127 @@ function SunOrb() {
       className="pointer-events-none select-none"
       aria-hidden
     >
-      {/* Wide outer corona */}
+      {/* ── Layer 1: far outer diffuse corona (400px) ── */}
       <motion.div
-        style={{ opacity: glowOpacity }}
+        style={{ scale: glowScale }}
         className="absolute rounded-full"
         css={undefined}
-        aria-hidden
       >
         <div style={{
-          width: 340, height: 340,
           position: "absolute",
+          width: 420, height: 420,
           top: "50%", left: "50%",
           transform: "translate(-50%,-50%)",
-          background: "radial-gradient(circle, rgba(255,210,80,0.07) 0%, transparent 70%)",
           borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,200,60,0.06) 0%, rgba(255,150,20,0.03) 40%, transparent 70%)",
         }} />
       </motion.div>
 
-      {/* Mid corona — breathes */}
+      {/* ── Layer 2: animated breathing corona (240px) ── */}
       <motion.div
-        animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
-          width: 180, height: 180,
+          width: 240, height: 240,
           top: "50%", left: "50%",
           transform: "translate(-50%,-50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,220,100,0.18) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,220,80,0.14) 0%, rgba(255,180,30,0.06) 50%, transparent 75%)",
         }}
       />
 
-      {/* Inner glow */}
-      <motion.div
-        animate={{ scale: [1, 1.08, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      {/* ── Layer 3: SVG corona rays ── */}
+      <svg
+        width={260}
+        height={260}
+        viewBox="0 0 260 260"
         style={{
           position: "absolute",
-          width: 90, height: 90,
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+          overflow: "visible",
+        }}
+      >
+        <defs>
+          <radialGradient id="rayGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(255,230,100,0.0)" />
+            <stop offset="40%" stopColor="rgba(255,210,70,0.22)" />
+            <stop offset="100%" stopColor="rgba(255,170,20,0)" />
+          </radialGradient>
+          <filter id="sunBlur">
+            <feGaussianBlur stdDeviation="1.5" />
+          </filter>
+        </defs>
+
+        {/* Rotating ray group */}
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+          style={{ originX: "130px", originY: "130px" }}
+        >
+          {rays.map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const innerR = 42;
+            const outerR = 78 + (i % 3 === 0 ? 18 : i % 3 === 1 ? 8 : 0);
+            const x1 = 130 + Math.cos(rad) * innerR;
+            const y1 = 130 + Math.sin(rad) * innerR;
+            const x2 = 130 + Math.cos(rad) * outerR;
+            const y2 = 130 + Math.sin(rad) * outerR;
+            const strokeW = i % 4 === 0 ? 2.5 : 1.2;
+            const strokeOp = i % 4 === 0 ? 0.45 : 0.2;
+            return (
+              <line
+                key={i}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={`rgba(255,220,100,${strokeOp})`}
+                strokeWidth={strokeW}
+                strokeLinecap="round"
+                filter="url(#sunBlur)"
+              />
+            );
+          })}
+        </motion.g>
+
+        {/* Chromosphere ring — orange/red edge */}
+        <circle
+          cx="130" cy="130" r="38"
+          fill="none"
+          stroke="rgba(255,140,30,0.35)"
+          strokeWidth="4"
+          filter="url(#sunBlur)"
+        />
+      </svg>
+
+      {/* ── Layer 4: photosphere glow halo (80px) ── */}
+      <motion.div
+        animate={{ scale: [1, 1.06, 1], opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+        style={{
+          position: "absolute",
+          width: 88, height: 88,
           top: "50%", left: "50%",
           transform: "translate(-50%,-50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,240,140,0.55) 0%, rgba(255,200,60,0.2) 60%, transparent 100%)",
-          filter: "blur(4px)",
+          background: "radial-gradient(circle, rgba(255,255,200,0.7) 0%, rgba(255,220,80,0.4) 40%, rgba(255,160,20,0.1) 70%, transparent 100%)",
+          filter: "blur(3px)",
         }}
       />
 
-      {/* Sun core */}
+      {/* ── Layer 5: sun disk with limb darkening ── */}
       <div style={{
         position: "relative",
-        width: 42, height: 42,
+        width: 58, height: 58,
         borderRadius: "50%",
-        background: "radial-gradient(circle at 38% 38%, #fff 20%, #ffe566 55%, #ffaa20 100%)",
-        boxShadow: "0 0 30px 12px rgba(255,210,60,0.55), 0 0 70px 30px rgba(255,170,20,0.25), 0 0 140px 60px rgba(255,140,0,0.1)",
+        // Limb darkening: bright white-yellow core fading to deep orange at edge
+        background: "radial-gradient(circle at 42% 38%, #fffde7 0%, #fff176 18%, #ffee58 32%, #ffca28 50%, #ffa000 70%, #e65100 90%, #bf360c 100%)",
+        boxShadow: [
+          "0 0 0 2px rgba(255,200,60,0.3)",
+          "0 0 20px 8px rgba(255,220,80,0.6)",
+          "0 0 50px 20px rgba(255,180,30,0.3)",
+          "0 0 100px 45px rgba(255,140,0,0.15)",
+          "0 0 200px 90px rgba(255,100,0,0.06)",
+        ].join(", "),
       }} />
     </motion.div>
   );
@@ -1106,19 +1177,19 @@ export default function AvenixCarePage() {
           }}
         />
 
-        {/* ☀️ Sun — upper-right, scroll-linked glow */}
-        <div className="absolute inset-0 pointer-events-none" style={{ position: "relative" }}>
-          <div style={{ position: "absolute", top: "9%", right: "11%", zIndex: 6 }}>
+        {/* ☀️ Sun — top-left, scroll-linked glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div style={{ position: "absolute", top: "7%", left: "6%", zIndex: 6 }}>
             {mounted && <SunOrb />}
           </div>
         </div>
 
-        {/* Warm sun ray tint on Earth — upper-right radial */}
+        {/* Warm sunlight tint — top-left radial matching sun position */}
         <div
           className="absolute inset-0 pointer-events-none z-[5]"
           style={{
             background:
-              "radial-gradient(ellipse 45% 45% at 72% 18%, rgba(255,200,60,0.08) 0%, transparent 70%)",
+              "radial-gradient(ellipse 55% 50% at 18% 12%, rgba(255,200,60,0.09) 0%, rgba(255,150,20,0.04) 40%, transparent 70%)",
           }}
         />
 
