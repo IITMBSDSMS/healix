@@ -310,65 +310,64 @@ export function HeroCarousel() {
         </div>
       </div>
 
-      {/* Overlapping Quick Links Block (DNA Helix Design) */}
-      <div className="relative z-30 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 md:-mt-28 mb-16">
-        <div className="relative w-full h-[180px] md:h-[220px] rounded-[2rem] md:rounded-[3rem] bg-zinc-950/70 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex items-center justify-between px-6 md:px-16 overflow-hidden">
-          
-          {/* Horizontal DNA Background */}
-          <div className="absolute inset-0 pointer-events-none opacity-60">
-            <svg viewBox="0 0 1200 200" preserveAspectRatio="none" className="w-full h-full text-orange-500">
+      {/* Quick Links — transparent, simple wave */}
+      <div className="relative z-30 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 md:-mt-24 mb-16">
+        <div className="relative w-full h-[180px] md:h-[220px] flex items-center justify-between px-6 md:px-16 overflow-hidden">
+
+          {/* Simple sine wave SVG — single clean line */}
+          <div className="absolute inset-0 pointer-events-none flex items-center">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full"
+              style={{ height: "80px" }}
+            >
               <defs>
-                <linearGradient id="dnaGradH" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ea580c" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.5" />
+                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#ea580c" stopOpacity="0.15" />
+                  <stop offset="50%" stopColor="#ea580c" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
                 </linearGradient>
               </defs>
-              <g>
-                {Array.from({ length: 40 }).map((_, i) => {
-                  const x = i * 30.7; // Spreads across 1200
-                  const offset = i * 0.3;
-                  return (
-                    <g key={i}>
-                      <line 
-                        x1={x} y1={100} x2={x} y2={100} 
-                        stroke="url(#dnaGradH)" strokeWidth="1.5" strokeDasharray="3 3"
-                      >
-                        <animate attributeName="y1" values={`${100 + Math.sin(offset)*60};${100 - Math.sin(offset)*60};${100 + Math.sin(offset)*60}`} dur="5s" repeatCount="indefinite" />
-                        <animate attributeName="y2" values={`${100 - Math.sin(offset)*60};${100 + Math.sin(offset)*60};${100 - Math.sin(offset)*60}`} dur="5s" repeatCount="indefinite" />
-                      </line>
-                      <circle cx={x} cy={100} r="3" fill="#ea580c">
-                        <animate attributeName="cy" values={`${100 + Math.sin(offset)*60};${100 - Math.sin(offset)*60};${100 + Math.sin(offset)*60}`} dur="5s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx={x} cy={100} r="3" fill="#3b82f6">
-                        <animate attributeName="cy" values={`${100 - Math.sin(offset)*60};${100 + Math.sin(offset)*60};${100 - Math.sin(offset)*60}`} dur="5s" repeatCount="indefinite" />
-                      </circle>
-                    </g>
-                  );
-                })}
-              </g>
+              <path
+                d="M0,60 C150,20 300,100 450,60 C600,20 750,100 900,60 C1050,20 1150,80 1200,60"
+                fill="none"
+                stroke="url(#waveGrad)"
+                strokeWidth="1.5"
+              >
+                <animate
+                  attributeName="d"
+                  values="
+                    M0,60 C150,20 300,100 450,60 C600,20 750,100 900,60 C1050,20 1150,80 1200,60;
+                    M0,60 C150,100 300,20 450,60 C600,100 750,20 900,60 C1050,100 1150,40 1200,60;
+                    M0,60 C150,20 300,100 450,60 C600,20 750,100 900,60 C1050,20 1150,80 1200,60
+                  "
+                  dur="6s"
+                  repeatCount="indefinite"
+                />
+              </path>
             </svg>
           </div>
 
-          {/* The 4 DNA Nodes (Quick Links) */}
+          {/* Quick Link Icons — float on the wave */}
           <div className="relative z-10 w-full flex justify-between items-center">
             {quickLinks.map((link, idx) => {
               const Icon = link.icon;
-              // Staggered Y float animation to match a wave
               const isEven = idx % 2 === 0;
               return (
-                <motion.a 
-                  key={idx} 
+                <motion.a
+                  key={idx}
                   href={link.href}
-                  animate={{ y: [ isEven ? -10 : 10, isEven ? 10 : -10, isEven ? -10 : 10 ] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className={`group relative flex flex-col items-center justify-center w-[75px] h-[75px] md:w-[130px] md:h-[130px] rounded-full transition-all duration-500 hover:scale-110 shadow-lg ${
-                    idx % 2 === 1 
-                      ? 'bg-gradient-to-br from-[#ea580c] to-[#9a3604] text-white shadow-[#ea580c]/40' 
-                      : 'bg-gradient-to-br from-zinc-50 to-zinc-300 text-zinc-950 shadow-white/20 hover:shadow-[#ea580c]/40'
+                  animate={{ y: [isEven ? -10 : 10, isEven ? 10 : -10, isEven ? -10 : 10] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: idx * 0.4 }}
+                  className={`group relative flex flex-col items-center justify-center w-[70px] h-[70px] md:w-[120px] md:h-[120px] rounded-full transition-all duration-500 hover:scale-110 shadow-lg ${
+                    idx % 2 === 1
+                      ? "bg-gradient-to-br from-[#ea580c] to-[#9a3604] text-white shadow-[#ea580c]/30"
+                      : "bg-gradient-to-br from-zinc-50 to-zinc-300 text-zinc-950 shadow-white/10 hover:shadow-[#ea580c]/30"
                   }`}
                 >
-                  <div className={`absolute inset-0 rounded-full border-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-110 ${idx % 2 === 1 ? 'border-[#ea580c]/50' : 'border-white/50'}`} />
-                  <Icon className="w-6 h-6 md:w-10 md:h-10 mb-1 md:mb-2" strokeWidth={1.5} />
+                  <div className={`absolute inset-0 rounded-full border-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-110 ${idx % 2 === 1 ? "border-[#ea580c]/50" : "border-white/40"}`} />
+                  <Icon className="w-6 h-6 md:w-9 md:h-9 mb-1 md:mb-2" strokeWidth={1.5} />
                   <span className="text-[7px] md:text-[10px] font-black tracking-widest text-center uppercase px-2 leading-tight">
                     {link.title}
                   </span>
