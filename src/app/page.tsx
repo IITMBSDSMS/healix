@@ -7,6 +7,95 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
 
+interface TransparentProfileImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+function TransparentProfileImage({ src, alt, className, style }: TransparentProfileImageProps) {
+  const [processedSrc, setProcessedSrc] = useState<string>(src);
+  const imgRef = React.useRef<HTMLImageElement>(null);
+
+  React.useEffect(() => {
+    setProcessedSrc(src);
+  }, [src]);
+
+  const handleImageLoad = () => {
+    const img = imgRef.current;
+    if (!img) return;
+
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+
+      // scan and clean pixels
+      const isDark = (r: number, g: number, b: number) => r < 65 && g < 65 && b < 65;
+      const isWhite = (r: number, g: number, b: number) => r > 215 && g > 215 && b > 215;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // 1. Remove white background (make it transparent)
+        if (isWhite(r, g, b)) {
+          data[i + 3] = 0;
+        }
+
+        // 2. Remove dark borders near the edges (outer 8% of the image)
+        const pixelIdx = i / 4;
+        const x = pixelIdx % canvas.width;
+        const y = Math.floor(pixelIdx / canvas.width);
+
+        if (
+          isDark(r, g, b) &&
+          (x < canvas.width * 0.08 ||
+            x > canvas.width * 0.92 ||
+            y < canvas.height * 0.08 ||
+            y > canvas.height * 0.92)
+        ) {
+          data[i + 3] = 0;
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      setProcessedSrc(canvas.toDataURL());
+    } catch (err) {
+      console.warn("CORS or canvas error processing image transparency:", err);
+      setProcessedSrc(src);
+    }
+  };
+
+  return (
+    <>
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        crossOrigin="anonymous"
+        onLoad={handleImageLoad}
+        style={{ display: "none" }}
+      />
+      <img
+        src={processedSrc}
+        alt={alt}
+        className={className}
+        style={style}
+      />
+    </>
+  );
+}
+
 const TEAM_MEMBERS = [
   {
     name: "Avnish Verma",
@@ -696,11 +785,11 @@ export default function Home() {
           </div>
 
           {/* Slideshow panel matching the curve-cut photo style — auto cycles */}
-          <div className="max-w-5xl mx-auto bg-white border border-zinc-100 shadow-xl relative overflow-hidden rounded-2xl">
-            <div className="grid md:grid-cols-[1fr_300px]">
+          <div className="max-w-7xl mx-auto w-full relative overflow-hidden bg-white">
+            <div className="grid md:grid-cols-[1fr_320px] gap-8 md:gap-12 items-center">
 
               {/* LEFT — Letter content with slide/fade animation */}
-              <div className="p-8 md:p-12 min-h-[440px] flex flex-col justify-between relative">
+              <div className="py-6 pr-0 md:pr-12 min-h-[440px] flex flex-col justify-between relative">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeFounderIndex}
@@ -750,7 +839,7 @@ export default function Home() {
               </div>
 
               {/* RIGHT — Photo with curved wave and peach blob */}
-              <div className="hidden md:flex flex-col bg-white relative overflow-hidden min-h-[420px] border-l border-zinc-50">
+              <div className="hidden md:flex flex-col bg-white relative overflow-hidden min-h-[440px] w-[320px]">
                 {/* Coral blob — upper-right behind photo */}
                 <div className="absolute top-8 right-0 w-64 h-64 opacity-90 pointer-events-none z-0">
                   <svg viewBox="0 0 200 200" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -761,7 +850,7 @@ export default function Home() {
                   </svg>
                 </div>
 
-                {/* Photo with mix-blend-mode: multiply */}
+                {/* Photo with auto background transparency & mix-blend-mode: multiply */}
                 <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none overflow-hidden">
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -773,7 +862,7 @@ export default function Home() {
                       className="h-full w-full flex justify-end items-end pointer-events-none"
                     >
                       {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo ? (
-                        <img
+                        <TransparentProfileImage
                           src={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo}
                           alt={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}
                           className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
@@ -791,13 +880,13 @@ export default function Home() {
                 {/* White curved wave mask at the bottom */}
                 <div className="absolute bottom-0 left-0 w-full h-[150px] z-20 pointer-events-none select-none">
                   <svg
-                    viewBox="0 0 300 150"
+                    viewBox="0 0 320 150"
                     className="w-full h-full block"
                     preserveAspectRatio="none"
                     fill="white"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path d="M 0 110 C 90 130, 180 80, 300 40 L 300 150 L 0 150 Z" />
+                    <path d="M 0 110 C 100 130, 200 80, 320 40 L 320 150 L 0 150 Z" />
                   </svg>
                 </div>
 
@@ -1598,7 +1687,7 @@ export default function Home() {
                   {/* Photo with mix-blend-mode: multiply for transparent bg effect */}
                   <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none">
                     {(selectedFounderForMsg.photo || selectedFounderForMsg.photo_url) ? (
-                      <img
+                      <TransparentProfileImage
                         src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
                         alt={selectedFounderForMsg.name}
                         className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
