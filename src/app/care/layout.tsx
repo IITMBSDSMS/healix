@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Avenix Pharmaceuticals — India's Intelligent Online Pharmacy",
+  title: "Avennix Care — Advancing Human Health on Earth and Beyond",
   description:
-    "Order medicines online with up to 80% generic savings. Sourced from CDSCO-compliant, WHO-GMP certified partner warehouse nodes. Interactive AI prescription verification, NABL laboratory home diagnostic tests, and doctor teleconsultation.",
+    "Avennix Care is at the forefront of biotechnology, artificial intelligence, and space medicine. Developing next-generation medical systems and autonomous health technologies to sustain human exploration beyond Earth.",
   keywords: [
-    "Avenix Pharmaceuticals",
-    "online pharmacy India",
-    "buy generic medicines",
-    "prescription scanner AI",
-    "WHO-GMP certified generic drugs",
-    "NABL home lab tests",
-    "telemedicine doctor consultation",
-    "express medicine delivery",
+    "Avennix Care",
+    "Space Medicine",
+    "Biotechnology",
+    "Artificial Intelligence in Healthcare",
+    "Space Biology",
+    "Autonomous Health Technologies",
+    "Human Performance Systems",
+    "Bio-intelligence",
+    "Future of Medicine",
     "Healix Technologies Care",
   ],
   openGraph: {
-    title: "Avenix Pharmaceuticals — India's Intelligent Online Pharmacy",
-    description: "Order medicines online with up to 80% savings. CDSCO-compliant, WHO-GMP certified partner warehouses.",
+    title: "Avennix Care — Advancing Human Health on Earth and Beyond",
+    description: "Developing next-generation medical systems at the intersection of biotechnology, artificial intelligence, and space medicine.",
     url: "https://healix-nu.vercel.app/care",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Avenix Pharmaceuticals — India's Intelligent Online Pharmacy",
-    description: "Order medicines online with up to 80% savings. CDSCO-compliant, WHO-GMP certified partner warehouses.",
+    title: "Avennix Care — Advancing Human Health on Earth and Beyond",
+    description: "Developing next-generation medical systems at the intersection of biotechnology, artificial intelligence, and space medicine.",
     images: ["/og-image.png"],
   },
 };

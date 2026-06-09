@@ -342,15 +342,11 @@ function EarthOrb() {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center select-none w-full h-full">
+    <div className="relative flex items-center justify-center select-none w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] md:w-[600px] md:h-[600px] lg:w-[680px] lg:h-[680px]">
       {/* Outer glow ring */}
       <div
-        className="absolute rounded-full pointer-events-none"
+        className="absolute rounded-full pointer-events-none w-[140%] h-[140%]"
         style={{
-          width: "140%",
-          height: "140%",
-          maxWidth: 900,
-          maxHeight: 900,
           background:
             "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
           animation: "pulse 6s ease-in-out infinite",
@@ -358,27 +354,19 @@ function EarthOrb() {
       />
       {/* Orbit ring */}
       <div
-        className="absolute rounded-full border border-blue-500/10 pointer-events-none"
-        style={{ width: "125%", height: "125%", maxWidth: 800, maxHeight: 800 }}
+        className="absolute rounded-full border border-blue-500/10 pointer-events-none w-[125%] h-[125%]"
       />
       <div
-        className="absolute rounded-full border border-blue-500/5 pointer-events-none"
-        style={{
-          width: "135%",
-          height: "135%",
-          maxWidth: 860,
-          maxHeight: 860,
-          animation: "spin 80s linear infinite",
-        }}
+        className="absolute rounded-full border border-blue-500/5 pointer-events-none w-[135%] h-[135%] animate-[spin_80s_linear_infinite]"
       >
         <div
           className="absolute w-2 h-2 rounded-full bg-blue-400/60"
-          style={{ top: 0, left: "50%" }}
+          style={{ top: 0, left: "50%", transform: "translate(-50%, -50%)" }}
         />
       </div>
 
       {/* WebGL Real Earth Globe */}
-      <div className="relative rounded-full overflow-hidden w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] md:w-[600px] md:h-[600px] lg:w-[680px] lg:h-[680px] flex items-center justify-center">
+      <div className="relative rounded-full overflow-hidden w-full h-full flex items-center justify-center">
         {/* Shadow Overlay for extra depth */}
         <div
           className="absolute inset-0 pointer-events-none rounded-full z-20"
@@ -963,6 +951,8 @@ function AboutSection() {
 ───────────────────────────────────────────── */
 function AvennixNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handler);
@@ -970,29 +960,98 @@ function AvennixNav() {
   }, []);
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, delay: 0.3 }}
-      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 md:px-14 h-20 transition-all duration-500 ${
-        scrolled ? "bg-black/90 backdrop-blur-xl border-b border-white/5" : ""
-      }`}
-    >
-      <AvennixLogo />
-      <div className="hidden md:flex items-center gap-10">
-        {["Mission", "Research", "Technology", "BioLabs", "Careers"].map(
-          (item) => (
-            <a
-              key={item}
-              href="#"
-              className="text-[10px] tracking-[0.25em] uppercase text-white/40 hover:text-white transition-colors duration-300 font-semibold font-mono"
-            >
-              {item}
-            </a>
-          )
+    <>
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.3 }}
+        className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 md:px-14 h-20 transition-all duration-500 ${
+          scrolled || mobileMenuOpen ? "bg-black/95 backdrop-blur-xl border-b border-white/5" : ""
+        }`}
+      >
+        <AvennixLogo />
+        
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-10">
+          {["Mission", "Research", "Technology", "BioLabs", "Careers"].map(
+            (item) => (
+              <a
+                key={item}
+                href="#"
+                className="text-[10px] tracking-[0.25em] uppercase text-white/40 hover:text-white transition-colors duration-300 font-semibold font-mono"
+              >
+                {item}
+              </a>
+            )
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="flex md:hidden flex-col gap-1.5 justify-center items-center w-8 h-8 focus:outline-none z-50 relative"
+          aria-label="Toggle mobile menu"
+          id="mobile-menu-toggle-btn"
+        >
+          <span
+            className={`w-5 h-[1px] bg-white transition-transform duration-300 ${
+              mobileMenuOpen ? "rotate-45 translate-y-1" : ""
+            }`}
+          />
+          <span
+            className={`w-5 h-[1px] bg-white transition-opacity duration-300 ${
+              mobileMenuOpen ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          <span
+            className={`w-5 h-[1px] bg-white transition-transform duration-300 ${
+              mobileMenuOpen ? "-rotate-45 -translate-y-1" : ""
+            }`}
+          />
+        </button>
+      </motion.nav>
+
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-40 bg-black/98 backdrop-blur-2xl flex flex-col justify-center px-12 md:hidden"
+          >
+            <div className="flex flex-col gap-8">
+              {["Mission", "Research", "Technology", "BioLabs", "Careers"].map(
+                (item, index) => (
+                  <motion.a
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.08, duration: 0.5 }}
+                    key={item}
+                    href="#"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-2xl tracking-[0.15em] uppercase text-white/50 hover:text-white transition-colors duration-300 font-light"
+                    id={`mobile-nav-link-${item.toLowerCase()}`}
+                  >
+                    {item}
+                  </motion.a>
+                )
+              )}
+            </div>
+            
+            <div className="absolute bottom-12 left-12 right-12 border-t border-white/10 pt-8 flex flex-col gap-4">
+              <span className="text-[9px] tracking-[0.15em] uppercase text-white/30 font-mono">
+                © Avennix Pharmaceuticals Ltd.
+              </span>
+              <span className="text-[9px] tracking-[0.1em] uppercase text-white/20 font-mono">
+                CDSCO Compliant · WHO-GMP Certified
+              </span>
+            </div>
+          </motion.div>
         )}
-      </div>
-    </motion.nav>
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -1259,8 +1318,6 @@ function SunOrb() {
         style={{
           scale: glowScale,
           position: "absolute",
-          width: 420,
-          height: 420,
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
@@ -1268,6 +1325,7 @@ function SunOrb() {
           background: "radial-gradient(circle, rgba(255,180,30,0.14) 0%, rgba(255,100,10,0.04) 45%, transparent 70%)",
           filter: "blur(20px)",
         }}
+        className="w-[280px] h-[280px] md:w-[420px] md:h-[420px]"
       />
 
       {/* ── Layer 2: animated breathing corona (260px) ── */}
@@ -1276,8 +1334,6 @@ function SunOrb() {
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
-          width: 260,
-          height: 260,
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
@@ -1285,6 +1341,7 @@ function SunOrb() {
           background: "radial-gradient(circle, rgba(255,210,50,0.18) 0%, rgba(255,130,10,0.08) 50%, transparent 75%)",
           filter: "blur(10px)",
         }}
+        className="w-[180px] h-[180px] md:w-[260px] md:h-[260px]"
       />
 
       {/* ── Layer 3: Interactive WebGL 3D Sun Sphere ── */}
@@ -1294,12 +1351,11 @@ function SunOrb() {
         height={300}
         style={{
           position: "absolute",
-          width: 300,
-          height: 300,
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
         }}
+        className="w-[200px] h-[200px] md:w-[300px] md:h-[300px]"
       />
     </motion.div>
   );
