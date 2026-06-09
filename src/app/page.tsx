@@ -746,35 +746,98 @@ export default function Home() {
       </section>
 
       {/* 3. Healix Network */}
-      <section className="bg-zinc-950 text-white py-20 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
-        {/* Grid Backdrop Mesh & radial glow */}
+      <section className="bg-zinc-950 text-white py-24 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
+        {/* Grid backdrop */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:35px_35px] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-orange-500/5 rounded-full blur-[120px] pointer-events-none" />
-        
+        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#ea580c]/5 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
+
         <div className="max-w-[94%] mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Institutional Scope</p>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight font-mono">Healix Network</h2>
-            <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4" />
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center max-w-7xl mx-auto">
-            {[
-              { label: "AIIMS Contributors", value: 15, suffix: "+" },
-              { label: "Clinical Advisors", value: 25, suffix: "+" },
-              { label: "Research Associates", value: 40, suffix: "+" },
-              { label: "Biomedical Researchers", value: 30, suffix: "+" },
-              { label: "Psychology Professionals", value: 20, suffix: "+" },
-              { label: "Innovation Programs", value: 8, suffix: "" },
-              { label: "Healthcare Initiatives", value: 12, suffix: "" }
-            ].map((stat, i) => (
-              <div key={i} className="p-5 bg-zinc-900/40 border border-zinc-850 hover:border-[#ea580c]/30 hover:bg-zinc-900/80 transition-all duration-300 group flex flex-col justify-center">
-                <p className="text-2xl md:text-3xl font-extrabold text-[#ea580c] font-mono tracking-tight group-hover:scale-105 transition-transform duration-300">
-                  <Counter target={stat.value} />{stat.suffix}
-                </p>
-                <p className="text-[9px] md:text-[10px] text-zinc-400 font-mono font-bold uppercase tracking-wider mt-3 leading-relaxed">{stat.label}</p>
+          <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
+
+            {/* LEFT: Content */}
+            <div>
+              <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-4">Institutional Scope</p>
+              <h2 className="text-4xl md:text-5xl xl:text-6xl font-black uppercase tracking-tight font-mono mb-3 leading-none">
+                Healix<br /><span className="text-[#ea580c]">Network</span>
+              </h2>
+              <div className="w-14 h-[3px] bg-[#ea580c] mb-6" />
+              <p className="text-zinc-400 text-sm leading-relaxed mb-10 max-w-md">
+                A growing interdisciplinary ecosystem of clinicians, researchers, engineers, psychologists, and innovators spanning top institutions across India.
+              </p>
+
+              {/* Stats Grid 3-col */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
+                {[
+                  { label: "AIIMS Contributors", value: 15, suffix: "+" },
+                  { label: "Clinical Advisors", value: 25, suffix: "+" },
+                  { label: "Research Associates", value: 40, suffix: "+" },
+                  { label: "Biomedical Researchers", value: 30, suffix: "+" },
+                  { label: "Psychology Professionals", value: 20, suffix: "+" },
+                  { label: "Innovation Programs", value: 8, suffix: "" },
+                  { label: "Healthcare Initiatives", value: 12, suffix: "" },
+                ].map((stat, i) => (
+                  <div key={i} className="p-4 border border-zinc-800 hover:border-[#ea580c]/50 hover:bg-zinc-900/60 transition-all duration-300 group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#ea580c]/0 group-hover:from-[#ea580c]/5 to-transparent transition-all duration-500" />
+                    <p className="text-2xl font-black text-[#ea580c] font-mono tracking-tight relative z-10 group-hover:scale-105 transition-transform duration-300 inline-block">
+                      <Counter target={stat.value} />{stat.suffix}
+                    </p>
+                    <p className="text-[9px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1 leading-snug relative z-10">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              {/* CTAs */}
+              <div className="flex gap-4 flex-wrap">
+                <Link href="/global-network" className="inline-flex items-center gap-2 px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_0_24px_rgba(234,88,12,0.35)] hover:shadow-[0_0_36px_rgba(234,88,12,0.5)]">
+                  Explore Network <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link href="/about" className="inline-flex items-center gap-2 px-6 py-3 border border-zinc-700 hover:border-[#ea580c] hover:text-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                  Meet Our Team <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT: Globe Illustration */}
+            <div className="hidden lg:flex items-center justify-center relative min-h-[480px]">
+              {/* Ambient glow */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[380px] h-[380px] rounded-full bg-[#ea580c]/8 blur-[90px]" />
+              </div>
+              {/* Decorative rings */}
+              <div className="absolute w-[480px] h-[480px] border border-zinc-800/60 rounded-full animate-[spin_40s_linear_infinite]" />
+              <div className="absolute w-[380px] h-[380px] border border-[#ea580c]/15 rounded-full animate-[spin_30s_linear_infinite_reverse]" />
+
+              {/* Main illustration */}
+              <div className="relative z-10">
+                <img
+                  src="/network-globe.png"
+                  alt="Global research network illustration — scientist examining a globe"
+                  className="w-[440px] xl:w-[500px] object-contain select-none"
+                  style={{ filter: "invert(1) drop-shadow(0 0 28px rgba(234,88,12,0.3))" }}
+                />
+
+                {/* Floating badge — top right */}
+                <div className="absolute top-14 -right-4 bg-zinc-900/90 backdrop-blur border border-zinc-700 px-3 py-2 rounded-lg shadow-2xl">
+                  <p className="text-[8px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Live Network</p>
+                  <p className="text-sm font-black text-white font-mono">150+ Members</p>
+                </div>
+
+                {/* Floating badge — bottom left */}
+                <div className="absolute bottom-20 -left-4 bg-zinc-900/90 backdrop-blur border border-zinc-700 px-3 py-2 rounded-lg shadow-2xl">
+                  <p className="text-[8px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Institutions</p>
+                  <p className="text-sm font-black text-white font-mono">AIIMS · IIT · HSF</p>
+                </div>
+
+                {/* Pulse indicator */}
+                <span className="absolute top-10 right-0 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ea580c] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#ea580c]" />
+                </span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
