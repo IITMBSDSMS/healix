@@ -1002,140 +1002,176 @@ function AvennixNav() {
 function SunOrb() {
   const { scrollYProgress } = useScroll();
   const opacity   = useTransform(scrollYProgress, [0, 0.14], [1, 0]);
-  const scale     = useTransform(scrollYProgress, [0, 0.14], [1, 0.2]);
-  const glowScale = useTransform(scrollYProgress, [0, 0.09], [1, 0.4]);
+  const scale     = useTransform(scrollYProgress, [0, 0.14], [1, 0.3]);
+  const glowScale = useTransform(scrollYProgress, [0, 0.09], [1, 0.5]);
 
-  // 16 evenly-spaced corona ray angles
-  const rays = Array.from({ length: 16 }, (_, i) => (i * 360) / 16);
+  // 12 evenly-spaced corona ray angles
+  const rays = Array.from({ length: 12 }, (_, i) => (i * 360) / 12);
 
   return (
     <motion.div
-      style={{ opacity, scale }}
+      style={{ opacity, scale, position: "relative" }}
       className="pointer-events-none select-none"
       aria-hidden
     >
-      {/* ── Layer 1: far outer diffuse corona (400px) ── */}
+      {/* ── Layer 1: far outer diffuse corona (420px) ── */}
       <motion.div
-        style={{ scale: glowScale }}
-        className="absolute rounded-full"
-        css={undefined}
-      >
-        <div style={{
-          position: "absolute",
-          width: 420, height: 420,
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,200,60,0.06) 0%, rgba(255,150,20,0.03) 40%, transparent 70%)",
-        }} />
-      </motion.div>
-
-      {/* ── Layer 2: animated breathing corona (240px) ── */}
-      <motion.div
-        animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         style={{
+          scale: glowScale,
           position: "absolute",
-          width: 240, height: 240,
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
+          width: 420,
+          height: 420,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,220,80,0.14) 0%, rgba(255,180,30,0.06) 50%, transparent 75%)",
+          background: "radial-gradient(circle, rgba(255,200,60,0.12) 0%, rgba(255,150,20,0.04) 45%, transparent 70%)",
+          filter: "blur(20px)",
         }}
       />
 
-      {/* ── Layer 3: SVG corona rays ── */}
-      <svg
-        width={260}
-        height={260}
-        viewBox="0 0 260 260"
+      {/* ── Layer 2: animated breathing corona (260px) ── */}
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
+          width: 260,
+          height: 260,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,210,50,0.18) 0%, rgba(255,140,20,0.08) 50%, transparent 75%)",
+          filter: "blur(10px)",
+        }}
+      />
+
+      {/* ── Layer 3: Dynamic rotating SVG flare overlay ── */}
+      <svg
+        width={300}
+        height={300}
+        viewBox="0 0 300 300"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
           overflow: "visible",
         }}
       >
         <defs>
-          <radialGradient id="rayGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,230,100,0.0)" />
-            <stop offset="40%" stopColor="rgba(255,210,70,0.22)" />
-            <stop offset="100%" stopColor="rgba(255,170,20,0)" />
-          </radialGradient>
-          <filter id="sunBlur">
-            <feGaussianBlur stdDeviation="1.5" />
+          <filter id="sunRayBlur">
+            <feGaussianBlur stdDeviation="3" />
           </filter>
         </defs>
-
-        {/* Rotating ray group */}
         <motion.g
           animate={{ rotate: 360 }}
-          transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-          style={{ originX: "130px", originY: "130px" }}
+          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+          style={{ originX: "150px", originY: "150px" }}
         >
           {rays.map((angle, i) => {
             const rad = (angle * Math.PI) / 180;
-            const innerR = 42;
-            const outerR = 78 + (i % 3 === 0 ? 18 : i % 3 === 1 ? 8 : 0);
-            const x1 = 130 + Math.cos(rad) * innerR;
-            const y1 = 130 + Math.sin(rad) * innerR;
-            const x2 = 130 + Math.cos(rad) * outerR;
-            const y2 = 130 + Math.sin(rad) * outerR;
-            const strokeW = i % 4 === 0 ? 2.5 : 1.2;
-            const strokeOp = i % 4 === 0 ? 0.45 : 0.2;
+            const innerR = 50;
+            const outerR = 110 + (i % 2 === 0 ? 30 : 0);
+            const x1 = 150 + Math.cos(rad) * innerR;
+            const y1 = 150 + Math.sin(rad) * innerR;
+            const x2 = 150 + Math.cos(rad) * outerR;
+            const y2 = 150 + Math.sin(rad) * outerR;
             return (
               <line
                 key={i}
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke={`rgba(255,220,100,${strokeOp})`}
-                strokeWidth={strokeW}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="rgba(255,180,50,0.18)"
+                strokeWidth={i % 2 === 0 ? 4 : 2}
                 strokeLinecap="round"
-                filter="url(#sunBlur)"
+                filter="url(#sunRayBlur)"
               />
             );
           })}
         </motion.g>
-
-        {/* Chromosphere ring — orange/red edge */}
-        <circle
-          cx="130" cy="130" r="38"
-          fill="none"
-          stroke="rgba(255,140,30,0.35)"
-          strokeWidth="4"
-          filter="url(#sunBlur)"
-        />
       </svg>
 
-      {/* ── Layer 4: photosphere glow halo (80px) ── */}
+      {/* ── Layer 4: Solar flare rays rotating in opposite direction ── */}
       <motion.div
-        animate={{ scale: [1, 1.06, 1], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+        animate={{ rotate: -360 }}
+        transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
         style={{
           position: "absolute",
-          width: 88, height: 88,
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
+          width: 200,
+          height: 200,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          background: "conic-gradient(from 0deg, transparent, rgba(255,200,50,0.05) 15deg, transparent 30deg, transparent 90deg, rgba(255,180,30,0.08) 105deg, transparent 120deg, transparent)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,255,200,0.7) 0%, rgba(255,220,80,0.4) 40%, rgba(255,160,20,0.1) 70%, transparent 100%)",
-          filter: "blur(3px)",
+          filter: "blur(8px)",
         }}
       />
 
-      {/* ── Layer 5: sun disk with limb darkening ── */}
-      <div style={{
-        position: "relative",
-        width: 58, height: 58,
-        borderRadius: "50%",
-        // Limb darkening: bright white-yellow core fading to deep orange at edge
-        background: "radial-gradient(circle at 42% 38%, #fffde7 0%, #fff176 18%, #ffee58 32%, #ffca28 50%, #ffa000 70%, #e65100 90%, #bf360c 100%)",
-        boxShadow: [
-          "0 0 0 2px rgba(255,200,60,0.3)",
-          "0 0 20px 8px rgba(255,220,80,0.6)",
-          "0 0 50px 20px rgba(255,180,30,0.3)",
-          "0 0 100px 45px rgba(255,140,0,0.15)",
-          "0 0 200px 90px rgba(255,100,0,0.06)",
-        ].join(", "),
-      }} />
+      {/* ── Layer 5: intense photosphere/chromosphere glow ring (120px) ── */}
+      <motion.div
+        animate={{ scale: [0.96, 1.04, 0.96], opacity: [0.85, 1, 0.85] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        style={{
+          position: "absolute",
+          width: 120,
+          height: 120,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,255,230,0.85) 0%, rgba(255,210,50,0.5) 40%, rgba(255,130,10,0.15) 70%, transparent 100%)",
+          filter: "blur(6px)",
+        }}
+      />
+
+      {/* ── Layer 6: The Hyper-Realistic Photographic Sun Disk ── */}
+      <motion.img
+        src="/sun.png"
+        alt="Sun"
+        style={{
+          position: "absolute",
+          width: 100,
+          height: 100,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          objectFit: "cover",
+          mixBlendMode: "screen",
+          filter: "drop-shadow(0 0 25px rgba(255,180,50,0.8))",
+          zIndex: 2,
+        }}
+        animate={{
+          scale: [1, 1.02, 0.99, 1.01, 1],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      {/* Extra flare overlays for realism */}
+      <div
+        style={{
+          position: "absolute",
+          width: 90,
+          height: 90,
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 80%)",
+          pointerEvents: "none",
+          mixBlendMode: "overlay",
+          zIndex: 3,
+        }}
+      />
     </motion.div>
   );
 }
