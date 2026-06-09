@@ -684,48 +684,45 @@ export default function Home() {
       <section id="leadership" className="py-24 bg-white border-b border-zinc-100 relative">
         <div className="max-w-[94%] mx-auto">
           <div className="text-center mb-16 max-w-2xl mx-auto">
-            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Core Leadership & Network</p>
+            <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Core Leadership &amp; Network</p>
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">
               People Behind Healix
             </h2>
             <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
-            <p className="text-zinc-650 text-sm md:text-base leading-relaxed">
+            <p className="text-zinc-500 text-sm md:text-base leading-relaxed">
               An interdisciplinary network of clinicians, researchers, engineers, psychologists, and innovators.
             </p>
           </div>
 
-          {/* Grid of Team Members */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          {/* Grid of Team Members — matching reference design */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 max-w-7xl mx-auto border border-zinc-200">
             {displayTeam.map((member, i) => (
-              <div key={i} className="bg-zinc-50 border border-zinc-200/80 hover:border-zinc-950 transition-all duration-300 group flex flex-col justify-between shadow-sm hover:shadow-md">
-                <div>
-                  <div className="aspect-square bg-zinc-100 relative overflow-hidden">
-                    <img 
-                      src={member.photo} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
-                      <span className="text-[9px] font-mono text-white bg-zinc-950/80 border border-white/20 px-2 py-0.5 uppercase tracking-wider font-bold">
-                        {member.institution}
-                      </span>
-                      <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#ea580c] text-white hover:bg-orange-600 transition-colors rounded-none">
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-extrabold text-base text-zinc-950 font-mono uppercase tracking-tight">{member.name}</h3>
-                    <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-1">{member.role}</p>
-                    <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mt-1">{member.institution}</p>
-                  </div>
+              <div
+                key={i}
+                className="bg-white border-r border-b border-zinc-200 last:border-r-0 flex flex-col"
+                style={{ borderRight: (i + 1) % 4 === 0 ? 'none' : undefined }}
+              >
+                {/* Portrait photo — tall aspect, permanent grayscale */}
+                <div className="relative overflow-hidden bg-zinc-100" style={{ aspectRatio: '4/5' }}>
+                  <img
+                    src={member.photo}
+                    alt={member.name}
+                    className="w-full h-full object-cover object-top grayscale"
+                  />
                 </div>
-                <div className="px-6 pb-6 pt-0">
-                  <button 
+
+                {/* Card info */}
+                <div className="px-5 pt-5 pb-3 flex-1">
+                  <h3 className="font-black text-[13px] text-zinc-950 uppercase tracking-tight leading-snug">{member.name}</h3>
+                  <p className="text-[11px] text-[#ea580c] font-bold uppercase tracking-wider mt-1 leading-snug">{member.role}</p>
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-widest mt-1 font-mono">{member.institution}</p>
+                </div>
+
+                {/* READ MESSAGE button */}
+                <div className="px-5 pb-5">
+                  <button
                     onClick={() => setSelectedFounderForMsg(member)}
-                    className="h-8 px-4 border border-zinc-300 hover:border-zinc-950 bg-white hover:bg-zinc-950 hover:text-white text-[10px] font-bold uppercase tracking-wider flex items-center transition-all w-full justify-center font-mono"
+                    className="w-full border border-zinc-300 hover:border-zinc-950 hover:bg-zinc-950 hover:text-white text-zinc-800 text-[10px] font-bold uppercase tracking-widest py-2.5 transition-all duration-200 font-mono"
                   >
                     Read Message
                   </button>
@@ -734,9 +731,9 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Link 
-              href="/about" 
+          <div className="text-center mt-10">
+            <Link
+              href="/about"
               className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
             >
               View Full Team <ArrowRight className="w-3.5 h-3.5" />
@@ -1443,81 +1440,96 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* --- FOUNDER MESSAGE ENVELOPE MODAL --- */}
+      {/* --- FOUNDER MESSAGE MODAL — Tata 1mg style two-column --- */}
       <AnimatePresence>
         {selectedFounderForMsg && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setSelectedFounderForMsg(null)}
           >
-            <motion.div 
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ duration: 0.25 }}
-              className="w-full max-w-lg bg-white border border-zinc-200 rounded-none shadow-2xl relative p-6 md:p-8"
+            <motion.div
+              initial={{ y: 24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 24, opacity: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+              className="w-full max-w-4xl bg-white shadow-2xl relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button 
+              {/* Close */}
+              <button
                 onClick={() => setSelectedFounderForMsg(null)}
-                className="absolute top-4 right-4 p-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black transition-colors"
+                className="absolute top-4 right-4 z-10 p-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black transition-colors rounded-full"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Message Header */}
-              <div className="flex items-center gap-4 mb-6 border-b border-zinc-100 pb-5 mt-2">
-                <div className="w-16 h-16 rounded-none border border-zinc-200 bg-zinc-50 relative overflow-hidden shrink-0 shadow-sm">
-                  {selectedFounderForMsg.photo ? (
-                    <img 
-                      src={selectedFounderForMsg.photo} 
-                      alt={selectedFounderForMsg.name} 
-                      className="w-full h-full object-cover object-top"
-                    />
-                  ) : selectedFounderForMsg.photo_url ? (
-                    <img 
-                      src={selectedFounderForMsg.photo_url} 
-                      alt={selectedFounderForMsg.name} 
-                      className="w-full h-full object-cover object-top"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200 to-zinc-50 flex items-center justify-center text-zinc-400 font-bold text-sm uppercase font-mono">
-                      {selectedFounderForMsg.name?.[0]}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-black font-mono uppercase tracking-tight">{selectedFounderForMsg.name}</h3>
-                  <p className="text-xs text-[#ea580c] font-bold uppercase tracking-wider mt-0.5">{selectedFounderForMsg.role}</p>
-                  <p className="text-[10px] text-zinc-400 font-mono uppercase mt-1">{selectedFounderForMsg.institution || "Healix Technologies"}</p>
-                </div>
-              </div>
+              <div className="grid md:grid-cols-[1fr_300px]">
 
-              {/* Letter Body */}
-              <div className="relative font-serif text-zinc-800 text-sm leading-relaxed whitespace-pre-line py-2">
-                <Quote className="absolute -top-1 -left-2 w-8 h-8 text-orange-100 -z-10 rotate-180" />
-                <p className="italic font-medium text-zinc-900 text-base mb-4">"Greetings from the Leadership Team,"</p>
-                <p className="font-medium text-zinc-700 leading-relaxed font-sans">{selectedFounderForMsg.quote}</p>
-              </div>
+                {/* LEFT — Letter */}
+                <div className="p-8 md:p-12 border-r border-zinc-100">
+                  {/* Heading */}
+                  <p className="text-xs text-zinc-400 uppercase tracking-widest font-mono mb-1">A message from</p>
+                  <h2 className="text-2xl md:text-3xl font-black text-zinc-950 leading-tight mb-1">
+                    Our{' '}
+                    <span className="text-[#ea580c]">{selectedFounderForMsg.role?.split(' ').slice(-2).join(' ') || 'Leader'}</span>
+                  </h2>
+                  <p className="text-sm text-zinc-500 mb-8 italic">Leading with a vision and compassion</p>
 
-              {/* Signature/Footer */}
-              <div className="mt-8 border-t border-zinc-100 pt-5 flex items-center justify-between text-xs font-mono">
-                <div>
-                  <p className="text-zinc-400 uppercase">Status</p>
-                  <p className="text-emerald-600 font-bold uppercase flex items-center gap-1.5 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Verified Leadership
-                  </p>
+                  {/* Body */}
+                  <div className="text-sm text-zinc-700 leading-[1.85] space-y-4 font-sans">
+                    <p>{selectedFounderForMsg.quote || 'We are driven by a singular mission to make high-quality healthcare understandable, accessible, and affordable for millions across India.'}</p>
+                    <p>We are proud to partner with institutions — both established and emerging — that share our passion for making a meaningful impact. Together, we are transforming lives by delivering exceptional healthcare services that drive positive change.</p>
+                    <p>To our current and future collaborators — your trust in Healix is what inspires us. Together, we can empower communities and revolutionise healthcare accessibility for a healthier tomorrow.</p>
+                  </div>
+
+                  {/* Signature */}
+                  <div className="mt-10 text-sm text-zinc-700">
+                    <p>Warm regards,</p>
+                    <p className="font-bold text-zinc-950 mt-0.5">{selectedFounderForMsg.name}</p>
+                    <p className="text-[#ea580c] font-semibold text-xs uppercase tracking-wide">{selectedFounderForMsg.role}</p>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedFounderForMsg(null)}
-                  className="px-4 py-2 border border-zinc-300 hover:border-black text-black text-xs font-bold uppercase tracking-wider transition-colors font-mono"
-                >
-                  Close
-                </button>
+
+                {/* RIGHT — Photo + blob */}
+                <div className="hidden md:flex flex-col items-center justify-center bg-zinc-50 px-8 py-12 relative">
+                  {/* Coral/salmon organic blob */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    aria-hidden
+                  >
+                    <svg viewBox="0 0 300 320" className="w-[240px] opacity-60" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M150,20 C200,10 270,60 280,120 C295,190 260,270 200,290 C140,310 60,280 30,210 C0,140 20,60 80,30 C105,18 130,25 150,20Z"
+                        fill="#f4a58a"
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Profile photo */}
+                  <div className="relative z-10 w-44 h-52 overflow-hidden shadow-lg">
+                    {(selectedFounderForMsg.photo || selectedFounderForMsg.photo_url) ? (
+                      <img
+                        src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
+                        alt={selectedFounderForMsg.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-3xl font-black text-zinc-400 uppercase">
+                        {selectedFounderForMsg.name?.[0]}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Name + title below photo */}
+                  <div className="relative z-10 text-center mt-4">
+                    <p className="text-[13px] font-black text-zinc-950 uppercase tracking-tight">{selectedFounderForMsg.name}</p>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">{selectedFounderForMsg.role}</p>
+                  </div>
+                </div>
+
               </div>
             </motion.div>
           </motion.div>
