@@ -7,94 +7,6 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
 
-interface TransparentProfileImageProps {
-  src: string;
-  alt: string;
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-function TransparentProfileImage({ src, alt, className, style }: TransparentProfileImageProps) {
-  const [processedSrc, setProcessedSrc] = useState<string>(src);
-  const imgRef = React.useRef<HTMLImageElement>(null);
-
-  React.useEffect(() => {
-    setProcessedSrc(src);
-  }, [src]);
-
-  const handleImageLoad = () => {
-    const img = imgRef.current;
-    if (!img) return;
-
-    try {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      ctx.drawImage(img, 0, 0);
-
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imgData.data;
-
-      // scan and clean pixels
-      const isDark = (r: number, g: number, b: number) => r < 65 && g < 65 && b < 65;
-      const isWhite = (r: number, g: number, b: number) => r > 215 && g > 215 && b > 215;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // 1. Remove white background (make it transparent)
-        if (isWhite(r, g, b)) {
-          data[i + 3] = 0;
-        }
-
-        // 2. Remove dark borders near the edges (outer 8% of the image)
-        const pixelIdx = i / 4;
-        const x = pixelIdx % canvas.width;
-        const y = Math.floor(pixelIdx / canvas.width);
-
-        if (
-          isDark(r, g, b) &&
-          (x < canvas.width * 0.08 ||
-            x > canvas.width * 0.92 ||
-            y < canvas.height * 0.08 ||
-            y > canvas.height * 0.92)
-        ) {
-          data[i + 3] = 0;
-        }
-      }
-
-      ctx.putImageData(imgData, 0, 0);
-      setProcessedSrc(canvas.toDataURL());
-    } catch (err) {
-      console.warn("CORS or canvas error processing image transparency:", err);
-      setProcessedSrc(src);
-    }
-  };
-
-  return (
-    <>
-      <img
-        ref={imgRef}
-        src={src}
-        alt={alt}
-        crossOrigin="anonymous"
-        onLoad={handleImageLoad}
-        style={{ display: "none" }}
-      />
-      <img
-        src={processedSrc}
-        alt={alt}
-        className={className}
-        style={style}
-      />
-    </>
-  );
-}
 
 const TEAM_MEMBERS = [
   {
@@ -850,26 +762,25 @@ export default function Home() {
                   </svg>
                 </div>
 
-                {/* Photo with auto background transparency & mix-blend-mode: multiply */}
-                <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none overflow-hidden">
+                {/* Photo — full bleed, object-cover centered on face */}
+                <div className="absolute inset-0 z-10 overflow-hidden">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeFounderIndex}
-                      initial={{ opacity: 0, x: 15 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -15 }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="h-full w-full flex justify-end items-end pointer-events-none"
+                      initial={{ opacity: 0, scale: 1.04 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.97 }}
+                      transition={{ duration: 0.45, ease: "easeInOut" }}
+                      className="w-full h-full"
                     >
                       {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo ? (
-                        <TransparentProfileImage
+                        <img
                           src={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo}
                           alt={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}
-                          className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
-                          style={{ mixBlendMode: 'multiply' }}
+                          className="w-full h-full object-cover object-top select-none"
                         />
                       ) : (
-                        <div className="w-44 h-52 bg-zinc-100 flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase rounded-2xl border border-zinc-200 mr-8 mb-20 pointer-events-auto">
+                        <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-5xl font-black text-[#ea580c] uppercase">
                           {(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name?.[0]}
                         </div>
                       )}
@@ -1684,14 +1595,13 @@ export default function Home() {
                     </svg>
                   </div>
 
-                  {/* Photo with mix-blend-mode: multiply for transparent bg effect */}
-                  <div className="absolute inset-0 z-10 flex justify-end items-end pointer-events-none">
+                  {/* Photo — full bleed object-cover, wave mask clips the bottom */}
+                  <div className="absolute inset-0 z-10 overflow-hidden">
                     {(selectedFounderForMsg.photo || selectedFounderForMsg.photo_url) ? (
-                      <TransparentProfileImage
+                      <img
                         src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
                         alt={selectedFounderForMsg.name}
-                        className="h-[90%] w-auto object-contain object-bottom select-none transition-transform duration-500 hover:scale-105 pointer-events-auto"
-                        style={{ mixBlendMode: 'multiply' }}
+                        className="w-full h-full object-cover object-top select-none"
                       />
                     ) : (
                       <div className="w-44 h-52 bg-zinc-100 flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase rounded-2xl border border-zinc-200 mr-8 mb-20 pointer-events-auto">
