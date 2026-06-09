@@ -1000,13 +1000,253 @@ function AvennixNav() {
    SUN ORB — scroll-linked glow with animated corona
 ───────────────────────────────────────────── */
 function SunOrb() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollYProgress } = useScroll();
   const opacity   = useTransform(scrollYProgress, [0, 0.14], [1, 0]);
   const scale     = useTransform(scrollYProgress, [0, 0.14], [1, 0.3]);
   const glowScale = useTransform(scrollYProgress, [0, 0.09], [1, 0.5]);
 
-  // 12 evenly-spaced corona ray angles
-  const rays = Array.from({ length: 12 }, (_, i) => (i * 360) / 12);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let gl: WebGLRenderingContext | null = null;
+    try {
+      gl =
+        canvas.getContext("webgl", { alpha: true, antialias: true }) ||
+        (canvas.getContext("experimental-webgl", {
+          alpha: true,
+          antialias: true,
+        }) as WebGLRenderingContext | null);
+    } catch (e) {
+      console.error("WebGL support checking failed for SunOrb", e);
+    }
+
+    if (!gl) return;
+
+    const vsSource = `
+      attribute vec2 a_position;
+      varying vec2 v_texCoord;
+      void main() {
+        v_texCoord = a_position * 0.5 + 0.5;
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+
+    const fsSource = `
+      precision mediump float;
+      varying vec2 v_texCoord;
+      uniform float u_time;
+
+      float hash(vec3 p) {
+        p = fract(p * vec3(443.8975, 397.2973, 491.1871));
+        p += dot(p.xyz, p.yzx + 19.19);
+        return fract(p.x * p.y * p.z);
+      }
+
+      float noise3d(vec3 p) {
+        vec3 i = floor(p);
+        vec3 f = fract(p);
+        vec3 u = f * f * (3.0 - 2.0 * f);
+        
+        float n000 = hash(i + vec3(0.0, 0.0, 0.0));
+        float n100 = hash(i + vec3(1.0, 0.0, 0.0));
+        float n010 = hash(i + vec3(0.0, 1.0, 0.0));
+        float n110 = hash(i + vec3(1.0, 1.0, 0.0));
+        float n001 = hash(i + vec3(0.0, 0.0, 1.0));
+        float n101 = hash(i + vec3(1.0, 0.0, 1.0));
+        float n011 = hash(i + vec3(0.0, 1.0, 1.0));
+        float n111 = hash(i + vec3(1.0, 1.0, 1.0));
+        
+        float x0 = mix(n000, n100, u.x);
+        float x1 = mix(n010, n110, u.x);
+        float y0 = mix(x0, x1, u.y);
+        
+        float x2 = mix(n001, n101, u.x);
+        float x3 = mix(n011, n111, u.x);
+        float y1 = mix(x2, x3, u.y);
+        
+        return mix(y0, y1, u.z);
+      }
+
+      float fbm3d(vec3 p) {
+        float v = 0.0;
+        float a = 0.5;
+        for (int i = 0; i < 3; ++i) {
+          v += a * noise3d(p);
+          p = p * 2.0;
+          a *= 0.5;
+        }
+        return v;
+      }
+
+      float hash2d(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise2d(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash2d(i + vec2(0.0,0.0)), hash2d(i + vec2(1.0,0.0)), u.x),
+                   mix(hash2d(i + vec2(0.0,1.0)), hash2d(i + vec2(1.0,1.0)), u.x), u.y);
+      }
+
+      float fbm2d(vec2 p) {
+        float v = 0.0;
+        float a = 0.5;
+        for (int i = 0; i < 3; ++i) {
+          v += a * noise2d(p);
+          p = p * 2.0;
+          a *= 0.5;
+        }
+        return v;
+      }
+
+      void main() {
+        vec2 p = v_texCoord * 2.0 - 1.0;
+        float d = length(p);
+        
+        float r_sun = 0.55;
+        float d_normalized = d / r_sun;
+        
+        float diskAlpha = smoothstep(1.0, 0.96, d_normalized);
+        
+        vec3 diskColor = vec3(0.0);
+        if (d_normalized < 1.05) {
+          float z = sqrt(max(0.0, 1.0 - min(1.0, d_normalized * d_normalized)));
+          vec3 normal = vec3(p.x / r_sun, p.y / r_sun, z);
+          
+          float angle_rot = u_time * 0.012;
+          mat3 rotY = mat3(
+            cos(angle_rot), 0.0, sin(angle_rot),
+            0.0, 1.0, 0.0,
+            -sin(angle_rot), 0.0, cos(angle_rot)
+          );
+          vec3 rotatedNormal = rotY * normal;
+          
+          float plasma = fbm3d(rotatedNormal * 6.5 + vec3(0.0, 0.0, u_time * 0.08));
+          float limb = pow(1.0 - normal.z, 2.2);
+          
+          float temp = normal.z * 1.35 - limb * 0.9 + (plasma - 0.5) * 0.38;
+          temp = clamp(temp, 0.0, 1.0);
+          
+          vec3 c_darkRed = vec3(0.85, 0.08, 0.0);
+          vec3 c_gold = vec3(1.0, 0.65, 0.02);
+          vec3 c_white = vec3(1.0, 1.0, 0.90);
+          
+          diskColor = mix(c_darkRed, c_gold, smoothstep(0.0, 0.45, temp));
+          diskColor = mix(diskColor, c_white, smoothstep(0.45, 1.0, temp));
+          
+          float hotspot = smoothstep(0.72, 0.90, plasma);
+          diskColor += vec3(0.22, 0.15, 0.08) * hotspot;
+        }
+        
+        float angle = atan(p.y, p.x);
+        vec2 flareUV1 = vec2(angle * 3.0 / 3.14159, d_normalized * 1.8 - u_time * 0.25);
+        vec2 flareUV2 = vec2(angle * 2.0 / 3.14159 + 5.0, d_normalized * 1.4 - u_time * 0.12);
+        
+        float flare1 = fbm2d(flareUV1 * 2.2);
+        float flare2 = fbm2d(flareUV2 * 3.2);
+        float flare = mix(flare1, flare2, 0.55);
+        
+        float coronaFade = exp(-4.6 * (d_normalized - 0.92));
+        float prominence = smoothstep(0.85, 1.0, d_normalized) * smoothstep(1.35, 1.0, d_normalized);
+        
+        float coronaIntensity = coronaFade * (0.35 + flare * 0.85) + prominence * flare * 0.4;
+        coronaIntensity = clamp(coronaIntensity, 0.0, 1.0);
+        
+        vec3 c_coronaOuter = vec3(0.95, 0.12, 0.0);
+        vec3 c_coronaInner = vec3(1.0, 0.70, 0.08);
+        vec3 coronaColor = mix(c_coronaOuter, c_coronaInner, coronaFade);
+        
+        vec3 finalColor = mix(coronaColor * coronaIntensity, diskColor, diskAlpha);
+        float finalAlpha = mix(coronaIntensity, 1.0, diskAlpha);
+        
+        float edgeFringe = smoothstep(2.5, 1.0, d_normalized);
+        finalAlpha *= edgeFringe;
+        
+        gl_FragColor = vec4(finalColor, finalAlpha * 0.98);
+      }
+    `;
+
+    const compileShader = (source: string, type: number): WebGLShader | null => {
+      const shader = gl!.createShader(type);
+      if (!shader) return null;
+      gl!.shaderSource(shader, source);
+      gl!.compileShader(shader);
+      if (!gl!.getShaderParameter(shader, gl!.COMPILE_STATUS)) {
+        console.error("SunOrb shader compile error:", gl!.getShaderInfoLog(shader));
+        gl!.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    };
+
+    const vs = compileShader(vsSource, gl.VERTEX_SHADER);
+    const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
+    if (!vs || !fs) return;
+
+    const program = gl.createProgram();
+    if (!program) return;
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error("SunOrb program link error:", gl.getProgramInfoLog(program));
+      return;
+    }
+
+    gl.useProgram(program);
+
+    const positionLoc = gl.getAttribLocation(program, "a_position");
+    const timeLoc = gl.getUniformLocation(program, "u_time");
+
+    const positions = new Float32Array([
+      -1, -1,
+       1, -1,
+      -1,  1,
+      -1,  1,
+       1, -1,
+       1,  1,
+    ]);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionLoc);
+    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+    let startTime = Date.now();
+    let animId: number;
+
+    const tick = () => {
+      if (!gl) return;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.useProgram(program);
+
+      const elapsed = (Date.now() - startTime) / 1000;
+      gl.uniform1f(timeLoc, elapsed);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      animId = requestAnimationFrame(tick);
+    };
+    animId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      if (gl) {
+        gl.deleteProgram(program);
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+        gl.deleteBuffer(buffer);
+      }
+    };
+  }, []);
 
   return (
     <motion.div
@@ -1025,7 +1265,7 @@ function SunOrb() {
           left: 0,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,200,60,0.12) 0%, rgba(255,150,20,0.04) 45%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,180,30,0.14) 0%, rgba(255,100,10,0.04) 45%, transparent 70%)",
           filter: "blur(20px)",
         }}
       />
@@ -1042,134 +1282,23 @@ function SunOrb() {
           left: 0,
           transform: "translate(-50%, -50%)",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,210,50,0.18) 0%, rgba(255,140,20,0.08) 50%, transparent 75%)",
+          background: "radial-gradient(circle, rgba(255,210,50,0.18) 0%, rgba(255,130,10,0.08) 50%, transparent 75%)",
           filter: "blur(10px)",
         }}
       />
 
-      {/* ── Layer 3: Dynamic rotating SVG flare overlay ── */}
-      <svg
+      {/* ── Layer 3: Interactive WebGL 3D Sun Sphere ── */}
+      <canvas
+        ref={canvasRef}
         width={300}
         height={300}
-        viewBox="0 0 300 300"
         style={{
           position: "absolute",
+          width: 300,
+          height: 300,
           top: 0,
           left: 0,
           transform: "translate(-50%, -50%)",
-          overflow: "visible",
-        }}
-      >
-        <defs>
-          <filter id="sunRayBlur">
-            <feGaussianBlur stdDeviation="3" />
-          </filter>
-        </defs>
-        <motion.g
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          style={{ originX: "150px", originY: "150px" }}
-        >
-          {rays.map((angle, i) => {
-            const rad = (angle * Math.PI) / 180;
-            const innerR = 50;
-            const outerR = 110 + (i % 2 === 0 ? 30 : 0);
-            const x1 = 150 + Math.cos(rad) * innerR;
-            const y1 = 150 + Math.sin(rad) * innerR;
-            const x2 = 150 + Math.cos(rad) * outerR;
-            const y2 = 150 + Math.sin(rad) * outerR;
-            return (
-              <line
-                key={i}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(255,180,50,0.18)"
-                strokeWidth={i % 2 === 0 ? 4 : 2}
-                strokeLinecap="round"
-                filter="url(#sunRayBlur)"
-              />
-            );
-          })}
-        </motion.g>
-      </svg>
-
-      {/* ── Layer 4: Solar flare rays rotating in opposite direction ── */}
-      <motion.div
-        animate={{ rotate: -360 }}
-        transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
-        style={{
-          position: "absolute",
-          width: 200,
-          height: 200,
-          top: 0,
-          left: 0,
-          transform: "translate(-50%, -50%)",
-          background: "conic-gradient(from 0deg, transparent, rgba(255,200,50,0.05) 15deg, transparent 30deg, transparent 90deg, rgba(255,180,30,0.08) 105deg, transparent 120deg, transparent)",
-          borderRadius: "50%",
-          filter: "blur(8px)",
-        }}
-      />
-
-      {/* ── Layer 5: intense photosphere/chromosphere glow ring (120px) ── */}
-      <motion.div
-        animate={{ scale: [0.96, 1.04, 0.96], opacity: [0.85, 1, 0.85] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        style={{
-          position: "absolute",
-          width: 120,
-          height: 120,
-          top: 0,
-          left: 0,
-          transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,255,230,0.85) 0%, rgba(255,210,50,0.5) 40%, rgba(255,130,10,0.15) 70%, transparent 100%)",
-          filter: "blur(6px)",
-        }}
-      />
-
-      {/* ── Layer 6: The Hyper-Realistic Photographic Sun Disk ── */}
-      <motion.img
-        src="/sun.png"
-        alt="Sun"
-        style={{
-          position: "absolute",
-          width: 100,
-          height: 100,
-          top: 0,
-          left: 0,
-          transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
-          objectFit: "cover",
-          mixBlendMode: "screen",
-          filter: "drop-shadow(0 0 25px rgba(255,180,50,0.8))",
-          zIndex: 2,
-        }}
-        animate={{
-          scale: [1, 1.02, 0.99, 1.01, 1],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Extra flare overlays for realism */}
-      <div
-        style={{
-          position: "absolute",
-          width: 90,
-          height: 90,
-          top: 0,
-          left: 0,
-          transform: "translate(-50%, -50%)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 80%)",
-          pointerEvents: "none",
-          mixBlendMode: "overlay",
-          zIndex: 3,
         }}
       />
     </motion.div>
