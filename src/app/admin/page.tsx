@@ -347,18 +347,26 @@ export default function UnifiedAdminDashboard() {
         setData(res);
       }
 
-      // Load academy courses and mentors
-      const [coursesData, mentorsData] = await Promise.all([
-        getCourses(),
-        getMentors()
-      ]);
-      setAcademyCourses(coursesData);
-      setAcademyMentors(mentorsData);
+      // Load academy courses and mentors (isolated — failure here must not crash the dashboard)
+      try {
+        const [coursesData, mentorsData] = await Promise.all([
+          getCourses(),
+          getMentors()
+        ]);
+        setAcademyCourses(coursesData);
+        setAcademyMentors(mentorsData);
+      } catch (academyErr) {
+        console.warn("Academy data unavailable, using defaults:", academyErr);
+      }
 
-      // Load Suraksha data
-      const surakshaRes = await getSurakshaData();
-      if (surakshaRes && !("error" in surakshaRes)) {
-        setSurakshaData(surakshaRes);
+      // Load Suraksha data (isolated)
+      try {
+        const surakshaRes = await getSurakshaData();
+        if (surakshaRes && !("error" in surakshaRes)) {
+          setSurakshaData(surakshaRes);
+        }
+      } catch (surakshaErr) {
+        console.warn("Suraksha data unavailable:", surakshaErr);
       }
 
       // Safe helper to fetch JSON lists with cache-busting
@@ -2114,9 +2122,14 @@ export default function UnifiedAdminDashboard() {
       <p className="text-[#ea580c] font-mono text-xs uppercase tracking-widest animate-pulse">Initializing Master Admin Core...</p>
     </div>
   );
-  
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 bg-[#050505] font-mono">Critical Security Error: {error}</div>;
-  if (!data) return null;
+
+  // Use empty-state fallback so the UI still renders even if server action failed
+  const safeData = data ?? {
+    applications: [], projects: [], vehicles: [], trips: [],
+    announcements: [], events: [], news: [], photos: [],
+    programs: [], reels: [], evidence: [], sos_alerts: [],
+    session_photos: [], publications: [], innovators: []
+  };
 
   // Tabs layout navigation
   const tabs = [
@@ -2134,14 +2147,35 @@ export default function UnifiedAdminDashboard() {
     { id: "system", label: "System Health", icon: Server, color: "text-green-400", bg: "bg-green-500/10" }
   ] as const;
 
-  const totalApps = data.applications.length;
-  const pendingApps = data.applications.filter((a:any) => a.status === 'pending').length;
-  const activeProjects = data.projects.length;
-  const fleetSize = data.vehicles.length;
-  const activeTrips = data.trips.filter((t:any) => t.status === 'active').length;
+  const totalApps = safeData.applications.length;
+  const pendingApps = safeData.applications.filter((a:any) => a.status === 'pending').length;
+  const activeProjects = safeData.projects.length;
+  const fleetSize = safeData.vehicles.length;
+  const activeTrips = safeData.trips.filter((t:any) => t.status === 'active').length;
 
   return (
     <div className="min-h-screen bg-[#09090b] flex font-sans text-gray-200 admin-console">
+
+      {/* ── Non-blocking error/retry banner ── */}
+      {error && (
+        <div className="fixed top-0 left-0 right-0 z-[99999] flex items-center justify-between gap-3 bg-amber-900/90 backdrop-blur border-b border-amber-600/50 px-4 py-2.5 text-xs font-mono">
+          <div className="flex items-center gap-2 text-amber-300">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+            <span><strong className="text-amber-200">Data sync issue:</strong> {error}</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => { setError(null); fetchData(); }}
+              className="flex items-center gap-1 px-3 py-1 rounded-md bg-amber-600 hover:bg-amber-500 text-white transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" /> Retry
+            </button>
+            <button onClick={() => setError(null)} className="text-amber-400 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Toast popup */}
       <AnimatePresence>
@@ -2370,7 +2404,7 @@ export default function UnifiedAdminDashboard() {
                       </thead>
                       <tbody className="divide-y divide-white/5">
                         <AnimatePresence>
-                          {data.applications.filter((a:any) => a.status === 'pending').map((app: any) => (
+                          {safeData.applications.filter((a:any) => a.status === 'pending').map((app: any) => (
                             <motion.tr key={app.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, height: 0 }} className="hover:bg-white/[0.02] transition-colors group">
                               <td className="py-4 pr-4">
                                 <p className="font-semibold">{app.name}</p>
@@ -2408,7 +2442,7 @@ export default function UnifiedAdminDashboard() {
                 <GlassCard className="border-white/5 shadow-xl bg-[#0a0a0a] p-6">
                   <h3 className="text-base font-bold font-mono uppercase tracking-wider mb-6 flex items-center gap-2"><Cpu className="h-5 w-5 text-blue-400" /> Active Incubations</h3>
                   <div className="space-y-4">
-                    {data.projects.map((proj: any) => (
+                    {safeData.projects.map((proj: any) => (
                       <div key={proj.id} className="p-4 bg-[#050505] border border-white/5 rounded-2xl flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden group">
                         <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 pointer-events-none transition-all duration-500 ease-out" style={{ width: `${proj.progress || 0}%` }} />
                         <div className="flex-1 z-10">
@@ -2503,7 +2537,7 @@ export default function UnifiedAdminDashboard() {
                         </div>
                       </form>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto custom-scrollbar">
-                        {data.photos?.map((p: any) => (
+                        {safeData.photos?.map((p: any) => (
                           <div key={p.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
                             <div className="flex items-center gap-3">
                               <img src={p.image_url} alt="thumb" className="w-10 h-10 object-cover rounded bg-black" />
@@ -2751,7 +2785,7 @@ export default function UnifiedAdminDashboard() {
                         <button type="submit" className="px-6 py-2 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold text-xs uppercase tracking-wider">Publish Document</button>
                       </form>
                       <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto custom-scrollbar">
-                        {data.publications?.map((pub: any) => (
+                        {safeData.publications?.map((pub: any) => (
                           <div key={pub.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl">
                             <div>
                               <p className="text-sm font-semibold">{pub.title}</p>
@@ -2798,7 +2832,7 @@ export default function UnifiedAdminDashboard() {
                       </form>
                       
                       <div className="space-y-2 mt-4 max-h-[200px] overflow-y-auto custom-scrollbar">
-                        {data.events?.map((evt: any) => {
+                        {safeData.events?.map((evt: any) => {
                           let displayDesc = evt.description;
                           let displayCategory = "Academic Workshops";
                           try {
@@ -2820,7 +2854,7 @@ export default function UnifiedAdminDashboard() {
                             </div>
                           );
                         })}
-                        {(!data.events || data.events.length === 0) && (
+                        {(!safeData.events || safeData.events.length === 0) && (
                           <p className="text-xs text-white/30 italic text-center py-4">No events found in database.</p>
                         )}
                       </div>
