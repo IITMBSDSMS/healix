@@ -1493,40 +1493,39 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* RIGHT — Photo + blob */}
-                <div className="hidden md:flex flex-col items-center justify-center bg-zinc-50 px-8 py-12 relative">
-                  {/* Coral/salmon organic blob */}
-                  <div
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    aria-hidden
-                  >
-                    <svg viewBox="0 0 300 320" className="w-[240px] opacity-60" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M150,20 C200,10 270,60 280,120 C295,190 260,270 200,290 C140,310 60,280 30,210 C0,140 20,60 80,30 C105,18 130,25 150,20Z"
-                        fill="#f4a58a"
-                      />
-                    </svg>
-                  </div>
+                {/* RIGHT — Floating photo panel */}
+                <div className="hidden md:flex flex-col bg-gradient-to-br from-[#fdf6f0] to-[#fce8dc] relative overflow-hidden min-h-[420px]">
+                  {/* Coral blob — top right */}
+                  <svg className="absolute -top-12 -right-12 w-52 h-52 opacity-75 pointer-events-none" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M 45,150 C 15,130 10,80 35,50 C 60,20 110,10 145,30 C 180,50 190,100 175,135 C 160,170 120,190 85,185 C 60,180 55,160 45,150 Z"
+                      fill="#f4a58a"
+                    />
+                  </svg>
 
-                  {/* Profile photo */}
-                  <div className="relative z-10 w-44 h-52 overflow-hidden shadow-lg">
+                  {/* Photo with mix-blend-mode: multiply for transparent bg effect */}
+                  <div className="flex-1 flex items-end justify-center pt-12 px-6 pb-20 relative">
                     {(selectedFounderForMsg.photo || selectedFounderForMsg.photo_url) ? (
                       <img
                         src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
                         alt={selectedFounderForMsg.name}
-                        className="w-full h-full object-cover object-top"
+                        className="w-56 h-auto max-h-[320px] object-contain object-bottom relative z-10 transition-transform duration-500 hover:scale-105"
+                        style={{ mixBlendMode: 'multiply' }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-3xl font-black text-zinc-400 uppercase">
+                      <div className="w-44 h-52 bg-white/60 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase relative z-10 rounded-2xl shadow-sm border border-white/40">
                         {selectedFounderForMsg.name?.[0]}
                       </div>
                     )}
                   </div>
 
-                  {/* Name + title below photo */}
-                  <div className="relative z-10 text-center mt-4">
-                    <p className="text-[13px] font-black text-zinc-950 uppercase tracking-tight">{selectedFounderForMsg.name}</p>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">{selectedFounderForMsg.role}</p>
+                  {/* Name card — bottom left */}
+                  <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md rounded-xl px-4 py-3 shadow-lg z-20 border border-white/80">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <p className="text-[12px] font-black text-zinc-950 uppercase tracking-tight">{selectedFounderForMsg.name}</p>
+                    </div>
+                    <p className="text-[10px] text-zinc-500 mt-0.5 font-medium">{selectedFounderForMsg.role}</p>
                   </div>
                 </div>
 
