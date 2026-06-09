@@ -635,36 +635,52 @@ function ScrollSequence() {
 function CellsToSpaceSection() {
   return (
     <section className="relative min-h-screen flex flex-col items-end justify-end overflow-hidden">
-      {/* Full-screen astronaut background */}
+      {/* Full-screen astronaut background — positioned so astronaut is centered/visible */}
       <div
         className="absolute inset-0"
         style={{
           backgroundImage: "url('/astronaut-hero.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center center",
+          backgroundPosition: "center 30%",
           backgroundRepeat: "no-repeat",
         }}
       />
 
-      {/* Multi-layer cinematic overlay */}
+      {/* TOP fade — solid black bleeding in from above, fades to transparent */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-x-0 top-0 z-10 pointer-events-none"
         style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,1) 100%)",
-        }}
-      />
-      {/* Left vignette for text */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 100%)",
+          height: "35%",
+          background: "linear-gradient(to bottom, #000000 0%, rgba(0,0,0,0) 100%)",
         }}
       />
 
-      {/* Text — bottom-left, cinematic */}
-      <div className="relative z-10 flex flex-col gap-5 px-10 md:px-20 pb-28 max-w-3xl">
+      {/* BOTTOM fade — solid black bleeding up from below */}
+      <div
+        className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
+        style={{
+          height: "40%",
+          background: "linear-gradient(to top, #000000 0%, rgba(0,0,0,0) 100%)",
+        }}
+      />
+
+      {/* Left vignette — so text stays readable */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 40%, transparent 70%)",
+        }}
+      />
+
+      {/* Subtle center darkening so image doesn't overpower */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "rgba(0,0,0,0.15)" }}
+      />
+
+      {/* Text — bottom-left, cinematic, above all fades */}
+      <div className="relative z-20 flex flex-col gap-5 px-10 md:px-20 pb-28 max-w-3xl">
         <motion.p
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
