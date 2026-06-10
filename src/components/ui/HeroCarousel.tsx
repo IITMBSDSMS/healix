@@ -237,43 +237,65 @@ export function HeroCarousel() {
               </div>
             ) : (
               <>
+                {/* ── Media: full-screen image or video ── */}
                 {carouselItems[activeIndex].type === "video" ? (
-                  <video 
+                  <video
                     src={carouselItems[activeIndex].media_url}
                     autoPlay muted loop playsInline
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Image 
-                    src={carouselItems[activeIndex].media_url} 
-                    alt={carouselItems[activeIndex].title}
+                  <Image
+                    src={carouselItems[activeIndex].media_url}
+                    alt={carouselItems[activeIndex].title || "Hero Banner"}
                     fill
-                    className="object-cover object-top"
+                    className="object-cover object-center"
                     priority
                   />
                 )}
-                {/* Gradient Overlay for Text Readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                
-                {/* Center Content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pb-20">
-                  <motion.h2 
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg max-w-4xl"
-                  >
-                    {carouselItems[activeIndex].title}
-                  </motion.h2>
-                  <motion.p 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md max-w-2xl"
-                  >
-                    {carouselItems[activeIndex].subtitle}
-                  </motion.p>
-                </div>
+
+                {/* ── Overlay + text: only when title or subtitle exist ── */}
+                {(carouselItems[activeIndex].title || carouselItems[activeIndex].subtitle) && (
+                  <>
+                    {/* Dark gradient — left-heavy, like the reference banner */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+
+                    {/* Text block — bottom-left, matching uploaded banner style */}
+                    <div className="absolute inset-0 flex flex-col justify-end px-10 md:px-20 pb-32 md:pb-36 max-w-3xl">
+                      {carouselItems[activeIndex].title && (
+                        <motion.h2
+                          initial={{ y: 30, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.3, duration: 0.8 }}
+                          className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg leading-tight"
+                        >
+                          {carouselItems[activeIndex].title}
+                        </motion.h2>
+                      )}
+                      {carouselItems[activeIndex].subtitle && (
+                        <motion.p
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.5, duration: 0.8 }}
+                          className="text-lg md:text-xl text-white/85 font-medium drop-shadow-md"
+                        >
+                          {carouselItems[activeIndex].subtitle}
+                        </motion.p>
+                      )}
+                      {carouselItems[activeIndex].cta_label && carouselItems[activeIndex].cta_url && (
+                        <motion.a
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.7, duration: 0.8 }}
+                          href={carouselItems[activeIndex].cta_url}
+                          className="mt-6 inline-block px-8 py-3 bg-[#eab308] hover:bg-[#ca8a04] text-black text-sm font-black uppercase tracking-wider transition-colors w-fit"
+                        >
+                          {carouselItems[activeIndex].cta_label}
+                        </motion.a>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </motion.div>

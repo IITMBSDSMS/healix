@@ -59,8 +59,8 @@ export default function HeroManagerPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !subtitle || !file) {
-      alert("Please fill all fields and select a file.");
+    if (!file) {
+      alert("Please select an image or video file.");
       return;
     }
 
@@ -131,26 +131,24 @@ export default function HeroManagerPage() {
             </h2>
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1">Title</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Title <span className="text-white/30 text-xs font-normal">(optional)</span></label>
                 <input 
                   type="text" 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#eab308] transition-colors"
-                  placeholder="e.g. Next-Gen Research"
-                  required
+                  placeholder="e.g. Next-Gen Research — leave blank for image-only"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1">Subtitle</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Subtitle <span className="text-white/30 text-xs font-normal">(optional)</span></label>
                 <input 
                   type="text" 
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
                   className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#eab308] transition-colors"
                   placeholder="e.g. Empowering the future..."
-                  required
                 />
               </div>
 
