@@ -25,5 +25,26 @@ export const metadata: Metadata = {
 };
 
 export default function CareLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      {/* Barlow Condensed — for the LATENCY wordmark */}
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossOrigin="anonymous"
+      />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800;1,900&display=swap"
+        rel="stylesheet"
+      />
+      {children}
+    </>
+  );
 }

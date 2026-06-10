@@ -4,14 +4,91 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
-   LATENCY LOGO
+   OFFICIAL LATENCY LOGO
+   Orbital globe mark (navy + silver rings) + bold wordmark
 ───────────────────────────────────────────────────────── */
 function LatencyLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "text-lg tracking-[0.4em]", md: "text-2xl tracking-[0.5em]", lg: "text-5xl tracking-[0.6em]" };
+  const iconW = size === "sm" ? 36 : size === "md" ? 48 : 88;
+  const iconH = size === "sm" ? 36 : size === "md" ? 48 : 88;
+  const textCls = size === "sm" ? "text-xl" : size === "md" ? "text-2xl" : "text-6xl";
+
   return (
-    <span className={`font-black text-white font-mono uppercase select-none ${sizes[size]}`}>
-      LATENCY
-    </span>
+    <div className="flex items-center gap-3 select-none">
+      {/* ── Orbital mark ── */}
+      <svg
+        viewBox="0 0 100 100"
+        width={iconW}
+        height={iconH}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <radialGradient id="lg-sphere" cx="36%" cy="32%" r="68%">
+            <stop offset="0%" stopColor="#2f52b8" />
+            <stop offset="50%" stopColor="#182d8a" />
+            <stop offset="100%" stopColor="#0b1660" />
+          </radialGradient>
+          <radialGradient id="lg-silver" cx="30%" cy="25%" r="75%">
+            <stop offset="0%" stopColor="#d0d8ec" />
+            <stop offset="60%" stopColor="#8898c0" />
+            <stop offset="100%" stopColor="#505e90" />
+          </radialGradient>
+          {/* Clip to sphere for layering */}
+          <clipPath id="lg-sphere-front">
+            <ellipse cx="50" cy="50" rx="31" ry="35" />
+          </clipPath>
+        </defs>
+
+        {/* ── Back half: silver ring ── */}
+        <path
+          d="M 14 74 C 20 18 80 8 90 36"
+          stroke="url(#lg-silver)"
+          strokeWidth="9"
+          strokeLinecap="round"
+        />
+        {/* ── Back half: navy ring ── */}
+        <path
+          d="M 16 22 C 44 -14 98 48 88 88"
+          stroke="#1a2d82"
+          strokeWidth="10.5"
+          strokeLinecap="round"
+        />
+
+        {/* ── Sphere body ── */}
+        <ellipse cx="50" cy="50" rx="31" ry="35" fill="url(#lg-sphere)" />
+        {/* Subtle specular shine */}
+        <ellipse cx="40" cy="34" rx="9" ry="7" fill="rgba(255,255,255,0.09)" />
+
+        {/* ── Front half: silver ring ── */}
+        <path
+          d="M 14 74 C 24 94 76 97 90 36"
+          stroke="url(#lg-silver)"
+          strokeWidth="9"
+          strokeLinecap="round"
+        />
+        {/* ── Front half: navy ring ── */}
+        <path
+          d="M 16 22 C -4 46 10 92 88 88"
+          stroke="#1a2d82"
+          strokeWidth="10.5"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      {/* ── Wordmark ── */}
+      <span
+        className={`font-black uppercase select-none leading-none ${textCls}`}
+        style={{
+          fontFamily: "'Barlow Condensed', 'Arial Narrow', Arial, sans-serif",
+          fontStyle: "italic",
+          fontWeight: 800,
+          color: "#ffffff",
+          letterSpacing: "0.04em",
+        }}
+      >
+        LATENCY
+      </span>
+    </div>
   );
 }
 
