@@ -1,31 +1,25 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Avennix Care — Advancing Human Health on Earth and Beyond",
+  title: "LATENCY — When Earth Is Too Far Away | Powered by AVENNIX",
   description:
-    "Avennix Care is at the forefront of biotechnology, artificial intelligence, and space medicine. Developing next-generation medical systems and autonomous health technologies to sustain human exploration beyond Earth.",
+    "LATENCY is building autonomous health technologies for human survival beyond Earth. Autonomous medicine, biological intelligence, and human performance systems for deep space exploration.",
   keywords: [
-    "Avennix Care",
-    "Space Medicine",
-    "Biotechnology",
-    "Artificial Intelligence in Healthcare",
-    "Space Biology",
-    "Autonomous Health Technologies",
-    "Human Performance Systems",
-    "Bio-intelligence",
-    "Future of Medicine",
-    "Healix Technologies Care",
+    "LATENCY", "AVENNIX", "Space Medicine", "Autonomous Medicine",
+    "Biological Operating System", "Human Performance Intelligence",
+    "Deep Space Health", "Mars Medicine", "Space Biology",
+    "Autonomous Health Systems", "Future of Medicine", "Healix Technologies",
   ],
   openGraph: {
-    title: "Avennix Care — Advancing Human Health on Earth and Beyond",
-    description: "Developing next-generation medical systems at the intersection of biotechnology, artificial intelligence, and space medicine.",
+    title: "LATENCY — When Earth Is Too Far Away",
+    description: "Building autonomous technologies for human life beyond Earth. When Earth cannot respond, LATENCY can.",
     url: "https://healix-nu.vercel.app/care",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Avennix Care — Advancing Human Health on Earth and Beyond",
-    description: "Developing next-generation medical systems at the intersection of biotechnology, artificial intelligence, and space medicine.",
+    title: "LATENCY — When Earth Is Too Far Away | AVENNIX",
+    description: "Building autonomous health technologies for human survival beyond Earth.",
     images: ["/og-image.png"],
   },
 };
