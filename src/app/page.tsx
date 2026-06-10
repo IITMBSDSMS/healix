@@ -1023,14 +1023,27 @@ export default function Home() {
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative group w-full max-w-sm border border-zinc-200 p-3 bg-zinc-50 shadow-md">
                 <div className="aspect-[3/4] bg-zinc-100 relative overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=600&auto=format&fit=crop" 
-                    alt="Avnish Verma" 
-                    className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700"
-                  />
+                  {(() => {
+                    const founder = displayTeam.length > 0 ? displayTeam[0] : TEAM_MEMBERS[0];
+                    return founder?.photo ? (
+                      <img
+                        src={founder.photo}
+                        alt={founder.name || "Avnish Verma"}
+                        className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center">
+                        <span className="text-7xl font-black text-[#ea580c] uppercase select-none">
+                          {(founder?.name || "A")[0]}
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6">
-                    <p className="text-xs font-mono text-[#ea580c] uppercase font-bold tracking-widest">Founder & CEO</p>
-                    <h3 className="text-xl font-black text-white font-mono uppercase tracking-tight mt-1">Avnish Verma</h3>
+                    <p className="text-xs font-mono text-[#ea580c] uppercase font-bold tracking-widest">Founder &amp; CEO</p>
+                    <h3 className="text-xl font-black text-white font-mono uppercase tracking-tight mt-1">
+                      {displayTeam.length > 0 ? displayTeam[0].name : "Avnish Verma"}
+                    </h3>
                     <p className="text-[10px] text-zinc-300 font-mono mt-0.5">Healix Technologies</p>
                   </div>
                 </div>
