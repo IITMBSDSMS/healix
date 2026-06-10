@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import * as THREE from "three";
 
 /* ─────────────────────────────────────────────────────────
    OFFICIAL LATENCY LOGO
@@ -639,132 +640,257 @@ function drawPlanet(
 }
 
 function DeepSpaceCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
+  const mountRef = useRef<HTMLDivElement>(null);
+  const rafRef   = useRef<number>(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const el = mountRef.current;
+    if (!el) return;
 
-    let W = window.innerWidth, H = window.innerHeight;
-    canvas.width = W; canvas.height = H;
+    // ── Scene ──────────────────────────────────────────────────────────
+    const scene    = new THREE.Scene();
+    const W = window.innerWidth, H = window.innerHeight;
+    const camera   = new THREE.PerspectiveCamera(45, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 3.2);
 
-    const textures = getPlanetTextures();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x000000, 1);
+    el.appendChild(renderer.domElement);
 
-    // Stars
-    const stars = Array.from({ length: 400 }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 1.2 + 0.2,
-      speed: Math.random() * 0.04 + 0.01,
-      alpha: Math.random() * 0.7 + 0.3,
-      twinkleSpeed: Math.random() * 0.008 + 0.003,
-      twinkleOffset: Math.random() * Math.PI * 2,
-    }));
-
-    // Orbital particles
-    const orbitals = Array.from({ length: 3 }, (_, i) => ({
-      cx: W * 0.72, cy: H * 0.5,
-      rx: 180 + i * 90, ry: 60 + i * 30,
-      angle: Math.random() * Math.PI * 2,
-      speed: 0.0004 + i * 0.0002,
-      dotCount: 2 + i,
-    }));
-
-    let t = 0;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-
-      // Void background
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, W, H);
-
-      // Nebula glow — far left
-      const neb = ctx.createRadialGradient(W * 0.05, H * 0.3, 0, W * 0.05, H * 0.3, W * 0.45);
-      neb.addColorStop(0, "rgba(0,60,140,0.08)");
-      neb.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = neb;
-      ctx.fillRect(0, 0, W, H);
-
-      // Stars
-      stars.forEach(s => {
-        const alpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.twinkleSpeed + s.twinkleOffset));
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-        ctx.fill();
-      });
-
-      // Earth glow on right side
-      const earthX = W * 0.72, earthY = H * 0.5;
-      const earthR = Math.min(W, H) * 0.18;
-
-      // Draw hyper-realistic Earth
-      drawPlanet(
-        ctx,
-        "earth",
-        earthX,
-        earthY,
-        earthR,
-        t * 0.0008,
-        1.0,
-        { x: -0.5, y: 0.3, z: 0.8 },
-        textures
+    // ── Stars ──────────────────────────────────────────────────────────
+    const starGeo = new THREE.BufferGeometry();
+    const starVerts: number[] = [];
+    for (let i = 0; i < 4000; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi   = Math.acos(2 * Math.random() - 1);
+      const r     = 80 + Math.random() * 40;
+      starVerts.push(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
       );
+    }
+    starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starVerts, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.22, sizeAttenuation: true });
+    scene.add(new THREE.Points(starGeo, starMat));
 
-      // Orbital rings
-      orbitals.forEach(orb => {
-        // Ring itself
-        ctx.save();
-        ctx.translate(orb.cx, orb.cy);
-        ctx.rotate(-0.25);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, orb.rx, orb.ry, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(0,102,255,0.12)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+    // ── Procedural Earth texture ───────────────────────────────────────
+    function buildEarthTexture(size = 1024): THREE.CanvasTexture {
+      const cvs = document.createElement("canvas");
+      cvs.width = size; cvs.height = size / 2;
+      const ctx = cvs.getContext("2d")!;
+      const img = ctx.createImageData(size, size / 2);
+      const H2 = size / 2;
 
-        // Moving dots on ring
-        for (let d = 0; d < orb.dotCount; d++) {
-          const angle = orb.angle + t * orb.speed + (d * Math.PI * 2) / orb.dotCount;
-          const dx = Math.cos(angle) * orb.rx;
-          const dy = Math.sin(angle) * orb.ry;
-          ctx.beginPath();
-          ctx.arc(dx, dy, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,140,255,0.8)";
-          ctx.fill();
-          // Trail
-          for (let tr = 1; tr <= 6; tr++) {
-            const ta = angle - tr * 0.04;
-            const tx = Math.cos(ta) * orb.rx;
-            const ty = Math.sin(ta) * orb.ry;
-            ctx.beginPath();
-            ctx.arc(tx, ty, 2.5 * (1 - tr / 7), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0,120,255,${0.5 * (1 - tr / 7)})`;
-            ctx.fill();
+      // re-use fbm helpers from page scope
+      const fbm = (x: number, y: number, z: number, oct = 5) => {
+        let v = 0, a = 0.5, f = 1, m = 0;
+        for (let i = 0; i < oct; i++) { v += a * noise3D(x*f,y*f,z*f); m+=a; f*=2; a*=0.5; }
+        return v / m;
+      };
+
+      for (let y = 0; y < H2; y++) {
+        const lat    = (0.5 - y / H2) * Math.PI;
+        const absLat = Math.abs(lat);
+        const cosL   = Math.cos(lat), sinL = Math.sin(lat);
+        for (let x = 0; x < size; x++) {
+          const lon  = (x / size) * Math.PI * 2;
+          const nx   = cosL * Math.sin(lon);
+          const ny2  = sinL;
+          const nz   = cosL * Math.cos(lon);
+
+          const h = fbm(nx*2.2+10, ny2*2.2+20, nz*2.2+30);
+          let r: number, g: number, b: number;
+
+          if (h <= 0.46) {
+            // Ocean
+            const d = Math.max(0, Math.min(1, h / 0.46));
+            r = Math.round(4 + d*9);
+            g = Math.round(10 + d*48);
+            b = Math.round(27 + d*93);
+          } else if (h < 0.485) {
+            // Beach
+            r = 215; g = 188; b = 140;
+          } else if (h < 0.65) {
+            const yf = absLat / (Math.PI / 2);
+            if (yf < 0.22)        { r=10; g=58; b=16; }       // rainforest
+            else if (yf < 0.55)   { r=180; g=155; b=90; }     // desert/savanna
+            else if (yf > 0.76)   { r=110; g=105; b=95; }     // tundra
+            else                   { r=34; g=88; b=38; }        // temperate
+          } else if (h < 0.76) {
+            r = 88; g = 74; b = 58;                            // highlands
+          } else {
+            r = 240; g = 240; b = 245;                         // snow peaks
           }
+
+          // Ice caps
+          const iceN = fbm(nx*4.5, ny2*4.5, nz*4.5, 3) * 0.13;
+          if (absLat + iceN > 1.16) {
+            const f2 = Math.min(1, (absLat + iceN - 1.16) / 0.14);
+            r = Math.round(r*(1-f2) + 245*f2);
+            g = Math.round(g*(1-f2) + 245*f2);
+            b = Math.round(b*(1-f2) + 250*f2);
+          }
+
+          const i4 = (y * size + x) * 4;
+          img.data[i4]   = r;
+          img.data[i4+1] = g;
+          img.data[i4+2] = b;
+          img.data[i4+3] = 255;
         }
-        ctx.restore();
-      });
+      }
+      ctx.putImageData(img, 0, 0);
+      return new THREE.CanvasTexture(cvs);
+    }
 
-      t++;
-      rafRef.current = requestAnimationFrame(draw);
-    };
+    function buildCloudTexture(size = 512): THREE.CanvasTexture {
+      const cvs = document.createElement("canvas");
+      cvs.width = size; cvs.height = size / 2;
+      const ctx = cvs.getContext("2d")!;
+      const img = ctx.createImageData(size, size / 2);
+      const H2 = size / 2;
+      const fbm = (x: number, y: number, z: number) => {
+        let v = 0, a = 0.5, f = 1, m = 0;
+        for (let i = 0; i < 5; i++) { v += a * noise3D(x*f,y*f,z*f); m+=a; f*=2; a*=0.5; }
+        return v / m;
+      };
+      for (let y = 0; y < H2; y++) {
+        const lat = (0.5 - y / H2) * Math.PI;
+        const cosL = Math.cos(lat), sinL = Math.sin(lat);
+        for (let x = 0; x < size; x++) {
+          const lon = (x / size) * Math.PI * 2;
+          const nx = cosL * Math.sin(lon), ny2 = sinL, nz = cosL * Math.cos(lon);
+          const sw = fbm(nx*1.8+10, ny2*1.8+20, nz*1.8+30) * 0.35;
+          const h  = fbm((nx+sw)*2.5-40, (ny2+sw)*2.5-50, nz*2.5-60);
+          const a  = h > 0.46 ? Math.round(Math.min(255, (h-0.46)*3.5*255)) : 0;
+          const i4 = (y * size + x) * 4;
+          img.data[i4] = img.data[i4+1] = img.data[i4+2] = 255;
+          img.data[i4+3] = a;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      return new THREE.CanvasTexture(cvs);
+    }
 
-    draw();
+    // ── Earth Group ────────────────────────────────────────────────────
+    const earthGroup = new THREE.Group();
+    earthGroup.position.set(1.3, 0, 0);
+    scene.add(earthGroup);
 
+    const earthTex  = buildEarthTexture(1024);
+    const cloudTex  = buildCloudTexture(512);
+
+    const earthGeo  = new THREE.SphereGeometry(1, 64, 64);
+    const earthMat  = new THREE.MeshPhongMaterial({
+      map: earthTex,
+      shininess: 18,
+      specular: new THREE.Color(0x226688),
+    });
+    const earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    earthGroup.add(earthMesh);
+
+    // Clouds layer
+    const cloudGeo  = new THREE.SphereGeometry(1.012, 64, 64);
+    const cloudMat  = new THREE.MeshPhongMaterial({
+      map: cloudTex,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.82,
+    });
+    const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+    earthGroup.add(cloudMesh);
+
+    // Atmosphere glow
+    const atmoGeo = new THREE.SphereGeometry(1.06, 64, 64);
+    const atmoMat = new THREE.MeshPhongMaterial({
+      color: 0x4488ff,
+      transparent: true,
+      opacity: 0.13,
+      side: THREE.BackSide,
+    });
+    earthGroup.add(new THREE.Mesh(atmoGeo, atmoMat));
+
+    // Outer halo
+    const haloGeo = new THREE.SphereGeometry(1.18, 32, 32);
+    const haloMat = new THREE.MeshPhongMaterial({
+      color: 0x0044cc,
+      transparent: true,
+      opacity: 0.04,
+      side: THREE.BackSide,
+    });
+    earthGroup.add(new THREE.Mesh(haloGeo, haloMat));
+
+    // ── Orbital particles ──────────────────────────────────────────────
+    const orbGroup = new THREE.Group();
+    earthGroup.add(orbGroup);
+    const orbitRingGeo = new THREE.TorusGeometry(1.5, 0.002, 2, 120);
+    const orbitRingMat = new THREE.MeshBasicMaterial({ color: 0x0066ff, transparent: true, opacity: 0.15 });
+    const orbitRing    = new THREE.Mesh(orbitRingGeo, orbitRingMat);
+    orbitRing.rotation.x = Math.PI / 2.5;
+    orbGroup.add(orbitRing);
+
+    const orbitDotGeo = new THREE.SphereGeometry(0.025, 8, 8);
+    const orbitDotMat = new THREE.MeshBasicMaterial({ color: 0x44aaff });
+    const orbitDots: THREE.Mesh[] = [];
+    for (let i = 0; i < 3; i++) {
+      const d = new THREE.Mesh(orbitDotGeo, orbitDotMat);
+      orbGroup.add(d);
+      orbitDots.push(d);
+    }
+
+    // ── Lighting ───────────────────────────────────────────────────────
+    const sun = new THREE.DirectionalLight(0xfff5e0, 2.2);
+    sun.position.set(-5, 3, 5);
+    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x111133, 0.35));
+
+    // ── Tilt Earth 23.5° ──────────────────────────────────────────────
+    earthGroup.rotation.z = THREE.MathUtils.degToRad(23.5);
+
+    // ── Resize handler ─────────────────────────────────────────────────
     const onResize = () => {
-      W = window.innerWidth; H = window.innerHeight;
-      canvas.width = W; canvas.height = H;
+      const W2 = window.innerWidth, H2 = window.innerHeight;
+      camera.aspect = W2 / H2;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W2, H2);
     };
     window.addEventListener("resize", onResize);
-    return () => { cancelAnimationFrame(rafRef.current); window.removeEventListener("resize", onResize); };
+
+    // ── Animate ────────────────────────────────────────────────────────
+    let frame = 0;
+    const animate = () => {
+      rafRef.current = requestAnimationFrame(animate);
+      frame++;
+      earthMesh.rotation.y  += 0.0015;
+      cloudMesh.rotation.y  += 0.0018;
+      orbGroup.rotation.y   += 0.004;
+      orbitDots.forEach((d, i) => {
+        const angle = frame * 0.006 + (i * Math.PI * 2) / 3;
+        d.position.set(
+          Math.cos(angle) * 1.5,
+          0,
+          Math.sin(angle) * 1.5
+        );
+        // correct for ring tilt
+        d.position.applyEuler(orbitRing.rotation);
+      });
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", onResize);
+      renderer.dispose();
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
+    };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+  return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 }
+
 
 /* ─────────────────────────────────────────────────────────
    NEURAL NETWORK CANVAS — cells transforming
@@ -911,108 +1037,201 @@ function BuildCard({ title, body, index }: { title: string; body: string; index:
    MARS JOURNEY CANVAS
 ───────────────────────────────────────────────────────── */
 function MarsCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
+  const mountRef = useRef<HTMLDivElement>(null);
+  const rafRef   = useRef<number>(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let W = canvas.offsetWidth, H = canvas.offsetHeight;
-    canvas.width = W; canvas.height = H;
+    const el = mountRef.current;
+    if (!el) return;
 
-    const stars = Array.from({ length: 200 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.2 + 0.2,
-      alpha: Math.random() * 0.8 + 0.2,
-    }));
+    const scene  = new THREE.Scene();
+    const W = el.offsetWidth || window.innerWidth;
+    const H = el.offsetHeight || window.innerHeight;
+    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 5);
 
-    let t = 0;
-    const textures = getPlanetTextures();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x000000, 1);
+    el.appendChild(renderer.domElement);
 
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, W, H);
+    // ── Stars ──────────────────────────────────────────────────────────
+    const starVerts: number[] = [];
+    for (let i = 0; i < 3000; i++) {
+      const t2 = Math.random() * Math.PI * 2;
+      const p  = Math.acos(2 * Math.random() - 1);
+      const r  = 80 + Math.random() * 40;
+      starVerts.push(r*Math.sin(p)*Math.cos(t2), r*Math.sin(p)*Math.sin(t2), r*Math.cos(p));
+    }
+    const sGeo = new THREE.BufferGeometry();
+    sGeo.setAttribute("position", new THREE.Float32BufferAttribute(starVerts, 3));
+    scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.20 })));
 
-      stars.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
-        ctx.fill();
-      });
-
-      // Earth (fading left)
-      const earthAlpha = Math.max(0, 1 - t / 400);
-      if (earthAlpha > 0) {
-        const ex = W * 0.15, ey = H * 0.5, er = Math.min(W, H) * 0.12;
-        drawPlanet(
-          ctx,
-          "earth",
-          ex,
-          ey,
-          er,
-          t * 0.0008,
-          earthAlpha,
-          { x: -0.5, y: 0.3, z: 0.8 },
-          textures
-        );
+    // ── Procedural Mars texture ────────────────────────────────────────
+    function buildMarsTexture(size = 512): THREE.CanvasTexture {
+      const cvs = document.createElement("canvas");
+      cvs.width = size; cvs.height = size / 2;
+      const ctx = cvs.getContext("2d")!;
+      const img = ctx.createImageData(size, size / 2);
+      const H2  = size / 2;
+      const fbm = (x: number, y: number, z: number) => {
+        let v = 0, a = 0.5, f = 1, m = 0;
+        for (let i = 0; i < 5; i++) { v += a * noise3D(x*f,y*f,z*f); m+=a; f*=2; a*=0.5; }
+        return v / m;
+      };
+      for (let y = 0; y < H2; y++) {
+        const lat = (0.5 - y / H2) * Math.PI;
+        const cosL = Math.cos(lat), sinL = Math.sin(lat);
+        for (let x = 0; x < size; x++) {
+          const lon = (x / size) * Math.PI * 2;
+          const nx  = cosL * Math.sin(lon), ny2 = sinL, nz = cosL * Math.cos(lon);
+          const h   = fbm(nx*2.5+40, ny2*2.5+50, nz*2.5+60);
+          let r: number, g: number, b: number;
+          if (h < 0.44) {
+            const f2 = h / 0.44;
+            r = Math.round(55 + f2*55); g = Math.round(30 + f2*25); b = Math.round(22 + f2*16);
+          } else if (h < 0.72) {
+            const f2 = (h - 0.44) / 0.28;
+            r = Math.round(110 + f2*85); g = Math.round(55 + f2*35); b = Math.round(38 + f2*14);
+          } else {
+            const f2 = Math.min(1, (h - 0.72) / 0.28);
+            r = Math.round(195 - f2*35); g = Math.round(90 + f2*5); b = Math.round(52 + f2*23);
+          }
+          // Polar ice
+          const iceN = fbm(nx*5, ny2*5, nz*5) * 0.08;
+          if (lat + iceN > 1.28) { const f2 = Math.min(1,(lat+iceN-1.28)/0.12); r=Math.round(r*(1-f2)+245*f2); g=Math.round(g*(1-f2)+242*f2); b=Math.round(b*(1-f2)+245*f2); }
+          else if (lat + iceN < -1.34) { const f2 = Math.min(1,(-lat-iceN-1.34)/0.1); r=Math.round(r*(1-f2)+240*f2); g=Math.round(g*(1-f2)+238*f2); b=Math.round(b*(1-f2)+242*f2); }
+          const i4 = (y * size + x) * 4;
+          img.data[i4]=r; img.data[i4+1]=g; img.data[i4+2]=b; img.data[i4+3]=255;
+        }
       }
+      ctx.putImageData(img, 0, 0);
+      return new THREE.CanvasTexture(cvs);
+    }
 
-      // Mars (appearing right)
-      const marsAlpha = Math.min(1, t / 300);
-      const mx = W * 0.82, my = H * 0.5, mr = Math.min(W, H) * 0.15;
-      drawPlanet(
-        ctx,
-        "mars",
-        mx,
-        my,
-        mr,
-        t * 0.0005,
-        marsAlpha,
-        { x: -0.5, y: 0.3, z: 0.8 },
-        textures
-      );
-
-      // Journey line
-      if (marsAlpha > 0.1) {
-        const progress = Math.min(1, t / 300);
-        const dotX = W * 0.15 + (W * 0.82 - W * 0.15) * progress;
-        ctx.beginPath();
-        ctx.setLineDash([4, 8]);
-        ctx.moveTo(W * 0.15, H * 0.5);
-        ctx.lineTo(dotX, H * 0.5);
-        ctx.strokeStyle = `rgba(0,102,255,${marsAlpha * 0.4})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.arc(dotX, H * 0.5, 3, 0, Math.PI * 2);
-        ctx.fillStyle = "#0066FF";
-        ctx.fill();
+    // ── Earth (left, small) ────────────────────────────────────────────
+    function buildSimpleEarthTex(size = 256): THREE.CanvasTexture {
+      const cvs = document.createElement("canvas");
+      cvs.width = size; cvs.height = size / 2;
+      const ctx = cvs.getContext("2d")!;
+      const img = ctx.createImageData(size, size / 2);
+      const H2 = size / 2;
+      const fbm = (x: number, y: number, z: number) => {
+        let v = 0, a = 0.5, f = 1, m = 0;
+        for (let i = 0; i < 4; i++) { v += a * noise3D(x*f,y*f,z*f); m+=a; f*=2; a*=0.5; }
+        return v / m;
+      };
+      for (let y = 0; y < H2; y++) {
+        const lat = (0.5 - y / H2) * Math.PI;
+        const cosL = Math.cos(lat), sinL = Math.sin(lat);
+        for (let x = 0; x < size; x++) {
+          const lon = (x / size) * Math.PI * 2;
+          const nx = cosL * Math.sin(lon), ny2 = sinL, nz = cosL * Math.cos(lon);
+          const h = fbm(nx*2.2+10, ny2*2.2+20, nz*2.2+30);
+          let r: number, g: number, b: number;
+          if (h <= 0.46) { r=8; g=40; b=100; }
+          else if (h < 0.49) { r=200; g=178; b=138; }
+          else if (h < 0.65) { r=28; g=80; b=32; }
+          else { r=240; g=240; b=245; }
+          const i4 = (y * size + x) * 4;
+          img.data[i4]=r; img.data[i4+1]=g; img.data[i4+2]=b; img.data[i4+3]=255;
+        }
       }
+      ctx.putImageData(img, 0, 0);
+      return new THREE.CanvasTexture(cvs);
+    }
 
-      t++;
-      rafRef.current = requestAnimationFrame(draw);
-    };
+    // Earth group (left)
+    const earthGroup = new THREE.Group();
+    earthGroup.position.set(-2.5, 0, 0);
+    earthGroup.rotation.z = THREE.MathUtils.degToRad(23.5);
+    scene.add(earthGroup);
+    const eTex  = buildSimpleEarthTex(256);
+    const eMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.72, 48, 48),
+      new THREE.MeshPhongMaterial({ map: eTex, shininess: 16, specular: new THREE.Color(0x224466) })
+    );
+    earthGroup.add(eMesh);
+    // Earth atmosphere
+    earthGroup.add(new THREE.Mesh(
+      new THREE.SphereGeometry(0.78, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0x4488ff, transparent: true, opacity: 0.10, side: THREE.BackSide })
+    ));
 
-    draw();
+    // Mars group (right)
+    const marsGroup = new THREE.Group();
+    marsGroup.position.set(2.5, 0, 0);
+    marsGroup.rotation.z = THREE.MathUtils.degToRad(25.2);
+    scene.add(marsGroup);
+    const mTex  = buildMarsTexture(512);
+    const mMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.9, 56, 56),
+      new THREE.MeshPhongMaterial({ map: mTex, shininess: 8, specular: new THREE.Color(0x331100) })
+    );
+    marsGroup.add(mMesh);
+    // Mars atmosphere (thin rusty)
+    marsGroup.add(new THREE.Mesh(
+      new THREE.SphereGeometry(0.96, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xcc5522, transparent: true, opacity: 0.07, side: THREE.BackSide })
+    ));
 
+    // ── Journey line (3D tube between planets) ─────────────────────────
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x0066ff, transparent: true, opacity: 0.3 });
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-2.5, 0, 0),
+      new THREE.Vector3(2.5, 0, 0),
+    ]);
+    scene.add(new THREE.Line(lineGeo, lineMat));
+
+    // Small dot travelling along line
+    const dotMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.04, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0x44aaff })
+    );
+    scene.add(dotMesh);
+
+    // ── Sun light ─────────────────────────────────────────────────────
+    const sun = new THREE.DirectionalLight(0xfff5e0, 2.4);
+    sun.position.set(-8, 4, 6);
+    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x111122, 0.4));
+
+    // ── Resize ────────────────────────────────────────────────────────
     const onResize = () => {
-      W = canvas.offsetWidth; H = canvas.offsetHeight;
-      canvas.width = W; canvas.height = H;
+      const W2 = el.offsetWidth || window.innerWidth;
+      const H2 = el.offsetHeight || window.innerHeight;
+      camera.aspect = W2 / H2;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W2, H2);
     };
     window.addEventListener("resize", onResize);
+
+    // ── Animate ───────────────────────────────────────────────────────
+    let frame = 0;
+    const animate = () => {
+      rafRef.current = requestAnimationFrame(animate);
+      frame++;
+      eMesh.rotation.y += 0.0015;
+      mMesh.rotation.y += 0.0009;
+      // dot travels Earth→Mars and back
+      const t2 = (Math.sin(frame * 0.005) + 1) / 2;
+      dotMesh.position.set(-2.5 + t2 * 5, 0, 0);
+      renderer.render(scene, camera);
+    };
+    animate();
+
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", onResize);
+      renderer.dispose();
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+  return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 }
+
 
 export default function LatencyPage() {
   const [menuOpen, setMenuOpen] = useState(false);
