@@ -93,8 +93,551 @@ function LatencyLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   DEEP SPACE CANVAS — stars + orbital rings + Earth glow
+   HYPER-REALISTIC PLANET RENDERER (procedural + 3D projected)
+   Generates detailed texture maps on mount and projects them
+   onto spheres using horizontal segments and Lambertian shading.
 ───────────────────────────────────────────────────────── */
+
+// Seedable random number generator (mulberry32)
+function mulberry32(a: number) {
+  return function() {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rand = mulberry32(101);
+const noiseTable = Array.from({ length: 256 }, () => Math.floor(rand() * 256));
+const p = new Uint8Array(512);
+for (let i = 0; i < 256; i++) {
+  p[i] = p[i + 256] = noiseTable[i];
+}
+
+function fade(t: number) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+function lerp(t: number, a: number, b: number) {
+  return a + t * (b - a);
+}
+
+function noise3D(x: number, y: number, z: number) {
+  const X = Math.floor(x) & 255;
+  const Y = Math.floor(y) & 255;
+  const Z = Math.floor(z) & 255;
+
+  const xf = x - Math.floor(x);
+  const yf = y - Math.floor(y);
+  const zf = z - Math.floor(z);
+
+  const u = fade(xf);
+  const v = fade(yf);
+  const w = fade(zf);
+
+  const A = p[X] + Y;
+  const AA = p[A] + Z;
+  const AB = p[A + 1] + Z;
+  const B = p[X + 1] + Y;
+  const BA = p[B] + Z;
+  const BB = p[B + 1] + Z;
+
+  const val000 = p[AA] / 255;
+  const val100 = p[BA] / 255;
+  const val010 = p[AB] / 255;
+  const val110 = p[BB] / 255;
+  const val001 = p[AA + 1] / 255;
+  const val101 = p[BA + 1] / 255;
+  const val011 = p[AB + 1] / 255;
+  const val111 = p[BB + 1] / 255;
+
+  return lerp(w,
+    lerp(v, lerp(u, val000, val100), lerp(u, val010, val110)),
+    lerp(v, lerp(u, val001, val101), lerp(u, val011, val111))
+  );
+}
+
+function fbm3D(x: number, y: number, z: number, octaves = 4) {
+  let value = 0;
+  let amplitude = 0.5;
+  let frequency = 1.0;
+  let maxValue = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += amplitude * noise3D(x * frequency, y * frequency, z * frequency);
+    maxValue += amplitude;
+    frequency *= 2.0;
+    amplitude *= 0.5;
+  }
+  return value / maxValue;
+}
+
+interface PlanetTextures {
+  earthDay: HTMLCanvasElement;
+  earthNight: HTMLCanvasElement;
+  earthClouds: HTMLCanvasElement;
+  earthCloudShadow: HTMLCanvasElement;
+  mars: HTMLCanvasElement;
+}
+
+let globalTextures: PlanetTextures | null = null;
+
+function generatePlanetTextures(): PlanetTextures {
+  const earthDay = document.createElement('canvas');
+  earthDay.width = 512; earthDay.height = 256;
+  const ectx = earthDay.getContext('2d')!;
+
+  const earthNight = document.createElement('canvas');
+  earthNight.width = 512; earthNight.height = 256;
+  const enctx = earthNight.getContext('2d')!;
+
+  const earthClouds = document.createElement('canvas');
+  earthClouds.width = 512; earthClouds.height = 256;
+  const ecctx = earthClouds.getContext('2d')!;
+
+  const earthCloudShadow = document.createElement('canvas');
+  earthCloudShadow.width = 512; earthCloudShadow.height = 256;
+  const ecsctx = earthCloudShadow.getContext('2d')!;
+
+  const mars = document.createElement('canvas');
+  mars.width = 512; mars.height = 256;
+  const mctx = mars.getContext('2d')!;
+
+  const eImg = ectx.createImageData(512, 256);
+  const nImg = enctx.createImageData(512, 256);
+  const cImg = ecctx.createImageData(512, 256);
+  const csImg = ecsctx.createImageData(512, 256);
+  const mImg = mctx.createImageData(512, 256);
+
+  for (let y = 0; y < 256; y++) {
+    const lat = (0.5 - y / 256) * Math.PI;
+    const cosLat = Math.cos(lat);
+    const sinLat = Math.sin(lat);
+
+    for (let x = 0; x < 512; x++) {
+      const lon = (x / 512) * Math.PI * 2;
+      const cosLon = Math.cos(lon);
+      const sinLon = Math.sin(lon);
+
+      const nx = cosLat * sinLon;
+      const ny = sinLat;
+      const nz = cosLat * cosLon;
+
+      // Earth height map
+      const hEarth = fbm3D(nx * 2.2 + 10, ny * 2.2 + 20, nz * 2.2 + 30, 5);
+
+      let er = 10, eg = 30, eb = 65; // deep ocean
+      let nr = 0, ng = 0, nb = 0;
+
+      if (hEarth > 0.46) {
+        if (hEarth < 0.49) {
+          // Beach
+          er = 195; eg = 175; eb = 135;
+        } else if (hEarth < 0.63) {
+          // Lowland vegetation
+          const f = (hEarth - 0.49) / 0.14;
+          er = Math.round(25 * (1 - f) + 12 * f);
+          eg = Math.round(85 * (1 - f) + 50 * f);
+          eb = Math.round(35 * (1 - f) + 20 * f);
+        } else if (hEarth < 0.76) {
+          // Highlands
+          const f = (hEarth - 0.63) / 0.13;
+          er = Math.round(80 * (1 - f) + 65 * f);
+          eg = Math.round(65 * (1 - f) + 50 * f);
+          eb = Math.round(45 * (1 - f) + 35 * f);
+        } else {
+          // Peaks
+          er = 230; eg = 230; eb = 235;
+        }
+
+        // City lights
+        if (Math.abs(lat) < 1.15) {
+          const lNoise = noise3D(nx * 24 + 100, ny * 24 + 200, nz * 24 + 300);
+          if (lNoise > 0.63) {
+            const intensity = (lNoise - 0.63) / 0.37;
+            nr = Math.round(255 * intensity);
+            ng = Math.round(210 * intensity);
+            nb = Math.round(130 * intensity);
+          }
+        }
+      } else if (hEarth > 0.43) {
+        // Coastline
+        const f = (hEarth - 0.43) / 0.03;
+        er = Math.round(10 * (1 - f) + 20 * f);
+        eg = Math.round(30 * (1 - f) + 65 * f);
+        eb = Math.round(65 * (1 - f) + 110 * f);
+      }
+
+      // Ice caps
+      const absLat = Math.abs(lat);
+      if (absLat > 1.25) {
+        const f = Math.min(1, (absLat - 1.25) / 0.18);
+        er = Math.round(er * (1 - f) + 240 * f);
+        eg = Math.round(eg * (1 - f) + 240 * f);
+        eb = Math.round(eb * (1 - f) + 245 * f);
+        nr = Math.round(nr * (1 - f));
+        ng = Math.round(ng * (1 - f));
+        nb = Math.round(nb * (1 - f));
+      }
+
+      // Earth clouds
+      const hClouds = fbm3D(nx * 2.8 - 40, ny * 2.8 - 50, nz * 2.8 - 60, 5);
+      let cr = 0, cg = 0, cb = 0, ca = 0;
+      if (hClouds > 0.48) {
+        ca = Math.round(Math.min(255, (hClouds - 0.48) * 2.8 * 255));
+        cr = 255; cg = 255; cb = 255;
+      }
+
+      // Mars height map
+      const hMars = fbm3D(nx * 2.5 + 40, ny * 2.5 + 50, nz * 2.5 + 60, 5);
+      let mr = 150, mg = 60, mb = 35;
+
+      if (hMars < 0.44) {
+        // Volcanic lowlands
+        const f = hMars / 0.44;
+        mr = Math.round(75 * (1 - f) + 105 * f);
+        mg = Math.round(35 * (1 - f) + 48 * f);
+        mb = Math.round(22 * (1 - f) + 30 * f);
+      } else {
+        // Highlands
+        const f = Math.min(1, (hMars - 0.44) / 0.56);
+        mr = Math.round(105 * (1 - f) + 195 * f);
+        mg = Math.round(48 * (1 - f) + 85 * f);
+        mb = Math.round(30 * (1 - f) + 50 * f);
+      }
+
+      // Mars Ice Caps
+      if (lat > 1.32) {
+        const f = Math.min(1, (lat - 1.32) / 0.12);
+        mr = Math.round(mr * (1 - f) + 245 * f);
+        mg = Math.round(mg * (1 - f) + 245 * f);
+        mb = Math.round(mb * (1 - f) + 250 * f);
+      } else if (lat < -1.38) {
+        const f = Math.min(1, (-lat - 1.38) / 0.1);
+        mr = Math.round(mr * (1 - f) + 240 * f);
+        mg = Math.round(mg * (1 - f) + 240 * f);
+        mb = Math.round(mb * (1 - f) + 245 * f);
+      }
+
+      const idx = (y * 512 + x) * 4;
+
+      eImg.data[idx] = er; eImg.data[idx + 1] = eg; eImg.data[idx + 2] = eb; eImg.data[idx + 3] = 255;
+      nImg.data[idx] = nr; nImg.data[idx + 1] = ng; nImg.data[idx + 2] = nb; nImg.data[idx + 3] = 255;
+      cImg.data[idx] = cr; cImg.data[idx + 1] = cg; cImg.data[idx + 2] = cb; cImg.data[idx + 3] = ca;
+      csImg.data[idx] = 0; csImg.data[idx + 1] = 0; csImg.data[idx + 2] = 0; csImg.data[idx + 3] = ca;
+      mImg.data[idx] = mr; mImg.data[idx + 1] = mg; mImg.data[idx + 2] = mb; mImg.data[idx + 3] = 255;
+    }
+  }
+
+  ectx.putImageData(eImg, 0, 0);
+  enctx.putImageData(nImg, 0, 0);
+  ecctx.putImageData(cImg, 0, 0);
+  ecsctx.putImageData(csImg, 0, 0);
+  mctx.putImageData(mImg, 0, 0);
+
+  return { earthDay, earthNight, earthClouds, earthCloudShadow, mars };
+}
+
+function getPlanetTextures(): PlanetTextures {
+  if (typeof window === "undefined") {
+    return {} as PlanetTextures;
+  }
+  if (!globalTextures) {
+    globalTextures = generatePlanetTextures();
+  }
+  return globalTextures;
+}
+
+interface LightVector {
+  x: number;
+  y: number;
+  z: number;
+}
+
+function drawPlanet(
+  ctx: CanvasRenderingContext2D,
+  type: "earth" | "mars",
+  cx: number,
+  cy: number,
+  R: number,
+  rotation: number,
+  opacity: number,
+  lightVector: LightVector,
+  textures: PlanetTextures
+) {
+  if (opacity <= 0 || !textures.earthDay) return;
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+
+  const lx = lightVector.x;
+  const ly = lightVector.y;
+
+  // 1. Draw outer atmosphere glow (back layer)
+  if (type === "earth") {
+    const atmoGlow = ctx.createRadialGradient(
+      cx + lx * R * 0.15, cy - ly * R * 0.15, R * 0.85,
+      cx + lx * R * 0.3, cy - ly * R * 0.3, R * 1.4
+    );
+    atmoGlow.addColorStop(0, "rgba(0,120,255,0.35)");
+    atmoGlow.addColorStop(0.2, "rgba(0,80,220,0.2)");
+    atmoGlow.addColorStop(0.6, "rgba(0,40,150,0.05)");
+    atmoGlow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = atmoGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const atmoGlow = ctx.createRadialGradient(
+      cx + lx * R * 0.15, cy - ly * R * 0.15, R * 0.85,
+      cx + lx * R * 0.3, cy - ly * R * 0.3, R * 1.3
+    );
+    atmoGlow.addColorStop(0, "rgba(220,100,50,0.25)");
+    atmoGlow.addColorStop(0.3, "rgba(180,60,30,0.12)");
+    atmoGlow.addColorStop(0.7, "rgba(100,30,10,0.03)");
+    atmoGlow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = atmoGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 2. Setup sphere clipping path
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 3. Draw base dark sphere
+  ctx.fillStyle = type === "earth" ? "#020614" : "#1f0d07";
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Draw slices
+  const W_map = 512;
+  const H_map = 256;
+  const N = 16; // Number of horizontal segments
+
+  const dayCanvas = type === "earth" ? textures.earthDay : textures.mars;
+  const nightCanvas = type === "earth" ? textures.earthNight : null;
+  const cloudCanvas = type === "earth" ? textures.earthClouds : null;
+  const cloudShadowCanvas = type === "earth" ? textures.earthCloudShadow : null;
+
+  const step = 2;
+  for (let y = -R; y < R; y += step) {
+    const w = Math.sqrt(R * R - y * y);
+    if (w <= 0) continue;
+
+    const lat = Math.asin(y / R);
+    const cosLat = Math.cos(lat);
+    const sy = Math.round((0.5 - lat / Math.PI) * H_map);
+
+    for (let i = 0; i < N; i++) {
+      const u1 = -1 + (2 * i) / N;
+      const u2 = -1 + (2 * (i + 1)) / N;
+
+      const phi1 = Math.asin(u1);
+      const phi2 = Math.asin(u2);
+
+      const dx1 = cx + w * u1;
+      const dx2 = cx + w * u2;
+      const dw = dx2 - dx1;
+      if (dw <= 0) continue;
+
+      const phi = (phi1 + phi2) / 2;
+      const nx = cosLat * Math.sin(phi);
+      const ny = Math.sin(lat);
+      const nz = cosLat * Math.cos(phi);
+
+      const intensity = nx * lx + ny * ly + nz * lightVector.z;
+
+      const lonOffset1 = phi1;
+      const lonOffset2 = phi2;
+
+      let sx1 = ((rotation + lonOffset1) / (2 * Math.PI)) * W_map;
+      let sx2 = ((rotation + lonOffset2) / (2 * Math.PI)) * W_map;
+
+      sx1 = (sx1 % W_map + W_map) % W_map;
+      sx2 = (sx2 % W_map + W_map) % W_map;
+
+      ctx.save();
+      if (sx2 > sx1) {
+        ctx.drawImage(
+          dayCanvas,
+          sx1, sy, sx2 - sx1, step,
+          dx1, cy + y, dw + 0.5, step + 0.5
+        );
+      } else {
+        const w1 = W_map - sx1;
+        const dw1 = dw * (w1 / (w1 + sx2));
+        ctx.drawImage(
+          dayCanvas,
+          sx1, sy, w1, step,
+          dx1, cy + y, dw1 + 0.5, step + 0.5
+        );
+        ctx.drawImage(
+          dayCanvas,
+          0, sy, sx2, step,
+          dx1 + dw1, cy + y, dw - dw1 + 0.5, step + 0.5
+        );
+      }
+
+      // Shading overlay
+      const shadowAlpha = Math.max(0, Math.min(1, 1 - (intensity + 0.15) * 1.2));
+      ctx.fillStyle = `rgba(0, 0, 0, ${shadowAlpha})`;
+      ctx.fillRect(dx1, cy + y, dw + 0.5, step + 0.5);
+      ctx.restore();
+
+      // Night lights
+      if (type === "earth" && nightCanvas) {
+        const nightAlpha = Math.max(0, Math.min(1, -intensity * 1.8));
+        if (nightAlpha > 0.02) {
+          ctx.save();
+          ctx.globalAlpha = opacity * nightAlpha;
+          ctx.globalCompositeOperation = "screen";
+          if (sx2 > sx1) {
+            ctx.drawImage(
+              nightCanvas,
+              sx1, sy, sx2 - sx1, step,
+              dx1, cy + y, dw + 0.5, step + 0.5
+            );
+          } else {
+            const w1 = W_map - sx1;
+            const dw1 = dw * (w1 / (w1 + sx2));
+            ctx.drawImage(
+              nightCanvas,
+              sx1, sy, w1, step,
+              dx1, cy + y, dw1 + 0.5, step + 0.5
+            );
+            ctx.drawImage(
+              nightCanvas,
+              0, sy, sx2, step,
+              dx1 + dw1, cy + y, dw - dw1 + 0.5, step + 0.5
+            );
+          }
+          ctx.restore();
+        }
+      }
+
+      // Clouds
+      if (type === "earth" && cloudCanvas && cloudShadowCanvas) {
+        const cloudRotation = rotation * 1.15 + 1.2;
+
+        let csx1 = ((cloudRotation + lonOffset1) / (2 * Math.PI)) * W_map;
+        let csx2 = ((cloudRotation + lonOffset2) / (2 * Math.PI)) * W_map;
+        csx1 = (csx1 % W_map + W_map) % W_map;
+        csx2 = (csx2 % W_map + W_map) % W_map;
+
+        // Cloud Shadow
+        const csdx = -lx * R * 0.03;
+        const csdy = ly * R * 0.03;
+        const cloudShadowAlpha = Math.max(0, Math.min(0.4, (intensity + 0.2) * 0.5));
+
+        if (cloudShadowAlpha > 0.02) {
+          ctx.save();
+          ctx.globalAlpha = opacity * cloudShadowAlpha;
+          ctx.globalCompositeOperation = "multiply";
+          if (csx2 > csx1) {
+            ctx.drawImage(
+              cloudShadowCanvas,
+              csx1, sy, csx2 - csx1, step,
+              dx1 + csdx, cy + y + csdy, dw + 0.5, step + 0.5
+            );
+          } else {
+            const w1 = W_map - csx1;
+            const dw1 = dw * (w1 / (w1 + csx2));
+            ctx.drawImage(
+              cloudShadowCanvas,
+              csx1, sy, w1, step,
+              dx1 + csdx, cy + y + csdy, dw1 + 0.5, step + 0.5
+            );
+            ctx.drawImage(
+              cloudShadowCanvas,
+              0, sy, csx2, step,
+              dx1 + dw1 + csdx, cy + y + csdy, dw - dw1 + 0.5, step + 0.5
+            );
+          }
+          ctx.restore();
+        }
+
+        // Cloud Body
+        const cloudIntensity = Math.max(0.05, Math.min(1.0, (intensity + 0.1) * 1.1));
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        if (csx2 > csx1) {
+          ctx.drawImage(
+            cloudCanvas,
+            csx1, sy, csx2 - csx1, step,
+            dx1, cy + y, dw + 0.5, step + 0.5
+          );
+        } else {
+          const w1 = W_map - csx1;
+          const dw1 = dw * (w1 / (w1 + csx2));
+          ctx.drawImage(
+            cloudCanvas,
+            csx1, sy, w1, step,
+            dx1, cy + y, dw1 + 0.5, step + 0.5
+          );
+          ctx.drawImage(
+            cloudCanvas,
+            0, sy, csx2, step,
+            dx1 + dw1, cy + y, dw - dw1 + 0.5, step + 0.5
+          );
+        }
+        ctx.fillStyle = `rgba(0, 0, 0, ${1 - cloudIntensity})`;
+        ctx.fillRect(dx1, cy + y, dw + 0.5, step + 0.5);
+        ctx.restore();
+      }
+    }
+  }
+
+  // 5. Specular atmosphere ring glow (front)
+  if (type === "earth") {
+    const limb = ctx.createRadialGradient(
+      cx + lx * R * 0.1, cy - ly * R * 0.1, R * 0.95,
+      cx + lx * R * 0.1, cy - ly * R * 0.1, R * 1.05
+    );
+    limb.addColorStop(0, "rgba(100,200,255,0.0)");
+    limb.addColorStop(0.5, "rgba(100,200,255,0.45)");
+    limb.addColorStop(0.8, "rgba(150,220,255,0.7)");
+    limb.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = limb;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.05, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const limb = ctx.createRadialGradient(
+      cx + lx * R * 0.1, cy - ly * R * 0.1, R * 0.95,
+      cx + lx * R * 0.1, cy - ly * R * 0.1, R * 1.04
+    );
+    limb.addColorStop(0, "rgba(255,150,100,0.0)");
+    limb.addColorStop(0.5, "rgba(255,130,80,0.3)");
+    limb.addColorStop(0.8, "rgba(255,100,50,0.45)");
+    limb.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = limb;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.04, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 6. Specular reflection
+  if (type === "earth") {
+    const spec = ctx.createRadialGradient(
+      cx + lx * R * 0.4, cy - ly * R * 0.4, 0,
+      cx + lx * R * 0.4, cy - ly * R * 0.4, R * 0.6
+    );
+    spec.addColorStop(0, "rgba(255,255,255,0.25)");
+    spec.addColorStop(0.4, "rgba(255,255,255,0.05)");
+    spec.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = spec;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 function DeepSpaceCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
@@ -107,6 +650,8 @@ function DeepSpaceCanvas() {
 
     let W = window.innerWidth, H = window.innerHeight;
     canvas.width = W; canvas.height = H;
+
+    const textures = getPlanetTextures();
 
     // Stars
     const stars = Array.from({ length: 400 }, () => ({
@@ -156,54 +701,18 @@ function DeepSpaceCanvas() {
       const earthX = W * 0.72, earthY = H * 0.5;
       const earthR = Math.min(W, H) * 0.18;
 
-      // Atmosphere halo
-      const atmo = ctx.createRadialGradient(earthX, earthY, earthR * 0.85, earthX, earthY, earthR * 1.5);
-      atmo.addColorStop(0, "rgba(0,80,200,0.18)");
-      atmo.addColorStop(0.5, "rgba(0,40,120,0.06)");
-      atmo.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = atmo;
-      ctx.beginPath();
-      ctx.arc(earthX, earthY, earthR * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Earth body
-      const earthGrad = ctx.createRadialGradient(earthX - earthR * 0.25, earthY - earthR * 0.25, 0, earthX, earthY, earthR);
-      earthGrad.addColorStop(0, "#1a4fa0");
-      earthGrad.addColorStop(0.35, "#0a2d7a");
-      earthGrad.addColorStop(0.65, "#061a4a");
-      earthGrad.addColorStop(1, "#020b22");
-      ctx.beginPath();
-      ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-      ctx.fillStyle = earthGrad;
-      ctx.fill();
-
-      // Earth continent-like patches
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-      ctx.clip();
-      const patches = [
-        { x: -0.1, y: -0.2, w: 0.3, h: 0.25 },
-        { x: 0.15, y: 0.05, w: 0.2, h: 0.3 },
-        { x: -0.3, y: 0.1, w: 0.15, h: 0.2 },
-      ];
-      patches.forEach(p => {
-        ctx.beginPath();
-        ctx.ellipse(earthX + p.x * earthR, earthY + p.y * earthR, p.w * earthR, p.h * earthR, Math.PI * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(16,80,40,0.45)";
-        ctx.fill();
-      });
-      ctx.restore();
-
-      // Terminator shadow (night side)
-      const termGrad = ctx.createRadialGradient(earthX + earthR * 0.3, earthY, 0, earthX + earthR * 0.3, earthY, earthR * 1.1);
-      termGrad.addColorStop(0, "rgba(0,0,0,0)");
-      termGrad.addColorStop(0.5, "rgba(0,0,0,0.15)");
-      termGrad.addColorStop(1, "rgba(0,0,0,0.7)");
-      ctx.beginPath();
-      ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-      ctx.fillStyle = termGrad;
-      ctx.fill();
+      // Draw hyper-realistic Earth
+      drawPlanet(
+        ctx,
+        "earth",
+        earthX,
+        earthY,
+        earthR,
+        t * 0.0008,
+        1.0,
+        { x: -0.5, y: 0.3, z: 0.8 },
+        textures
+      );
 
       // Orbital rings
       orbitals.forEach(orb => {
@@ -413,11 +922,16 @@ function MarsCanvas() {
     let W = canvas.offsetWidth, H = canvas.offsetHeight;
     canvas.width = W; canvas.height = H;
 
-    const stars = Array.from({ length: 300 }, () => ({
-      x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.2 + 0.2, alpha: Math.random() * 0.8 + 0.2,
+    const stars = Array.from({ length: 200 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      alpha: Math.random() * 0.8 + 0.2,
     }));
 
     let t = 0;
+    const textures = getPlanetTextures();
+
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = "#000";
@@ -434,35 +948,33 @@ function MarsCanvas() {
       const earthAlpha = Math.max(0, 1 - t / 400);
       if (earthAlpha > 0) {
         const ex = W * 0.15, ey = H * 0.5, er = Math.min(W, H) * 0.12;
-        const eg = ctx.createRadialGradient(ex - er * 0.2, ey - er * 0.2, 0, ex, ey, er);
-        eg.addColorStop(0, `rgba(30,80,200,${earthAlpha})`);
-        eg.addColorStop(0.6, `rgba(10,30,100,${earthAlpha})`);
-        eg.addColorStop(1, `rgba(2,5,30,${earthAlpha})`);
-        ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI * 2);
-        ctx.fillStyle = eg; ctx.fill();
-        // Atmosphere
-        const atmo = ctx.createRadialGradient(ex, ey, er * 0.85, ex, ey, er * 1.4);
-        atmo.addColorStop(0, `rgba(0,80,200,${earthAlpha * 0.2})`);
-        atmo.addColorStop(1, `rgba(0,0,0,0)`);
-        ctx.beginPath(); ctx.arc(ex, ey, er * 1.4, 0, Math.PI * 2);
-        ctx.fillStyle = atmo; ctx.fill();
+        drawPlanet(
+          ctx,
+          "earth",
+          ex,
+          ey,
+          er,
+          t * 0.0008,
+          earthAlpha,
+          { x: -0.5, y: 0.3, z: 0.8 },
+          textures
+        );
       }
 
       // Mars (appearing right)
       const marsAlpha = Math.min(1, t / 300);
       const mx = W * 0.82, my = H * 0.5, mr = Math.min(W, H) * 0.15;
-      const mg = ctx.createRadialGradient(mx - mr * 0.25, my - mr * 0.25, 0, mx, my, mr);
-      mg.addColorStop(0, `rgba(200,80,40,${marsAlpha})`);
-      mg.addColorStop(0.5, `rgba(140,45,20,${marsAlpha})`);
-      mg.addColorStop(1, `rgba(60,15,5,${marsAlpha})`);
-      ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2);
-      ctx.fillStyle = mg; ctx.fill();
-      // Mars dust shadow
-      const mShadow = ctx.createRadialGradient(mx + mr * 0.3, my, 0, mx + mr * 0.3, my, mr * 1.2);
-      mShadow.addColorStop(0, `rgba(0,0,0,0)`);
-      mShadow.addColorStop(1, `rgba(0,0,0,${marsAlpha * 0.65})`);
-      ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2);
-      ctx.fillStyle = mShadow; ctx.fill();
+      drawPlanet(
+        ctx,
+        "mars",
+        mx,
+        my,
+        mr,
+        t * 0.0005,
+        marsAlpha,
+        { x: -0.5, y: 0.3, z: 0.8 },
+        textures
+      );
 
       // Journey line
       if (marsAlpha > 0.1) {
@@ -485,16 +997,23 @@ function MarsCanvas() {
       t++;
       rafRef.current = requestAnimationFrame(draw);
     };
+
     draw();
-    return () => cancelAnimationFrame(rafRef.current);
+
+    const onResize = () => {
+      W = canvas.offsetWidth; H = canvas.offsetHeight;
+      canvas.width = W; canvas.height = H;
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
 }
 
-/* ═══════════════════════════════════════════════════════
-   MAIN PAGE
-═══════════════════════════════════════════════════════ */
 export default function LatencyPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

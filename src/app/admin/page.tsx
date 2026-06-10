@@ -3297,7 +3297,7 @@ export default function UnifiedAdminDashboard() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {[...corpMentors].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)).map((m) => (
-                    <GlassCard
+                    <div
                       key={m.id}
                       draggable
                       onDragStart={() => setCorpDragId(m.id)}
@@ -3305,69 +3305,73 @@ export default function UnifiedAdminDashboard() {
                       onDragLeave={() => setCorpDragOverId(null)}
                       onDrop={(e: React.DragEvent) => { e.preventDefault(); if (corpDragId) handleCorpDragReorder(corpDragId, m.id); setCorpDragId(null); setCorpDragOverId(null); }}
                       onDragEnd={() => { setCorpDragId(null); setCorpDragOverId(null); }}
-                      className={`p-5 flex flex-col gap-4 border transition-all cursor-grab active:cursor-grabbing select-none ${
-                        corpDragOverId === m.id ? "border-emerald-400 bg-emerald-500/5 scale-[1.02]" :
-                        corpDragId === m.id ? "border-white/20 opacity-40" :
-                        m.active ? "border-white/5 bg-[#0a0a0a] hover:border-white/10" : "border-white/5 bg-[#0a0a0a] opacity-55"
-                      }`}
+                      className="cursor-grab active:cursor-grabbing select-none"
                     >
-                      {/* Drag handle + category badge */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <GripVertical className="w-4 h-4 text-white/20" />
-                          {m.category && (
-                            <span className="text-[9px] font-black font-mono uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
-                              color: m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed",
-                              backgroundColor: (m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed") + "15",
-                            }}>{m.category}</span>
-                          )}
+                      <GlassCard
+                        className={`p-5 flex flex-col gap-4 border transition-all ${
+                          corpDragOverId === m.id ? "border-emerald-400 bg-emerald-500/5 scale-[1.02]" :
+                          corpDragId === m.id ? "border-white/20 opacity-40" :
+                          m.active ? "border-white/5 bg-[#0a0a0a] hover:border-white/10" : "border-white/5 bg-[#0a0a0a] opacity-55"
+                        }`}
+                      >
+                        {/* Drag handle + category badge */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <GripVertical className="w-4 h-4 text-white/20" />
+                            {m.category && (
+                              <span className="text-[9px] font-black font-mono uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
+                                color: m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed",
+                                backgroundColor: (m.category === "clinical" ? "#ea580c" : m.category === "research" ? "#2563eb" : m.category === "academic" ? "#059669" : "#7c3aed") + "15",
+                              }}>{m.category}</span>
+                            )}
+                          </div>
+                          <span className={`text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full ${ m.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400" }`}>
+                            {m.active ? "Live" : "Hidden"}
+                          </span>
                         </div>
-                        <span className={`text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full ${ m.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400" }`}>
-                          {m.active ? "Live" : "Hidden"}
-                        </span>
-                      </div>
 
-                      <div className="flex gap-4">
-                        {/* Photo with drag-drop upload */}
-                        <div
-                          className={`w-20 h-20 rounded-full overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
-                            corpUploadingFor === m.id ? "border-emerald-500 bg-emerald-500/20 scale-105" : "border-white/10"
-                          }`}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => handleCorpPhotoDrop(e, m.id)}
-                        >
-                          {m.photo_url ? (
-                            <Image src={m.photo_url} alt={m.name} fill className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{m.name[0]}</div>
-                          )}
-                          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
-                            <Upload className="w-3.5 h-3.5 mb-1 text-emerald-400 animate-bounce" /> Photo
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCorpPhotoUpload(e, m.id)} />
-                          </label>
+                        <div className="flex gap-4">
+                          {/* Photo with drag-drop upload */}
+                          <div
+                            className={`w-20 h-20 rounded-full overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                              corpUploadingFor === m.id ? "border-emerald-500 bg-emerald-500/20 scale-105" : "border-white/10"
+                            }`}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleCorpPhotoDrop(e, m.id)}
+                          >
+                            {m.photo_url ? (
+                              <Image src={m.photo_url} alt={m.name} fill className="object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{m.name[0]}</div>
+                            )}
+                            <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                              <Upload className="w-3.5 h-3.5 mb-1 text-emerald-400 animate-bounce" /> Photo
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCorpPhotoUpload(e, m.id)} />
+                            </label>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{m.role}</p>
+                            <h3 className="text-base font-bold text-white">{m.name}</h3>
+                            <p className="text-xs text-gray-500 font-medium">{m.organization}</p>
+                            {m.bio && <p className="text-[10px] text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">{m.role}</p>
-                          <h3 className="text-base font-bold text-white">{m.name}</h3>
-                          <p className="text-xs text-gray-500 font-medium">{m.organization}</p>
-                          {m.bio && <p className="text-[10px] text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                        <div className="flex gap-1">
-                          <button onClick={() => moveCorpOrder(m, "up")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move up"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
-                          <button onClick={() => moveCorpOrder(m, "down")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move down"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                        <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                          <div className="flex gap-1">
+                            <button onClick={() => moveCorpOrder(m, "up")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move up"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                            <button onClick={() => moveCorpOrder(m, "down")} className="p-1.5 bg-white/5 hover:bg-white/10 rounded transition-colors" title="Move down"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => toggleCorpActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-400 hover:bg-red-500/20"}`} title={m.active ? "Hide" : "Show"}>
+                              {m.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            </button>
+                            <button onClick={() => openCorpEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5"/></button>
+                            <button onClick={() => handleCorpDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5"/></button>
+                          </div>
                         </div>
-                        <div className="flex gap-1.5">
-                          <button onClick={() => toggleCorpActive(m)} className={`p-1.5 rounded transition-all ${m.active ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-400 hover:bg-red-500/20"}`} title={m.active ? "Hide" : "Show"}>
-                            {m.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          </button>
-                          <button onClick={() => openCorpEditForm(m)} className="p-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5"/></button>
-                          <button onClick={() => handleCorpDelete(m.id, m.name)} className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5"/></button>
-                        </div>
-                      </div>
-                    </GlassCard>
+                      </GlassCard>
+                    </div>
                   ))}
                 </div>
               </motion.div>
