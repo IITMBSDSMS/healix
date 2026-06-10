@@ -36,7 +36,7 @@ export default function MentorsAdminRedirect() {
             Routing to Master Console
           </p>
           <h2 className="text-xl font-black font-mono text-white uppercase tracking-widest">
-            Mentors &amp; Leaders
+            Advisors &amp; Mentors
           </h2>
         </div>
 

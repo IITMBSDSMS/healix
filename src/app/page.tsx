@@ -635,10 +635,6 @@ export default function Home() {
   // displayTeam moved to top of component to prevent TDZ ReferenceError
 
   // Map dynamic advisors (mentors) from database
-  // Filter out core team members shown in Section 2
-  const CORE_TEAM_NAMES = ["avnish verma", "mahima sharma", "debarghya bag", "debraghya bag", "sudiksha sharma", "chaavi sharma", "swaranjali sonje", "dhruv advani"];
-  const filteredMentors = dbMentors.filter(m => !CORE_TEAM_NAMES.includes(m.name?.toLowerCase().trim()));
-
   // Normalize db mentor to advisor shape
   const normalizeDbMentor = (m: any) => ({
     name: m.name,
@@ -651,7 +647,7 @@ export default function Home() {
   });
 
   // Use DB advisors if available, else fall back to DEFAULT_ADVISORS
-  const sourceAdvisors = filteredMentors.length > 0 ? filteredMentors.map(normalizeDbMentor) : DEFAULT_ADVISORS;
+  const sourceAdvisors = dbMentors.length > 0 ? dbMentors.map(normalizeDbMentor) : DEFAULT_ADVISORS;
 
   // Group by category
   const CATEGORY_CONFIG = [

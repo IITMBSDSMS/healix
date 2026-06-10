@@ -2137,7 +2137,7 @@ export default function UnifiedAdminDashboard() {
     { id: "biolabs", label: "BioLabs Pipeline", icon: TestTube, color: "text-purple-400", bg: "bg-purple-500/10" },
     { id: "suraksha", label: "Suraksha Control", icon: Shield, color: "text-orange-400", bg: "bg-orange-500/10" },
     { id: "academy", label: "Academy CRM", icon: GraduationCap, color: "text-[#eab308]", bg: "bg-yellow-500/10" },
-    { id: "mentors", label: "Corporate Mentors", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { id: "mentors", label: "Advisors & Mentors", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { id: "team", label: "Engineering Team", icon: Code2, color: "text-[#ea580c]", bg: "bg-orange-500/10" },
     { id: "founders", label: "Founders Corner", icon: ShieldAlert, color: "text-amber-500", bg: "bg-amber-500/10" },
     { id: "network", label: "Global Network", icon: Globe, color: "text-orange-400", bg: "bg-orange-500/10" },
