@@ -346,27 +346,25 @@ export default function BioLabsPage() {
       </section>
 
       {/* ----------------- Our Vision for Research ----------------- */}
-      <section className="py-24 px-6 bg-white relative overflow-hidden">
+      <section className="py-24 px-6 sm:px-12 lg:px-20 bg-white relative overflow-hidden">
         
         {/* Subtle decorative glow circles in background */}
-        <div className="absolute top-1/2 left-0 w-72 h-72 bg-[#00a887]/5 rounded-full filter blur-[80px] pointer-events-none" />
-        <div className="absolute top-1/3 right-0 w-72 h-72 bg-emerald-500/5 rounded-full filter blur-[80px] pointer-events-none" />
+        <div className="absolute top-1/2 left-0 w-72 h-72 bg-[#008080]/5 rounded-full filter blur-[80px] pointer-events-none" />
+        <div className="absolute top-1/3 right-0 w-72 h-72 bg-teal-500/5 rounded-full filter blur-[80px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto text-center space-y-12 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-12 relative z-10 text-left">
           
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#00a887]/20 bg-[#e6f6f3]/80 text-[#00a887] text-xs font-bold uppercase tracking-wider shadow-sm">
-            <img src="/biolabs/biolabs-logo.png" alt="Logo" className="w-4 h-4 rounded-full" />
-            Our Vision for Research
-          </div>
-
-          {/* Title & Subtitle */}
-          <div className="max-w-4xl mx-auto space-y-4">
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-[#0f172a] tracking-tight leading-tight">
-              Innovation Through <span className="text-[#00a887] relative after:absolute after:bottom-1 after:left-0 after:w-full after:h-1 after:bg-[#00a887]/20 after:rounded-full">Collaboration</span>, <span className="text-[#00a887]">Discovery</span>, and <span className="text-[#00a887]">Mentorship</span>
+          {/* Header Area */}
+          <div className="space-y-4 max-w-4xl">
+            <span className="text-xs sm:text-sm font-black tracking-widest text-[#00667a] uppercase block">
+              OUR VISION FOR RESEARCH
+            </span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-[#0f2942] tracking-tight leading-[1.15] font-normal">
+              Innovation Through <span className="text-[#008080] font-normal">Collaboration</span>,<br />
+              <span className="text-[#008080] font-normal">Discovery</span>, and <span className="text-[#008080] font-normal">Mentorship</span>
             </h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-sm sm:text-base font-semibold leading-relaxed">
-              At BioLabs, we accelerate interdisciplinary innovation by uniting brilliant minds, advancing bold ideas, and empowering the next generation of leaders in life science.
+            <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-3xl pt-2">
+              At BioLabs, we believe that groundbreaking research happens at the intersection of diverse perspectives, innovative thinking, and guided expertise. Our vision is to create a dynamic research environment where ideas flourish and impact is realised.
             </p>
           </div>
 
@@ -374,63 +372,66 @@ export default function BioLabsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6">
             
             {/* Card 1: Collaboration */}
-            <div className="bg-white/80 border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,168,135,0.08)] hover:-translate-y-1.5 rounded-[32px] p-8 flex flex-col items-center text-center group transition-all duration-500">
-              <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-slate-50/50 flex items-center justify-center relative border border-slate-100/50 shadow-inner">
+            <div className="bg-white border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,128,128,0.06)] hover:-translate-y-1 rounded-2xl overflow-hidden flex flex-col group transition-all duration-500">
+              <div className="w-full aspect-[16/10] overflow-hidden bg-slate-50 relative">
                 <img 
-                  src="/biolabs/biolabs_collaboration.png" 
+                  src="/biolabs/biolabs_collaboration_real.jpg" 
                   alt="Collaboration" 
-                  className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-100/30 to-transparent pointer-events-none" />
               </div>
-              <h3 className="text-xl font-bold text-[#0f172a]">Collaboration</h3>
-              <div className="w-10 h-1 bg-[#00a887] my-3 rounded-full transition-all group-hover:w-16 duration-300" />
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-semibold">
-                We believe the most impactful breakthroughs happen together. We foster an open, inclusive community where researchers, clinicians, and innovators collaborate across disciplines and institutions to solve complex challenges.
-              </p>
+              <div className="p-6 sm:p-8 flex flex-col flex-1">
+                <h3 className="text-2xl font-serif font-bold text-[#0f2942]">Collaboration</h3>
+                <div className="w-12 h-[3px] bg-[#008080] my-4 rounded-full" />
+                <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed flex-1">
+                  We bring together researchers, clinicians, and partners across disciplines and borders to solve complex challenges and drive meaningful change.
+                </p>
+              </div>
             </div>
 
             {/* Card 2: Discovery */}
-            <div className="bg-white/80 border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,168,135,0.08)] hover:-translate-y-1.5 rounded-[32px] p-8 flex flex-col items-center text-center group transition-all duration-500">
-              <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-slate-50/50 flex items-center justify-center relative border border-slate-100/50 shadow-inner">
+            <div className="bg-white border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,128,128,0.06)] hover:-translate-y-1 rounded-2xl overflow-hidden flex flex-col group transition-all duration-500">
+              <div className="w-full aspect-[16/10] overflow-hidden bg-slate-50 relative">
                 <img 
-                  src="/biolabs/biolabs_discovery.png" 
+                  src="/biolabs/biolabs_discovery_real.jpg" 
                   alt="Discovery" 
-                  className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-100/30 to-transparent pointer-events-none" />
               </div>
-              <h3 className="text-xl font-bold text-[#0f172a]">Discovery</h3>
-              <div className="w-10 h-1 bg-[#00a887] my-3 rounded-full transition-all group-hover:w-16 duration-300" />
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-semibold">
-                We empower bold ideas and pioneering research that push the boundaries of science. By providing access to resources, expertise, and cutting-edge tools, we help turn curiosity into transformative breakthroughs.
-              </p>
+              <div className="p-6 sm:p-8 flex flex-col flex-1">
+                <h3 className="text-2xl font-serif font-bold text-[#0f2942]">Discovery</h3>
+                <div className="w-12 h-[3px] bg-[#008080] my-4 rounded-full" />
+                <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed flex-1">
+                  We empower curiosity and invest in bold ideas to advance knowledge, develop new solutions, and improve lives.
+                </p>
+              </div>
             </div>
 
             {/* Card 3: Mentorship */}
-            <div className="bg-white/80 border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,168,135,0.08)] hover:-translate-y-1.5 rounded-[32px] p-8 flex flex-col items-center text-center group transition-all duration-500">
-              <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-slate-50/50 flex items-center justify-center relative border border-slate-100/50 shadow-inner">
+            <div className="bg-white border border-slate-100 shadow-[0_10px_35px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,128,128,0.06)] hover:-translate-y-1 rounded-2xl overflow-hidden flex flex-col group transition-all duration-500">
+              <div className="w-full aspect-[16/10] overflow-hidden bg-slate-50 relative">
                 <img 
-                  src="/biolabs/biolabs_mentorship.png" 
+                  src="/biolabs/biolabs_mentorship_real.jpg" 
                   alt="Mentorship" 
-                  className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-100/30 to-transparent pointer-events-none" />
               </div>
-              <h3 className="text-xl font-bold text-[#0f172a]">Mentorship</h3>
-              <div className="w-10 h-1 bg-[#00a887] my-3 rounded-full transition-all group-hover:w-16 duration-300" />
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-semibold">
-                We are committed to developing the next generation of leaders. Through guidance, shared experience, and meaningful connections, we help early-career scientists grow, lead, and shape the future of life science.
-              </p>
+              <div className="p-6 sm:p-8 flex flex-col flex-1">
+                <h3 className="text-2xl font-serif font-bold text-[#0f2942]">Mentorship</h3>
+                <div className="w-12 h-[3px] bg-[#008080] my-4 rounded-full" />
+                <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed flex-1">
+                  We are committed to nurturing the next generation of researchers through guidance, support, and opportunities to grow.
+                </p>
+              </div>
             </div>
 
           </div>
 
           {/* Join the Movement CTA */}
-          <div className="pt-8 space-y-4">
+          <div className="pt-8 space-y-4 text-center">
             <a
               href="#contact"
-              className="inline-flex items-center gap-2 h-12 px-8 bg-gradient-to-r from-[#00a887] to-[#008f72] hover:from-[#008f72] hover:to-[#00735b] text-white font-extrabold text-sm tracking-wide rounded-full transition-all shadow-md hover:shadow-lg active:scale-[0.98] transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 h-12 px-8 bg-gradient-to-r from-[#008080] to-[#006666] hover:from-[#006666] hover:to-[#004d4d] text-white font-extrabold text-sm tracking-wide rounded-full transition-all shadow-md hover:shadow-lg active:scale-[0.98] transform hover:-translate-y-0.5"
             >
               Join the Movement
               <ChevronRight className="w-4 h-4" />
