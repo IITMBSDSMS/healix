@@ -111,7 +111,7 @@ export const IDCard = ({
         <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between z-10">
           <div className="flex items-center gap-3 bg-white p-1 rounded-md">
             <Image 
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://healix-nu.vercel.app/verify/${idNumber}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.healix-technologies.com/verify/${idNumber}`}
               width={54}
               height={54}
               alt="Verification QR"
@@ -121,7 +121,7 @@ export const IDCard = ({
           <div className="flex flex-col items-end pb-1 pr-2">
             <div className="flex flex-col items-start bg-black/40 px-2 py-1 rounded">
               <span className="text-[10px] font-bold text-white uppercase tracking-widest">Verification profile:</span>
-              <span className="text-[10px] font-mono text-white mt-0.5">healix-nu.vercel.app/verify/{idNumber}</span>
+              <span className="text-[10px] font-mono text-white mt-0.5">healix-technologies.com/verify/{idNumber}</span>
             </div>
           </div>
 
@@ -165,7 +165,7 @@ export const IDCard = ({
               </div>
               <div className="space-y-1.5 text-right">
                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Website:</p>
-                <p className="text-sm font-mono text-[#eab308] underline underline-offset-2">healix-nu.vercel.app</p>
+                <p className="text-sm font-mono text-[#eab308] underline underline-offset-2">healix-technologies.com</p>
               </div>
             </div>
 

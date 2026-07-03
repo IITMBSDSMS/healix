@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="54 14 192 192" width="100%" height="100%">
+  <style>
+    .red-stroke { stroke: currentColor; stroke-width: 2.5; fill: none; }
+    .red-fill { fill: currentColor; }
+    .red-text { fill: currentColor; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; }
+  </style>
+
+  <!-- Central Seal Group -->
+  <g transform="translate(150, 110)">
+    <!-- Outer concentric rings -->
+    <circle r="92" class="red-stroke" stroke-width="3" />
+    <circle r="85" class="red-stroke" stroke-width="1.5" />
+    <circle r="58" class="red-stroke" stroke-width="1.5" />
+
+    <!-- Text Paths -->
+    <!-- Hindi path: top half (left to right) -->
+    <path id="hindi-path" d="M -73,0 A 73,73 0 0,1 73,0" fill="none" stroke="none" />
+    <!-- English path: bottom half (left to right, sweep=0) -->
+    <path id="english-path" d="M -73,0 A 73,73 0 0,0 73,0" fill="none" stroke="none" />
+    
+    <text class="red-text" font-weight="800" font-size="9px" letter-spacing="0.8px">
+      <textPath href="#hindi-path" startOffset="50%" text-anchor="middle">भारतीय प्रौद्योगिकी संस्थान दिल्ली</textPath>
+    </text>
+    
+    <text class="red-text" font-weight="800" font-size="7.5px" letter-spacing="0.4px">
+      <textPath href="#english-path" startOffset="50%" text-anchor="middle">INDIAN INSTITUTE OF TECHNOLOGY DELHI</textPath>
+    </text>
+
+    <!-- Star separators -->
+    <circle cx="-77.5" cy="-3" r="2.5" class="red-fill" />
+    <circle cx="77.5" cy="-3" r="2.5" class="red-fill" />
+
+    <!-- Stylized emblem in the center -->
+    <!-- Flame / altar structure -->
+    <path d="M -35,15 C -35,-35 35,-35 35,15 C 22,22 0,12 0,12 C 0,12 -22,22 -35,15 Z" class="red-stroke" stroke-width="2.5" />
+    <path d="M -18,22 L 0,-10 L 18,22 Z" class="red-stroke" stroke-width="2" />
+    <path d="M -9,22 L 0,3 L 9,22 Z" class="red-stroke" stroke-width="1.5" />
+    
+    <!-- Concentric waves -->
+    <circle cx="0" cy="10" r="26" class="red-stroke" stroke-width="1.5" stroke-dasharray="2 3" />
+    <circle cx="0" cy="10" r="17" class="red-stroke" stroke-width="1.2" stroke-dasharray="1 2" />
+    
+    <!-- Altar flame -->
+    <path d="M -3.5,-13 C -3.5,-22 0,-28 0,-28 C 0,-28 3.5,-22 3.5,-13 C 3.5,-6 -3.5,-6 -3.5,-13 Z" class="red-fill" />
+    
+    <!-- Inner dots -->
+    <circle cx="0" cy="10" r="3.5" class="red-fill" />
+    <circle cx="-37" cy="-12" r="1.8" class="red-fill" />
+    <circle cx="37" cy="-12" r="1.8" class="red-fill" />
+    <circle cx="-42" cy="8" r="1.8" class="red-fill" />
+    <circle cx="42" cy="8" r="1.8" class="red-fill" />
+  </g>
+</svg>

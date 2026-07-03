@@ -85,7 +85,16 @@ export default function EventsPage() {
             speaker_role,
             start_date: e.start_date,
             end_date: e.end_date,
-            seats_left
+            seats_left,
+            register_url: (() => {
+              try {
+                if (e.description?.startsWith("{")) {
+                  const p = JSON.parse(e.description);
+                  return p.register_url || "";
+                }
+              } catch {}
+              return "";
+            })()
           };
         });
         
@@ -213,7 +222,7 @@ export default function EventsPage() {
             <p className="text-xs text-slate-400 mt-1">Try resetting filters or adjusting search queries.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((sem, idx) => (
               <motion.div
                 key={sem.id}
@@ -230,7 +239,7 @@ export default function EventsPage() {
                 >
                   <div className="space-y-5">
                     {/* Event Backdrop Image */}
-                    <div className="w-full aspect-[21/9] rounded-xl overflow-hidden relative border border-slate-200 shadow-inner bg-slate-50">
+                    <div className="w-full aspect-[4/5] rounded-xl overflow-hidden relative border border-slate-200 shadow-inner bg-slate-50">
                       {sem.image_url ? (
                         <img 
                           src={sem.image_url} 
@@ -281,12 +290,23 @@ export default function EventsPage() {
                     <span className="text-[10px] font-mono text-slate-500 uppercase font-semibold">
                       Seats Left: <span className="text-red-500 font-bold">{sem.seats_left}</span>
                     </span>
-                    <button
-                      onClick={() => setRegisteringEvent(sem)}
-                      className="h-8.5 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-[10px] sm:text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                    >
-                      Register Now <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    {sem.register_url ? (
+                      <a
+                        href={sem.register_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-8.5 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-[10px] sm:text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        Register Now <ChevronRight className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => setRegisteringEvent(sem)}
+                        className="h-8.5 px-4 bg-[#ea580c] hover:bg-[#c2410c] text-white text-[10px] sm:text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        Register Now <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </GlassCard>
               </motion.div>

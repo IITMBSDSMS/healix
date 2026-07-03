@@ -1,50 +1,50 @@
 import type { Metadata } from "next";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.healix-technologies.com";
+
 export const metadata: Metadata = {
-  title: "LATENCY — When Earth Is Too Far Away | Powered by AVENNIX",
+  title: "Lupens & Company — Premium Healthcare Strategy & Advisory India",
   description:
-    "LATENCY is building autonomous health technologies for human survival beyond Earth. Autonomous medicine, biological intelligence, and human performance systems for deep space exploration.",
+    "Lupens & Company (Lupens Consultants India) is a premium healthcare advisory, research, and strategy firm. We partner with hospitals, startups, and policymakers to deliver growth strategies, AI & digital health solutions, and evidence-based innovation.",
   keywords: [
-    "LATENCY", "AVENNIX", "Space Medicine", "Autonomous Medicine",
-    "Biological Operating System", "Human Performance Intelligence",
-    "Deep Space Health", "Mars Medicine", "Space Biology",
-    "Autonomous Health Systems", "Future of Medicine", "Healix Technologies",
+    "Lupens & Company",
+    "Lupens Consultants India",
+    "Lupens India",
+    "Healthcare consulting India",
+    "Healthcare strategy and advisory",
+    "Hospital growth strategy India",
+    "Biomedical research consulting",
+    "AI and digital health solutions India",
+    "Healthcare transformation and impact",
+    "Public health advisory India",
   ],
+  alternates: {
+    canonical: `${siteUrl}/care`,
+    languages: { "en-IN": `${siteUrl}/care` },
+  },
   openGraph: {
-    title: "LATENCY — When Earth Is Too Far Away",
-    description: "Building autonomous technologies for human life beyond Earth. When Earth cannot respond, LATENCY can.",
-    url: "https://healix-nu.vercel.app/care",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+    url: `${siteUrl}/care`,
+    locale: "en_IN",
+    siteName: "Lupens & Company",
+    title: "Lupens & Company — Premium Healthcare Strategy & Advisory India",
+    description:
+      "Premium healthcare consulting, AI & digital health solutions, and evidence-based research advisory in India. Partnering for sustainable growth.",
+    images: [{ url: "/lupens/team_bright.png", width: 1200, height: 630, alt: "Lupens & Company Healthcare Consulting" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LATENCY — When Earth Is Too Far Away | AVENNIX",
-    description: "Building autonomous health technologies for human survival beyond Earth.",
-    images: ["/og-image.png"],
+    title: "Lupens & Company — Premium Healthcare Strategy & Advisory India",
+    description: "Healthcare consulting, AI & digital health solutions, and research advisory in India. Delivering clarity, driving impact.",
+    images: ["/lupens/team_bright.png"],
+    creator: "@LupensCo",
   },
 };
 
-export default function CareLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {/* Barlow Condensed — for the LATENCY wordmark */}
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossOrigin="anonymous"
-      />
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800;1,900&display=swap"
-        rel="stylesheet"
-      />
-      {children}
-    </>
-  );
+export default function CareLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
 }

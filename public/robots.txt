@@ -1,21 +1,34 @@
 User-agent: *
 Allow: /
 Allow: /about
-Allow: /contact
 Allow: /shesecure
 Allow: /ai-check
+Allow: /academy
 Allow: /biolabs
 Allow: /care
+Allow: /contact
+Allow: /news
+Allow: /events
+Allow: /global-network
+Allow: /startups
+Allow: /genomics-research
+Allow: /labs
+Allow: /suraksha
+Allow: /privacy
+Allow: /terms
+Allow: /register
 
-# Block admin and authenticated routes
-Disallow: /admin
+# Block admin and private routes
 Disallow: /admin/
-Disallow: /dashboard
-Disallow: /profile
 Disallow: /api/
 Disallow: /auth/
-Disallow: /track/
+Disallow: /dashboard/
+Disallow: /payment/
+Disallow: /biolabs/dashboard
 Disallow: /suraksha/start
+Disallow: /verify/
+Disallow: /signup
+Disallow: /login
 
 # Sitemap
-Sitemap: https://healix.tech/sitemap.xml
+Sitemap: https://www.healix-technologies.com/sitemap.xml

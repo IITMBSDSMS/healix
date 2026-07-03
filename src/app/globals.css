@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -18,6 +19,7 @@
   --color-surface-border: var(--surface-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-caveat: "Caveat", cursive;
 }
 
 html {
@@ -34,6 +36,32 @@ body {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* GPU compositing for smoother scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Use content-visibility for off-screen sections to skip rendering work */
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
+
+/* Promote carousel and marquee layers to GPU for smooth animation */
+.carousel-slide, .marquee-track {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* --- Global Responsive Typography --- */
@@ -105,10 +133,73 @@ button, a {
   animation: marquee 25s linear infinite;
   display: flex;
   width: max-content;
+  will-change: transform;
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 25s linear infinite;
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* Custom 3D lift hover effect for marquee cards */
+.healix-marquee-card {
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.healix-marquee-card:hover {
+  transform: translate3d(0, -8px, 25px) scale(1.03);
+}
+
+/* Premium 3D Flip Card Styles */
+.healix-flip-card {
+  perspective: 1000px;
+}
+
+.healix-flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.healix-marquee-card:hover .healix-flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.healix-flip-card-front,
+.healix-flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1rem;
+}
+
+.healix-flip-card-front {
+  z-index: 2;
+}
+
+.healix-flip-card-back {
+  transform: rotateY(180deg);
+  z-index: 1;
 }
 
 /* =============================================
@@ -1218,5 +1309,44 @@ button, a {
   content-visibility: auto;
   contain-intrinsic-size: 1px 500px;
 }
+
+/* Floating & Flicker Animations for Academy Projected Frame */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes projector-flicker {
+  0%, 100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.08;
+  }
+  30% {
+    opacity: 0.22;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  90% {
+    opacity: 0.18;
+  }
+}
+
+.animate-flicker {
+  animation: projector-flicker 0.25s infinite alternate;
+  will-change: opacity;
+}
+
 
 

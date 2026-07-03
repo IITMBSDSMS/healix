@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
+import { getEmailTemplateHtml } from '@/utils/emailTemplate';
+
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy_key');
 
 export async function POST(request: Request) {
@@ -19,24 +21,33 @@ export async function POST(request: Request) {
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'office@healix-technologies.com';
     // In test mode, Resend only allows sending to the account owner email
     const recipient = process.env.RESEND_DOMAIN_VERIFIED === 'true' ? email : ADMIN_EMAIL;
+    
+    const subject = 'Welcome to Healix';
+    const recipientName = name || 'User';
+    const bodyHtml = `
+      <p style="margin-top: 0; margin-bottom: 16px;">
+        We are thrilled to welcome you to <strong>Healix Technologies</strong>—your intelligent human-care platform.
+      </p>
+      <p style="margin-bottom: 20px; line-height: 1.6;">
+        At Healix, we combine a smart health guidance system, seamless medical access, early-stage biotechnology research, and a women's safety ecosystem (Project Suraksha). We exist to bridge the gap between healthcare, research, technology, and education.
+      </p>
+      <p style="margin-bottom: 24px; line-height: 1.6;">
+        Ready to explore? Head over to your dashboard to get started with your clinical portal.
+      </p>
+    `;
+
     const data = await resend.emails.send({
       from: 'Healix <onboarding@resend.dev>',
       to: [recipient],
-      subject: 'Welcome to Healix',
-      html: `
-        <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; background-color: #050505; color: #ededed; padding: 40px; border-radius: 12px; border: 1px solid #333;">
-          <h1 style="color: #6366f1;">Welcome to Healix, ${name || 'User'}!</h1>
-          <p style="font-size: 16px; line-height: 1.5; color: #ccc;">
-            We're thrilled to have you join our intelligent human-care platform. 
-            At Healix, we combine a smart health guidance system, seamless medical access, early-stage biotechnology research, and a women's safety ecosystem.
-          </p>
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
-            <p style="font-size: 14px; color: #888;">
-              Ready to explore? Head over to your dashboard to get started.
-            </p>
-          </div>
-        </div>
-      `,
+      subject: subject,
+      html: getEmailTemplateHtml({
+        subjectTitle: subject,
+        recipientName: recipientName,
+        bodyHtml: bodyHtml,
+        senderName: 'Healix Onboarding',
+        senderRole: 'User Experience Team',
+        senderEmail: 'onboarding@healix-technologies.com'
+      }),
     });
 
     return NextResponse.json(data);

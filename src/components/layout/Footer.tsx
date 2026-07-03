@@ -11,27 +11,18 @@ export function Footer() {
   // Full-viewport pages that don't need the global footer
   if (pathname.startsWith("/ai-check")) return null;
   return (
-    <footer className="relative border-t border-white/5 bg-[#0a0a0a] overflow-hidden mt-8">
+    <footer className={`relative border-t border-white/5 bg-[#0a0a0a] overflow-hidden ${pathname === "/contact" ? "mt-0" : "mt-8"}`}>
       {/* Subtle top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[1px] bg-gradient-to-r from-transparent via-[#ea580c]/30 to-transparent" />
       
       <div className="max-w-[94%] mx-auto px-2 sm:px-4 py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           <div className="col-span-1 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-4 mb-6 group">
-              <HealixLogo size={40} className="transition-transform duration-300 group-hover:scale-110" />
-              <div className="flex flex-col">
-                <span className="text-lg font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 uppercase">
-                  HEALIX TECHNOLOGIES
-                </span>
-                <span className="text-[10px] text-white/50 tracking-widest uppercase">PVT. LTD.</span>
-              </div>
+            <Link href="/" className="flex items-center mb-6 group">
+              <HealixLogo size={56} className="transition-transform duration-300 group-hover:scale-110" />
             </Link>
             <p className="text-sm text-white/60 mb-6 leading-relaxed max-w-sm">
               Intelligent human-care platform combining AI healthcare, BioLabs research, and SheSecure safety systems.
-            </p>
-            <p className="text-sm text-[#ea580c]/90 font-medium tracking-widest">
-              जैव-चिकित्सीय अनुसंधान एवं अभियांत्रिकी केंद्र
             </p>
           </div>
           
@@ -41,9 +32,8 @@ export function Footer() {
             </h3>
             <ul className="space-y-3 text-sm text-white/50">
               <li><Link href="/ai-check" className="hover:text-[#ea580c] transition-colors">Healix AI</Link></li>
-              <li><Link href="/care" className="hover:text-[#ea580c] transition-colors">Avennix Pharma</Link></li>
+              <li><Link href="/care" className="hover:text-[#ea580c] transition-colors">Lupens & Co.</Link></li>
               <li><Link href="/biolabs" className="hover:text-[#ea580c] transition-colors">Healix BioLabs</Link></li>
-              <li><Link href="/global-network" className="hover:text-[#ea580c] transition-colors">Global Network</Link></li>
               <li><Link href="/shesecure" className="hover:text-[#ea580c] transition-colors">HSF</Link></li>
             </ul>
           </div>

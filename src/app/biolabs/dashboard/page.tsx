@@ -97,7 +97,7 @@ export default function UserDashboardPage() {
 
   useEffect(() => {
     if (!uniqueId) return;
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://healix-nu.vercel.app";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://www.healix-technologies.com";
     const nameVal = cardName || "Dr. Priya Sharma";
     const verifyUrl = `${origin}/verify/${uniqueId}?name=${encodeURIComponent(nameVal)}&role=${encodeURIComponent(cardDesignation)}&div=${encodeURIComponent(cardDivision)}`;
     
@@ -129,30 +129,37 @@ export default function UserDashboardPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setUser(session.user);
-        
-        // Generate deterministic ID
-        const email = session.user.email || "user@healix.tech";
-        let hash = 0;
-        for (let i = 0; i < email.length; i++) {
-          hash = email.charCodeAt(i) + ((hash << 5) - hash);
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session) {
+          setUser(session.user);
+          
+          // Generate deterministic ID
+          const email = session.user.email || "user@healix.tech";
+          let hash = 0;
+          for (let i = 0; i < email.length; i++) {
+            hash = email.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          const numericHash = Math.abs(hash).toString().padStart(4, '0').slice(0, 4);
+          setUniqueId(`HX-RES-2026-${numericHash}`);
+          
+          // Show welcome if not seen
+          if (!localStorage.getItem(`healix_welcome_seen_${email}`)) {
+            setShowWelcome(true);
+            localStorage.setItem(`healix_welcome_seen_${email}`, 'true');
+          }
+        } else {
+          // Fallback for visual testing
+          setUniqueId(`HX-RES-2026-9999`);
         }
-        const numericHash = Math.abs(hash).toString().padStart(4, '0').slice(0, 4);
-        setUniqueId(`HX-RES-2026-${numericHash}`);
-        
-        // Show welcome if not seen
-        if (!localStorage.getItem(`healix_welcome_seen_${email}`)) {
-          setShowWelcome(true);
-          localStorage.setItem(`healix_welcome_seen_${email}`, 'true');
-        }
-      } else {
-        // Fallback for visual testing
+      })
+      .catch((err) => {
+        console.error("Session load error in BioLabs dashboard:", err);
         setUniqueId(`HX-RES-2026-9999`);
-      }
-      fetchDashboardData();
-    });
+      })
+      .finally(() => {
+        fetchDashboardData();
+      });
   }, []);
 
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Dr. Priya Sharma";
@@ -305,7 +312,7 @@ export default function UserDashboardPage() {
     doc.setTextColor(100, 116, 139);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(3.5);
-    doc.text(`PROFILE: healix-nu.vercel.app/verify/${uniqueId}`, fieldsX + 1.5, frontY + 52.2);
+    doc.text(`PROFILE: www.healix-technologies.com/verify/${uniqueId}`, fieldsX + 1.5, frontY + 52.2);
 
     // Gold Emblem - BioLabs Round Circle Logo Seal
     doc.setFillColor(10, 10, 12);
@@ -873,7 +880,7 @@ export default function UserDashboardPage() {
                                 <div className="mt-1.5 select-text">
                                   <div className="bg-black/80 border border-zinc-800 rounded-lg py-0.5 px-1.5 sm:py-1 sm:px-3 text-[5px] sm:text-[7.5px] font-mono text-zinc-400 tracking-wider inline-flex items-center gap-1 w-fit">
                                     <span className="text-[#eab308]/60 uppercase font-semibold">VERIFY:</span>
-                                    <span className="text-zinc-300">healix-nu.vercel.app/verify/{uniqueId}</span>
+                                    <span className="text-zinc-300">www.healix-technologies.com/verify/{uniqueId}</span>
                                   </div>
                                 </div>
 

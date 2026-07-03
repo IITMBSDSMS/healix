@@ -24,17 +24,27 @@ function SurakshaStartContent() {
     }
 
     const checkAuthAndVehicle = async () => {
-      const supabase = createClient();
-      await supabase.auth.getSession();
+      try {
+        const supabase = createClient();
+        try {
+          await supabase.auth.getSession();
+        } catch (authErr) {
+          console.warn("Auth session check failed in Suraksha:", authErr);
+        }
 
-      // Fetch vehicle
-      const { data, error } = await supabase.from("vehicles").select("*").eq("id", vid).single();
-      if (error || !data) {
-        setError("Invalid QR Code: Vehicle not found or inactive.");
-      } else {
-        setVehicle(data);
+        // Fetch vehicle
+        const { data, error } = await supabase.from("vehicles").select("*").eq("id", vid).single();
+        if (error || !data) {
+          setError("Invalid QR Code: Vehicle not found or inactive.");
+        } else {
+          setVehicle(data);
+        }
+      } catch (err: any) {
+        console.error("Error confirming vehicle identity:", err);
+        setError("Failed to verify vehicle. Detail: " + (err.message || String(err)));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuthAndVehicle();

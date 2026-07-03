@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, FlaskConical, Rocket, Newspaper, Building2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, FlaskConical, Rocket, Newspaper, Building2, Globe } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { createClient } from "@/utils/supabase/client";
+import { InteractivePlexus } from "./InteractivePlexus";
 
 const quickLinks = [
-  { title: "RESEARCH", icon: FlaskConical, href: "/biolabs", bg: "bg-[#f5f5f5] text-black hover:bg-white" },
-  { title: "STARTUPS", icon: Rocket, href: "/startups", bg: "bg-[#ea580c] text-white hover:bg-[#c2410c]" },
-  { title: "NEWS", icon: Newspaper, href: "/news", bg: "bg-[#f5f5f5] text-black hover:bg-white" },
-  { title: "GLOBAL NETWORK", icon: Building2, href: "/global-network", bg: "bg-[#ea580c] text-white hover:bg-[#c2410c]" },
+  { title: "RESEARCH", icon: FlaskConical, href: "/biolabs", bg: "bg-[#f5f7fa] text-black hover:bg-white" },
+  { title: "BRANDS", icon: Building2, href: "#ecosystem", bg: "bg-[#F56A00] text-white hover:bg-[#d45b00]" },
+  { title: "NEWS", icon: Newspaper, href: "/news", bg: "bg-[#f5f7fa] text-black hover:bg-white" },
+  { title: "SURAKSHA", icon: Rocket, href: "/suraksha", bg: "bg-[#F56A00] text-white hover:bg-[#d45b00]" },
 ];
 
 const fallbackItems = [
@@ -24,25 +26,26 @@ const fallbackItems = [
   },
   {
     id: "2",
-    type: "video",
-    title: "AI Genomic Sequencing Pipeline",
-    subtitle: "Next-generation research division and compute clusters.",
-    media_url: "https://www.w3schools.com/html/mov_bbb.mp4",
+    type: "image",
+    title: "",
+    subtitle: "",
+    media_url: "/ghana_banner.png",
   },
   {
     id: "3",
     type: "image",
-    title: "Project Suraksha Expansion",
-    subtitle: "Securing the community with real-time IoT safety networks.",
-    media_url: "/shesecure-hero.png",
+    title: "",
+    subtitle: "",
+    media_url: "/team_banner.png",
+    cta_url: "/our-members"
   }
 ];
 
 export function HeroCarousel() {
-  const [carouselItems, setCarouselItems] = useState<any[]>([]);
+  // Initialize with fallback items immediately — no loading skeleton shown
+  const [carouselItems, setCarouselItems] = useState<any[]>(fallbackItems);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const supabase = createClient();
 
@@ -55,19 +58,14 @@ export function HeroCarousel() {
           .eq("is_active", true)
           .order("order_index", { ascending: true });
 
-        if (error) {
-          console.warn("Banners table not found or query error, using fallback:", error.message);
-          setCarouselItems(fallbackItems);
-        } else if (data && data.length > 0) {
+        if (!error && data && data.length > 0) {
           setCarouselItems(data);
-        } else {
-          setCarouselItems(fallbackItems);
+          setActiveIndex(0);
         }
+        // If error or empty — fallbackItems already shown, no change needed
       } catch (error: any) {
-        console.warn("Error fetching banners:", error?.message || error);
-        setCarouselItems(fallbackItems); // Use fallback if DB is not set up yet
-      } finally {
-        setLoading(false);
+        // Fallback already rendered, silently ignore
+        console.warn("Banner fetch failed, keeping fallback:", error?.message || error);
       }
     };
 
@@ -90,10 +88,6 @@ export function HeroCarousel() {
     return () => clearInterval(interval);
   }, [isHovered, carouselItems.length]);
 
-  if (loading) {
-    return <div className="h-[80vh] min-h-[600px] w-full bg-[#050505] animate-pulse" />;
-  }
-
   return (
     <div className="relative w-full overflow-hidden">
       {/* Full-width Carousel Area */}
@@ -102,215 +96,173 @@ export function HeroCarousel() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0"
-          >
-            {activeIndex === 0 ? (
-              <div className="absolute inset-0 bg-[#050505] flex items-center justify-center overflow-hidden">
-                {/* Glowing Background Blobs */}
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
-                <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
-                
-                {/* DNA Double Helix Wave Animation */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-20 lg:opacity-40 z-0">
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-[50%] h-[400px] flex items-center justify-center">
-                    <svg viewBox="0 0 450 400" className="w-full h-full text-orange-500">
-                      <defs>
-                        <linearGradient id="dnaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ea580c" />
-                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
-                        </linearGradient>
-                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                          <feGaussianBlur stdDeviation="5" result="blur" />
-                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
-                      </defs>
-                      <g filter="url(#glow)">
-                        {Array.from({ length: 15 }).map((_, i) => {
-                          const x = 40 + i * 26;
-                          const offset = i * 0.4;
-                          return (
-                            <g key={i}>
-                              <line 
-                                x1={x} 
-                                y1={140 + Math.sin(offset) * 45} 
-                                x2={x} 
-                                y2={260 - Math.sin(offset) * 45} 
-                                stroke="url(#dnaGrad)" 
-                                strokeWidth="1.5" 
-                                strokeDasharray="3 3"
-                              >
-                                <animate 
-                                  attributeName="y1" 
-                                  values={`${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45}`} 
-                                  dur="5s" 
-                                  repeatCount="indefinite" 
-                                />
-                                <animate 
-                                  attributeName="y2" 
-                                  values={`${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45}`} 
-                                  dur="5s" 
-                                  repeatCount="indefinite" 
-                                />
-                              </line>
-                              <circle cx={x} cy={140 + Math.sin(offset) * 45} r="5.5" fill="#ea580c">
-                                <animate 
-                                  attributeName="cy" 
-                                  values={`${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45}`} 
-                                  dur="5s" 
-                                  repeatCount="indefinite" 
-                                />
-                              </circle>
-                              <circle cx={x} cy={260 - Math.sin(offset) * 45} r="5.5" fill="#3b82f6">
-                                <animate 
-                                  attributeName="cy" 
-                                  values={`${260 - Math.sin(offset) * 45};${140 + Math.sin(offset) * 45};${260 - Math.sin(offset) * 45}`} 
-                                  dur="5s" 
-                                  repeatCount="indefinite" 
-                                />
-                              </circle>
-                            </g>
-                          );
-                        })}
-                      </g>
-                    </svg>
+        {carouselItems.map((item, idx) => {
+          const isActive = idx === activeIndex;
+          return (
+            <div
+              key={item.id || idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+              }`}
+            >
+              {idx === 0 ? (
+                <div className="absolute inset-0 bg-[#060b18] flex items-center justify-center overflow-hidden">
+                  {/* Glowing Background Blobs */}
+                  <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0B4A9E]/20 rounded-full blur-[120px] pointer-events-none" />
+                  <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#F56A00]/10 rounded-full blur-[120px] pointer-events-none" />
+                  
+                  {/* Interactive Plexus Particle Field Background */}
+                  <div className="absolute inset-0 pointer-events-auto select-none opacity-40 lg:opacity-75 z-0">
+                    <InteractivePlexus />
+                  </div>
+   
+                  {/* Content Overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-20 z-10 max-w-5xl mx-auto pointer-events-none">
+                    <motion.div
+                      initial={false}
+                      animate={isActive ? { y: 0, opacity: 1 } : { y: 30, opacity: 0 }}
+                      transition={{ delay: 0.2, duration: 0.8 }}
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#0B4A9E]/30 bg-[#0B4A9E]/10 mb-6 pointer-events-auto"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F56A00] animate-pulse" />
+                      <span className="text-[10px] font-mono text-[#0B4A9E] uppercase tracking-widest font-extrabold">Healix Technologies Incorporated</span>
+                    </motion.div>
+                    
+                    <motion.h1 
+                      initial={false}
+                      animate={isActive ? { y: 0, opacity: 1 } : { y: 30, opacity: 0 }}
+                      transition={{ delay: 0.4, duration: 0.8 }}
+                      className="text-4xl sm:text-6xl md:text-7xl font-black text-white mb-6 uppercase tracking-tight max-w-4xl leading-none pointer-events-auto select-text"
+                    >
+                      Engineering the <span className="text-[#F56A00]">Future</span> of Healthcare
+                    </motion.h1>
+                    
+                    <motion.p 
+                      initial={false}
+                      animate={isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+                      transition={{ delay: 0.6, duration: 0.8 }}
+                      className="text-sm sm:text-base md:text-lg text-zinc-300 font-medium max-w-3xl leading-relaxed mb-8 font-sans pointer-events-auto select-text"
+                    >
+                      Healix is on a mission to build AI-powered healthcare solutions, biotechnology innovations, research collaborations, diagnostics, and clinical technologies through a nationwide network of doctors, researchers, engineers, students, and innovators.
+                    </motion.p>
+   
+                    {/* Buttons */}
+                    <motion.div 
+                      initial={false}
+                      animate={isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+                      transition={{ delay: 0.8, duration: 0.8 }}
+                      className="flex flex-col sm:flex-row gap-4 items-center justify-center pointer-events-auto"
+                    >
+                      <a 
+                        href="/contact?ref=partnership" 
+                        className="px-8 py-3.5 bg-[#F56A00] hover:bg-[#d45b00] text-white text-xs font-extrabold uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(245,106,0,0.3)] hover:shadow-[0_0_30px_rgba(245,106,0,0.5)] transform hover:-translate-y-0.5"
+                      >
+                        Partner With Us
+                      </a>
+                      <a 
+                        href="/biolabs" 
+                        className="px-8 py-3.5 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all"
+                      >
+                        BioLabs Research
+                      </a>
+                    </motion.div>
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* Media: full-screen image or video */}
+                  {item.type === "video" ? (
+                    isActive ? (
+                      <video
+                        src={item.media_url}
+                        autoPlay muted loop playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#050505]" />
+                    )
+                  ) : (
+                    item.cta_url ? (
+                      <Link href={item.cta_url} className="block w-full h-full relative cursor-pointer">
+                        <Image
+                          src={item.media_url}
+                          alt={item.title || "Hero Banner"}
+                          fill
+                          unoptimized={true}
+                          className="object-cover object-center"
+                          priority={idx === 0 || idx === 1}
+                        />
+                      </Link>
+                    ) : (
+                      <Image
+                        src={item.media_url}
+                        alt={item.title || "Hero Banner"}
+                        fill
+                        unoptimized={true}
+                        className="object-cover object-center"
+                        priority={idx === 0 || idx === 1}
+                      />
+                    )
+                  )}
 
-                {/* Content Overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-20 z-10 max-w-5xl mx-auto">
-                  <motion.div
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.8 }}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-6"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c] animate-pulse" />
-                    <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest font-bold">Healix Innovation Ecosystem</span>
-                  </motion.div>
-                  
-                  <motion.h1 
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="text-3xl sm:text-5xl md:text-6xl font-black text-white mb-6 uppercase tracking-tight max-w-4xl leading-tight"
-                  >
-                    Building the Future of Healthcare Through <span className="text-[#ea580c] bg-clip-text">Research, AI & Innovation</span>
-                  </motion.h1>
-                  
-                  <motion.p 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                    className="text-sm sm:text-base md:text-lg text-zinc-300 font-medium max-w-2xl leading-relaxed mb-8"
-                  >
-                    Healix Technologies connects clinicians, researchers, engineers, psychologists, and innovators to solve real-world healthcare challenges.
-                  </motion.p>
+                  {/* Overlay + text */}
+                  {(item.title || item.subtitle) && (
+                    <>
+                      {/* Dark gradient — left-heavy, like the reference banner */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
 
-                  {/* Buttons */}
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.8, duration: 0.8 }}
-                    className="flex flex-col sm:flex-row gap-4 items-center justify-center"
-                  >
-                    <a 
-                      href="/biolabs" 
-                      className="px-8 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(234,88,12,0.3)]"
-                    >
-                      Explore BioLabs
-                    </a>
-                    <a 
-                      href="#leadership" 
-                      className="px-8 py-3 border border-white/20 hover:border-white hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider transition-all"
-                    >
-                      Meet Our Team
-                    </a>
-                  </motion.div>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* ── Media: full-screen image or video ── */}
-                {carouselItems[activeIndex].type === "video" ? (
-                  <video
-                    src={carouselItems[activeIndex].media_url}
-                    autoPlay muted loop playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={carouselItems[activeIndex].media_url}
-                    alt={carouselItems[activeIndex].title || "Hero Banner"}
-                    fill
-                    className="object-cover object-center"
-                    priority
-                  />
-                )}
-
-                {/* ── Overlay + text: only when title or subtitle exist ── */}
-                {(carouselItems[activeIndex].title || carouselItems[activeIndex].subtitle) && (
-                  <>
-                    {/* Dark gradient — left-heavy, like the reference banner */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
-
-                    {/* Text block — bottom-left, matching uploaded banner style */}
-                    <div className="absolute inset-0 flex flex-col justify-end px-10 md:px-20 pb-32 md:pb-36 max-w-3xl">
-                      {carouselItems[activeIndex].title && (
-                        <motion.h2
-                          initial={{ y: 30, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.3, duration: 0.8 }}
-                          className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg leading-tight"
-                        >
-                          {carouselItems[activeIndex].title}
-                        </motion.h2>
-                      )}
-                      {carouselItems[activeIndex].subtitle && (
-                        <motion.p
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.5, duration: 0.8 }}
-                          className="text-lg md:text-xl text-white/85 font-medium drop-shadow-md"
-                        >
-                          {carouselItems[activeIndex].subtitle}
-                        </motion.p>
-                      )}
-                      {carouselItems[activeIndex].cta_label && carouselItems[activeIndex].cta_url && (
-                        <motion.a
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.7, duration: 0.8 }}
-                          href={carouselItems[activeIndex].cta_url}
-                          className="mt-6 inline-block px-8 py-3 bg-[#eab308] hover:bg-[#ca8a04] text-black text-sm font-black uppercase tracking-wider transition-colors w-fit"
-                        >
-                          {carouselItems[activeIndex].cta_label}
-                        </motion.a>
-                      )}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
+                      {/* Text block — bottom-left, matching uploaded banner style */}
+                      <div className="absolute inset-0 flex flex-col justify-end px-10 md:px-20 pb-32 md:pb-36 max-w-3xl">
+                        {item.title && (
+                          <motion.h2
+                            initial={false}
+                            animate={isActive ? { y: 0, opacity: 1 } : { y: 30, opacity: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg leading-tight"
+                          >
+                            {item.title}
+                          </motion.h2>
+                        )}
+                        {item.subtitle && (
+                          <motion.p
+                            initial={false}
+                            animate={isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="text-lg md:text-xl text-white/85 font-medium drop-shadow-md"
+                          >
+                            {item.subtitle}
+                          </motion.p>
+                        )}
+                        {item.cta_label && item.cta_url && (
+                          <motion.a
+                            initial={false}
+                            animate={isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+                            transition={{ delay: 0.7, duration: 0.8 }}
+                            href={item.cta_url}
+                            className="mt-6 inline-block px-8 py-3 bg-[#eab308] hover:bg-[#ca8a04] text-black text-sm font-black uppercase tracking-wider transition-colors w-fit"
+                          >
+                            {item.cta_label}
+                          </motion.a>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
 
         {/* Navigation Arrows */}
         <button 
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white/70 hover:bg-black/50 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white/70 hover:bg-black/50 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
         >
           <ChevronLeft className="w-8 h-8" />
         </button>
         <button 
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white/70 hover:bg-black/50 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white/70 hover:bg-black/50 hover:text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
         >
           <ChevronRight className="w-8 h-8" />
         </button>
@@ -346,9 +298,9 @@ export function HeroCarousel() {
             >
               <defs>
                 <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ea580c" stopOpacity="0.15" />
-                  <stop offset="50%" stopColor="#ea580c" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
+                  <stop offset="0%" stopColor="#F56A00" stopOpacity="0.15" />
+                  <stop offset="50%" stopColor="#F56A00" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="#0B4A9E" stopOpacity="0.15" />
                 </linearGradient>
               </defs>
               <path
@@ -384,11 +336,11 @@ export function HeroCarousel() {
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: idx * 0.4 }}
                   className={`group relative flex flex-col items-center justify-center w-[70px] h-[70px] md:w-[120px] md:h-[120px] rounded-full transition-all duration-500 hover:scale-110 shadow-lg ${
                     idx % 2 === 1
-                      ? "bg-gradient-to-br from-[#ea580c] to-[#9a3604] text-white shadow-[#ea580c]/30"
-                      : "bg-gradient-to-br from-zinc-50 to-zinc-300 text-zinc-950 shadow-white/10 hover:shadow-[#ea580c]/30"
+                      ? "bg-gradient-to-br from-[#F56A00] to-[#b04d00] text-white shadow-[#F56A00]/30"
+                      : "bg-gradient-to-br from-zinc-50 to-zinc-300 text-zinc-950 shadow-white/10 hover:shadow-[#F56A00]/30"
                   }`}
                 >
-                  <div className={`absolute inset-0 rounded-full border-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-110 ${idx % 2 === 1 ? "border-[#ea580c]/50" : "border-white/40"}`} />
+                  <div className={`absolute inset-0 rounded-full border-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-110 ${idx % 2 === 1 ? "border-[#F56A00]/50" : "border-white/40"}`} />
                   <Icon className="w-6 h-6 md:w-9 md:h-9 mb-1 md:mb-2" strokeWidth={1.5} />
                   <span className="text-[7px] md:text-[10px] font-black tracking-widest text-center uppercase px-2 leading-tight">
                     {link.title}

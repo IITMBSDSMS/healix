@@ -53,6 +53,18 @@ export async function getAdminData() {
       supabase.from("biolab_innovators").select("*").order("created_at", { ascending: false })
     ]);
 
+    let healixNewsRes: any = { data: [] };
+    try {
+      const res = await supabase.from("healix_news_articles").select("*").order("created_at", { ascending: false });
+      if (res.error) {
+        console.warn("healix_news_articles table fetch error, using empty array:", res.error.message);
+      } else {
+        healixNewsRes = res;
+      }
+    } catch (e) {
+      console.warn("healix_news_articles fetch failed, using fallback:", e);
+    }
+
     return {
       applications: appsRes.data || [],
       projects: projRes.data || [],
@@ -68,7 +80,8 @@ export async function getAdminData() {
       sos_alerts: sosRes.data || [],
       session_photos: sessionRes.data || [],
       publications: pubsRes.data || [],
-      innovators: innovatorsRes.data || []
+      innovators: innovatorsRes.data || [],
+      healix_news: healixNewsRes.data || []
     };
   } catch (err: any) {
     console.error("Exception in getAdminData:", err);
@@ -178,6 +191,7 @@ export async function addBiolabEvent(formData: FormData) {
   const speaker = formData.get("speaker") as string || "Research Fellow";
   const speaker_role = formData.get("speaker_role") as string || "BioLabs Faculty Advisor";
   const seats_left = parseInt(formData.get("seats_left") as string || "15", 10);
+  const register_url = formData.get("register_url") as string || "";
   
   if (!title || !rawDescription || !image_url || !start_date || !end_date) 
     return { error: "All fields required" };
@@ -187,7 +201,8 @@ export async function addBiolabEvent(formData: FormData) {
     category,
     speaker,
     speaker_role,
-    seats_left
+    seats_left,
+    register_url
   };
   const description = JSON.stringify(descObj);
     
@@ -211,6 +226,35 @@ export async function deleteBiolabEvent(id: string) {
   revalidatePath("/admin");
   revalidatePath("/biolabs");
   revalidatePath("/events");
+  return { success: true };
+}
+
+export async function updateBiolabEvent(id: string, formData: FormData) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+  const title = formData.get("title") as string;
+  const rawDescription = formData.get("description") as string;
+  const image_url = formData.get("image_url") as string;
+  const start_date = formData.get("start_date") as string;
+  const end_date = formData.get("end_date") as string;
+  const category = formData.get("category") as string || "Academic Workshops";
+  const speaker = formData.get("speaker") as string || "Research Fellow";
+  const speaker_role = formData.get("speaker_role") as string || "BioLabs Faculty Advisor";
+  const seats_left = parseInt(formData.get("seats_left") as string || "15", 10);
+  const register_url = formData.get("register_url") as string || "";
+  if (!title || !start_date || !end_date) return { error: "Title and dates required" };
+  const descObj = { description: rawDescription, category, speaker, speaker_role, seats_left, register_url };
+  const description = JSON.stringify(descObj);
+  const { error } = await supabase.from("biolab_events").update({
+    title, description, image_url,
+    start_date: new Date(start_date).toISOString(),
+    end_date: new Date(end_date).toISOString()
+  }).eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin");
+  revalidatePath("/biolabs");
+  revalidatePath("/events");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -486,3 +530,162 @@ export async function deleteBiolabInnovator(id: string) {
   revalidatePath("/biolabs");
   return { success: true };
 }
+
+export async function getLiveFeedSettings() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("academy_live_feed")
+      .select("*")
+      .eq("id", "main_session")
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "42P01") {
+        return {
+          data: {
+            id: "main_session",
+            tag: "Live Session • Healix Academy",
+            title: "Interactive Research & learning Discussion in Progress",
+            subtitle: "Healix main auditorium / Session ID: HSF-ACAD-2026",
+            image_url: "/academy-classroom.jpg"
+          },
+          tableExists: false
+        };
+      }
+      return { error: error.message };
+    }
+
+    if (!data) {
+      return {
+        data: {
+          id: "main_session",
+          tag: "Live Session • Healix Academy",
+          title: "Interactive Research & learning Discussion in Progress",
+          subtitle: "Healix main auditorium / Session ID: HSF-ACAD-2026",
+          image_url: "/academy-classroom.jpg"
+        },
+        tableExists: true
+      };
+    }
+
+    return { data, tableExists: true };
+  } catch (err: any) {
+    return { error: err.message || String(err) };
+  }
+}
+
+export async function updateLiveFeedSettings(tag: string, title: string, subtitle: string, image_url: string) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("academy_live_feed")
+    .upsert({
+      id: "main_session",
+      tag,
+      title,
+      subtitle,
+      image_url,
+      updated_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "42P01") {
+      return { error: "Database table 'academy_live_feed' does not exist. Please run the SQL migration script in your Supabase SQL Editor to enable dynamic updates.", tableMissing: true };
+    }
+    return { error: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { success: true, data };
+}
+
+export async function addHealixNewsArticle(formData: FormData) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+  const title = formData.get("title") as string;
+  const category = formData.get("category") as string || "ANNOUNCEMENT";
+  const date = formData.get("date") as string || new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+  const author = formData.get("author") as string || "Healix Press Team";
+  const desc_content = formData.get("desc_content") as string;
+  const image_url = formData.get("image_url") as string;
+  const link_url = formData.get("link_url") as string || "#";
+
+  if (!title || !desc_content || !image_url) 
+    return { error: "Title, Description, and Image are required" };
+
+  const { error } = await supabase.from("healix_news_articles").insert({
+    title,
+    category,
+    date,
+    author,
+    desc_content,
+    image_url,
+    link_url
+  });
+
+  if (error) {
+    if (error.code === "42P01") {
+       return { error: "Database table 'healix_news_articles' does not exist. Please run the SQL migration script (setup_news_articles.sql) in your Supabase SQL Editor." };
+    }
+    return { error: error.message };
+  }
+  revalidatePath("/admin");
+  revalidatePath("/news");
+  return { success: true };
+}
+
+export async function updateHealixNewsArticle(id: string, formData: FormData) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+  const title = formData.get("title") as string;
+  const category = formData.get("category") as string;
+  const date = formData.get("date") as string;
+  const author = formData.get("author") as string;
+  const desc_content = formData.get("desc_content") as string;
+  const image_url = formData.get("image_url") as string;
+  const link_url = formData.get("link_url") as string;
+
+  if (!title || !desc_content || !image_url) 
+    return { error: "Title, Description, and Image are required" };
+
+  const { error } = await supabase.from("healix_news_articles").update({
+    title,
+    category,
+    date,
+    author,
+    desc_content,
+    image_url,
+    link_url
+  }).eq("id", id);
+
+  if (error) {
+    if (error.code === "42P01") {
+       return { error: "Database table 'healix_news_articles' does not exist. Please run the SQL migration script (setup_news_articles.sql) in your Supabase SQL Editor." };
+    }
+    return { error: error.message };
+  }
+  revalidatePath("/admin");
+  revalidatePath("/news");
+  return { success: true };
+}
+
+export async function deleteHealixNewsArticle(id: string) {
+  if (!(await checkIsAdmin())) return { error: "Unauthorized" };
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("healix_news_articles").delete().eq("id", id);
+  if (error) {
+    if (error.code === "42P01") {
+       return { error: "Database table 'healix_news_articles' does not exist. Please run the SQL migration script (setup_news_articles.sql) in your Supabase SQL Editor." };
+    }
+    return { error: error.message };
+  }
+  revalidatePath("/admin");
+  revalidatePath("/news");
+  return { success: true };
+}
+

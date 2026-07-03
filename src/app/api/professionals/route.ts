@@ -7,32 +7,70 @@ export const dynamic = "force-dynamic";
 export const DEFAULT_PROFESSIONALS = [
   {
     id: "p1",
-    name: "Dr. Rajesh Kumar",
-    role: "Senior Cardiologist",
-    institution: "AIIMS Delhi",
-    photo_url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
-    description: "Leading cardiovascular specialist with over 15 years of experience in clinical diagnostics and edge safety telemetry integration for rural health outreach programs.",
+    name: "Dr. Samir K Kalra",
+    role: "Senior Neuro & Spine Surgeon",
+    institution: "Shri Gangaram Hospital",
+    photo_url: "/dr_samir_kalra.png",
+    description: "Leading Neurosurgeon specialist with over so many years of experience in clinical diagnostics and edge safety telemetry integration for rural health outreach programs.",
+    qualifications: [
+      "MBBS, MS, MCh (Neurosurgery)",
+      "Fellowship in Advanced Spine Surgery"
+    ],
+    hospital_name: "SHRI GANGARAM HOSPITAL",
+    hospital_image: "/hospital_gangaram.png",
+    hospital_location: "New Delhi, India",
     display_order: 0,
     active: true
   },
   {
     id: "p2",
-    name: "Dr. Priya Sharma",
-    role: "Professor of Genomics",
-    institution: "IIT Madras Research Park",
-    photo_url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
-    description: "Academic researcher specializing in CRISPR gene drive modeling and distributed laboratory sequence analysis frameworks for predicting genetic mutation metrics.",
+    name: "Dr. Rajesh Kumar",
+    role: "Senior Cardiologist",
+    institution: "AIIMS Delhi",
+    photo_url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
+    description: "Leading cardiovascular specialist with over 15 years of experience in clinical diagnostics and edge safety telemetry integration for rural health outreach programs.",
+    qualifications: [
+      "MBBS, MD, DM (Cardiology)",
+      "Fellow of American College of Cardiology (FACC)"
+    ],
+    hospital_name: "AIIMS Delhi",
+    hospital_image: "https://upload.wikimedia.org/wikipedia/commons/b/b2/AIIMS_DELHI.jpg",
+    hospital_location: "New Delhi, India",
     display_order: 1,
     active: true
   },
   {
     id: "p3",
+    name: "Dr. Priya Sharma",
+    role: "Professor of Genomics",
+    institution: "IIT Madras Research Park",
+    photo_url: "https://images.unsplash.com/photo-1594824813573-246434de83fb?q=80&w=400&auto=format&fit=crop",
+    description: "Academic researcher specializing in CRISPR gene drive modeling and distributed laboratory sequence analysis frameworks for predicting genetic mutation metrics.",
+    qualifications: [
+      "B.Tech (Biotech), MS (Genomics)",
+      "Ph.D. in CRISPR Gene Drive Modeling"
+    ],
+    hospital_name: "IIT Madras Research Park",
+    hospital_image: "https://upload.wikimedia.org/wikipedia/commons/2/23/IIT_Madras_campus_main_gate.jpg",
+    hospital_location: "Chennai, India",
+    display_order: 2,
+    active: true
+  },
+  {
+    id: "p4",
     name: "Dr. Amit Patel",
     role: "Director of Public Health",
     institution: "IIT Bombay Health Center",
     photo_url: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop",
     description: "Pioneering researcher focused on low-latency IoT health monitoring streams and developing indigenous community safety systems in collaboration with municipal corporations.",
-    display_order: 2,
+    qualifications: [
+      "MBBS, MD (Community Medicine)",
+      "Fellowship in Epidemiology & Public Health"
+    ],
+    hospital_name: "IIT Bombay Health Center",
+    hospital_image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Main_building_in_IIT_Bombay.jpg",
+    hospital_location: "Mumbai, India",
+    display_order: 3,
     active: true
   }
 ];

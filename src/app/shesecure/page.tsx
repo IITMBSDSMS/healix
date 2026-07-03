@@ -73,24 +73,32 @@ export default function SheSecurePage() {
   // Initial Data Fetch
   useEffect(() => {
     const fetchData = async () => {
-      const supabase = createClient();
-      await supabase.auth.getSession();
-      const fetchedContacts = await getContacts();
-      const fetchedTrips = await getTripHistory();
-      const fetchedPhotos = await getSessionPhotos();
-      const courses = await getCourses();
-      setContacts(fetchedContacts);
-      setTripHistory(fetchedTrips);
-      setAcademyCourses(courses);
-      
-      // Merge local storage photos for mock/demo mode
-      let allPhotos = [...fetchedPhotos];
-      if (typeof window !== 'undefined') {
-        const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
-        allPhotos = [...localPhotos, ...allPhotos];
+      try {
+        const supabase = createClient();
+        try {
+          await supabase.auth.getSession();
+        } catch (authErr) {
+          console.warn("Auth session check failed in SheSecure:", authErr);
+        }
+        const fetchedContacts = await getContacts();
+        const fetchedTrips = await getTripHistory();
+        const fetchedPhotos = await getSessionPhotos();
+        const courses = await getCourses();
+        setContacts(fetchedContacts);
+        setTripHistory(fetchedTrips);
+        setAcademyCourses(courses);
+        
+        // Merge local storage photos for mock/demo mode
+        let allPhotos = [...fetchedPhotos];
+        if (typeof window !== 'undefined') {
+          const localPhotos = JSON.parse(localStorage.getItem('healix_mock_photos') || '[]');
+          allPhotos = [...localPhotos, ...allPhotos];
+        }
+        
+        if (allPhotos.length > 0) setDbSessionPhotos(allPhotos);
+      } catch (err) {
+        console.error("Error fetching initial data in SheSecure:", err);
       }
-      
-      if (allPhotos.length > 0) setDbSessionPhotos(allPhotos);
     };
     fetchData();
   }, [router]);

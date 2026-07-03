@@ -11,7 +11,7 @@ export const DEFAULT_FOUNDERS = [
     name: "Avnish",
     role: "Founder & CEO",
     quote: "Precision health data infrastructure is the foundation of modern clinical safety and AI diagnostics. At Healix, we are commoditizing the complex engineering required to unify fragmented health datasets so innovators can build clinical products at scale.",
-    photo_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    photo_url: "/founder_avnish.jpg",
     display_order: 0,
     active: true
   },
@@ -20,25 +20,25 @@ export const DEFAULT_FOUNDERS = [
     name: "Debraghya Bag",
     role: "Co-Founder & Chief Medical Officer (CMO)",
     quote: "Precision medicine starts with precise data engineering. Ensuring scientific credibility, medical correctness, and healthcare system reliability is not a post-hoc check—it is built into every telemetry model we run at Healix.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+    photo_url: "/debarghya.png",
     display_order: 1,
     active: true
   },
   {
     id: "f3",
-    name: "Mahima Sharma",
+    name: "Divya Pasam",
     role: "COO",
     quote: "Reliability is not a feature; it is the core foundation. Scaling operations, securing strategic partnerships, and building sustainable ecosystem networks are key to translating Healix's clinical tech into tangible community outcomes.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+    photo_url: "/coo_divya.png",
     display_order: 2,
     active: true
   },
   {
     id: "f4",
-    name: "Sudiksha Sharma",
-    role: "Behavioral Psychology & Human Systems Strategist",
-    quote: "Technology must serve the human experience. Designing healthcare systems that people emotionally trust, feel safe using, and find reassuring is critical for securing widespread public health adoption.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    name: "Kaveri Gupta",
+    role: "Associate COO",
+    quote: "Operational efficiency and strategic alignment are the backbones of healthcare innovation. We build robust workflows that allow clinical teams, engineers, and partners to execute our vision with speed and safety.",
+    photo_url: "/member_kaveri.png",
     display_order: 3,
     active: true
   }

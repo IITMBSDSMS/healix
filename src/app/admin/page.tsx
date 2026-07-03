@@ -12,23 +12,25 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
 import { 
-  Shield, TestTube, Car, Trash2, CheckCircle, XCircle, Plus, Globe,
+  Shield, TestTube, Car, Trash2, CheckCircle, XCircle, Plus, Globe, Newspaper,
   LayoutDashboard, Activity, Server, Cpu, Database, MapPin, AlertTriangle, Users, 
   Download, Link as LinkIcon, Image as ImageIcon, FileText, Megaphone, Calendar, 
   GraduationCap, PlayCircle, Eye, EyeOff, Edit3, X, Check, Upload, Loader2, ArrowUpRight, 
   DollarSign, BookOpen, Star, Book, UserPlus, Code2, Link2, MessageCircle, RefreshCw, 
   Battery, Signal, Zap, ShieldAlert, Play, Square, ExternalLink, Copy, Smartphone,
-  ChevronUp, ChevronDown, Quote, GripVertical
+  ChevronUp, ChevronDown, Quote, GripVertical, Tv, Menu
 } from "lucide-react";
 
 import { 
   getAdminData, updateApplicationStatus, deleteProject, updateProjectProgress, addVehicle, deleteVehicle,
-  addBiolabPhoto, deleteBiolabPhoto, addBiolabEvent, deleteBiolabEvent, 
+  addBiolabPhoto, deleteBiolabPhoto, addBiolabEvent, deleteBiolabEvent, updateBiolabEvent,
   addBiolabAnnouncement, deleteBiolabAnnouncement, addBiolabNews, deleteBiolabNews,
   addBiolabProgram, deleteBiolabProgram, addReel, deleteReel,
   addSessionPhoto, deleteSessionPhoto,
   addBiolabPublication, deleteBiolabPublication,
-  addBiolabInnovator, deleteBiolabInnovator
+  addBiolabInnovator, deleteBiolabInnovator,
+  getLiveFeedSettings, updateLiveFeedSettings,
+  addHealixNewsArticle, updateHealixNewsArticle, deleteHealixNewsArticle
 } from "./actions";
 
 import { getCourses, getMentors } from "@/lib/academy/db";
@@ -117,6 +119,10 @@ const EMPTY_PROFESSIONAL = {
   institution: "",
   photo_url: "",
   description: "",
+  qualifications: "",
+  hospital_name: "",
+  hospital_location: "",
+  hospital_image: "",
   display_order: 0,
   active: true,
 };
@@ -143,13 +149,30 @@ const EMPTY_ENGINEER = {
   active: true,
 };
 
-
+const EMPTY_AMBASSADOR = {
+  name: "",
+  role: "",
+  institution: "",
+  logo_url: "",
+  email: "",
+  phone: "",
+  address: "",
+  quote: "",
+  photo_url: "",
+  accent_color: "#0B4A9E",
+  accent_color_sec: "#E60717",
+  display_order: 0,
+  active: true,
+};
 
 export default function UnifiedAdminDashboard() {
   const router = useRouter();
   
   // Master active tab state
-  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "suraksha" | "academy" | "mentors" | "team" | "founders" | "network" | "podcasts" | "branding" | "reels" | "system">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "biolabs" | "suraksha" | "academy" | "mentors" | "team" | "founders" | "network" | "podcasts" | "branding" | "reels" | "system" | "events" | "news" | "members">("overview");
+
+  // Mobile sidebar drawer state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   
   const [data, setData] = useState<any>(null);
@@ -164,7 +187,7 @@ export default function UnifiedAdminDashboard() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["overview", "biolabs", "suraksha", "academy", "mentors", "team", "founders", "network", "podcasts", "branding", "reels", "system"].includes(tabParam)) {
+      if (tabParam && ["overview", "biolabs", "suraksha", "academy", "mentors", "team", "founders", "network", "podcasts", "branding", "reels", "system", "events", "members"].includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
     }
@@ -179,7 +202,7 @@ export default function UnifiedAdminDashboard() {
   const [qrModal, setQrModal] = useState<{ deviceId: string; vehicleReg: string; driverName: string } | null>(null);
 
   // ─── 2. ACADEMY CRM STATES ───
-  const [academyActiveTab, setAcademyActiveTab] = useState<"dashboard" | "courses" | "mentors">("dashboard");
+  const [academyActiveTab, setAcademyActiveTab] = useState<"dashboard" | "courses" | "mentors" | "events" | "live-feed">("dashboard");
   const [academyCourses, setAcademyCourses] = useState<any[]>([]);
   const [academyMentors, setAcademyMentors] = useState<any[]>([]);
   const [showAcademyMentorModal, setShowAcademyMentorModal] = useState(false);
@@ -199,6 +222,40 @@ export default function UnifiedAdminDashboard() {
     companies: "",
     bio: ""
   });
+
+  // ─── 2.5 ACADEMY LIVE FEED STATES ───
+  const [liveFeedTag, setLiveFeedTag] = useState("Live Session \u2022 Healix Academy");
+  const [liveFeedTitle, setLiveFeedTitle] = useState("Interactive Research & learning Discussion in Progress");
+  const [liveFeedSubtitle, setLiveFeedSubtitle] = useState("Healix main auditorium / Session ID: HSF-ACAD-2026");
+  const [liveFeedImageUrl, setLiveFeedImageUrl] = useState("/academy-classroom.jpg");
+  const [liveFeedDragOver, setLiveFeedDragOver] = useState(false);
+  const [liveFeedUploading, setLiveFeedUploading] = useState(false);
+  const [liveFeedSaving, setLiveFeedSaving] = useState(false);
+  const [liveFeedTableExists, setLiveFeedTableExists] = useState(true);
+  const liveFeedFileRef = React.useRef<HTMLInputElement>(null);
+
+  // ─── 2.6 UPCOMING EVENTS EDITOR STATES ───
+  const EMPTY_EVENT_FORM = {
+    title: "",
+    description: "",
+    speaker: "",
+    speaker_role: "",
+    category: "Academic Workshops",
+    seats_left: "30",
+    start_date: "",
+    end_date: "",
+    image_url: "",
+    register_url: "",
+  };
+  const [eventsData, setEventsData] = useState<any[]>([]);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [eventForm, setEventForm] = useState(EMPTY_EVENT_FORM);
+  const [eventImageUrl, setEventImageUrl] = useState("");
+  const [eventImageDragOver, setEventImageDragOver] = useState(false);
+  const [eventImageUploading, setEventImageUploading] = useState(false);
+  const [eventSaving, setEventSaving] = useState(false);
+  const eventImageRef = React.useRef<HTMLInputElement>(null);
 
   // ─── 3. CORPORATE MENTORS CRUD STATES ───
   const [corpMentors, setCorpMentors] = useState<any[]>([]);
@@ -251,6 +308,7 @@ export default function UnifiedAdminDashboard() {
   const [professionalForm, setProfessionalForm] = useState(EMPTY_PROFESSIONAL);
   const [professionalSubmitting, setProfessionalSubmitting] = useState(false);
   const [professionalUploadingFor, setProfessionalUploadingFor] = useState<string | null>(null);
+  const [professionalHospitalUploadingFor, setProfessionalHospitalUploadingFor] = useState<string | null>(null);
   const [professionalDbAlert, setProfessionalDbAlert] = useState(false);
 
   // ─── 3.10 GLOBAL NETWORK FACILITIES & ENGINEERS CRUD STATES ───
@@ -262,6 +320,7 @@ export default function UnifiedAdminDashboard() {
   const [facilityUploadingFor, setFacilityUploadingFor] = useState<string | null>(null);
   const [mentorUploadingFor, setMentorUploadingFor] = useState<{facilityId: string, index: number} | null>(null);
   const [facilityDbAlert, setFacilityDbAlert] = useState(false);
+  const [facilityModalUploading, setFacilityModalUploading] = useState(false);
 
   const [engineersList, setEngineersList] = useState<any[]>([]);
   const [showEngineerForm, setShowEngineerForm] = useState(false);
@@ -271,8 +330,23 @@ export default function UnifiedAdminDashboard() {
   const [engineerUploadingFor, setEngineerUploadingFor] = useState<string | null>(null);
   const [engineerDbAlert, setEngineerDbAlert] = useState(false);
 
-  // Active sub-tab under network: "professionals" | "facilities" | "engineers"
-  const [networkSubTab, setNetworkSubTab] = useState<"professionals" | "facilities" | "engineers">("professionals");
+  // Active sub-tab under network: "facilities" | "engineers"
+  const [networkSubTab, setNetworkSubTab] = useState<"facilities" | "engineers">("facilities");
+
+  // Active sub-tab under members: "ambassadors" | "professionals"
+  const [membersSubTab, setMembersSubTab] = useState<"ambassadors" | "professionals">("ambassadors");
+
+  // ─── 3.11 GLOBAL NETWORK AMBASSADORS CRUD STATES ───
+  const [ambassadorsList, setAmbassadorsList] = useState<any[]>([]);
+  const [showAmbassadorForm, setShowAmbassadorForm] = useState(false);
+  const [editingAmbassadorId, setEditingAmbassadorId] = useState<string | null>(null);
+  const [ambassadorForm, setAmbassadorForm] = useState<any>(EMPTY_AMBASSADOR);
+  const [ambassadorSubmitting, setAmbassadorSubmitting] = useState(false);
+  const [ambassadorUploadingFor, setAmbassadorUploadingFor] = useState<string | null>(null);
+  const [ambassadorLogoUploadingFor, setAmbassadorLogoUploadingFor] = useState<string | null>(null);
+  const [ambassadorDragId, setAmbassadorDragId] = useState<string | null>(null);
+  const [ambassadorDragOverId, setAmbassadorDragOverId] = useState<string | null>(null);
+  const [ambassadorDbAlert, setAmbassadorDbAlert] = useState(false);
 
 
 
@@ -308,6 +382,161 @@ export default function UnifiedAdminDashboard() {
   const [pubImagePreview, setPubImagePreview] = useState<string | null>(null);
   const pubPhotoRef = React.useRef<HTMLInputElement>(null);
 
+  // ─── HEALIX NEWS ARTICLES STATES ───
+  const [newsSearch, setNewsSearch] = useState("");
+  const [editingNewsArticle, setEditingNewsArticle] = useState<any | null>(null);
+  const [newsPhotoDragOver, setNewsPhotoDragOver] = useState(false);
+  const [newsPhotoPreview, setNewsPhotoPreview] = useState<string | null>(null);
+  const [newsPhotoUploading, setNewsPhotoUploading] = useState(false);
+  const newsPhotoRef = React.useRef<HTMLInputElement>(null);
+
+  // Form states for creating/editing news
+  const [newsTitle, setNewsTitle] = useState("");
+  const [newsCategory, setNewsCategory] = useState("ANNOUNCEMENT");
+  const [newsDate, setNewsDate] = useState("");
+  const [newsAuthor, setNewsAuthor] = useState("Healix Press Team");
+  const [newsDescContent, setNewsDescContent] = useState("");
+  const [newsLinkUrl, setNewsLinkUrl] = useState("#");
+
+  const handleNewsPhotoUpload = async (file: File) => {
+    if (!file) return;
+    setNewsPhotoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/news/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        setNewsPhotoPreview(data.url);
+        showToast("Photo uploaded successfully!");
+      } else {
+        showToast(data.error ?? "Photo upload failed", "err");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Upload failed", "err");
+    } finally {
+      setNewsPhotoUploading(false);
+    }
+  };
+
+  const handleNewsPhotoDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setNewsPhotoDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      await handleNewsPhotoUpload(file);
+    } else {
+      showToast("Please drop an image file", "err");
+    }
+  };
+
+  const handleSubmitNews = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("title", newsTitle);
+    formData.append("category", newsCategory);
+    formData.append("date", newsDate || new Date().toLocaleString('default', { month: 'long', year: 'numeric' }));
+    formData.append("author", newsAuthor);
+    formData.append("desc_content", newsDescContent);
+    formData.append("image_url", newsPhotoPreview || "");
+    formData.append("link_url", newsLinkUrl);
+
+    let res;
+    if (editingNewsArticle) {
+      res = await updateHealixNewsArticle(editingNewsArticle.id, formData);
+    } else {
+      res = await addHealixNewsArticle(formData);
+    }
+
+    if (res.error) {
+      if (res.error.includes("Database table 'healix_news_articles' does not exist")) {
+        // Table doesn't exist, use localStorage fallback!
+        const localNews = JSON.parse(localStorage.getItem('healix_news') || '[]');
+        if (editingNewsArticle) {
+          const updated = localNews.map((n: any) => {
+            if (n.id === editingNewsArticle.id) {
+              return {
+                id: n.id,
+                title: newsTitle,
+                category: newsCategory,
+                date: newsDate || new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+                author: newsAuthor,
+                desc_content: newsDescContent,
+                image_url: newsPhotoPreview || "",
+                link_url: newsLinkUrl,
+                created_at: n.created_at || new Date().toISOString()
+              };
+            }
+            return n;
+          });
+          localStorage.setItem('healix_news', JSON.stringify(updated));
+          showToast("Article updated in local storage fallback!");
+        } else {
+          const newArticle = {
+            id: 'local-' + Date.now(),
+            title: newsTitle,
+            category: newsCategory,
+            date: newsDate || new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+            author: newsAuthor,
+            desc_content: newsDescContent,
+            image_url: newsPhotoPreview || "",
+            link_url: newsLinkUrl,
+            created_at: new Date().toISOString()
+          };
+          localStorage.setItem('healix_news', JSON.stringify([newArticle, ...localNews]));
+          showToast("Article created in local storage fallback!");
+        }
+        
+        // Reset form
+        setEditingNewsArticle(null);
+        setNewsTitle("");
+        setNewsCategory("ANNOUNCEMENT");
+        setNewsDate("");
+        setNewsAuthor("Healix Press Team");
+        setNewsDescContent("");
+        setNewsLinkUrl("#");
+        setNewsPhotoPreview(null);
+        fetchData();
+      } else {
+        showToast(res.error, "err");
+      }
+    } else {
+      showToast(editingNewsArticle ? "Article updated successfully!" : "Article created successfully!");
+      // Reset form
+      setEditingNewsArticle(null);
+      setNewsTitle("");
+      setNewsCategory("ANNOUNCEMENT");
+      setNewsDate("");
+      setNewsAuthor("Healix Press Team");
+      setNewsDescContent("");
+      setNewsLinkUrl("#");
+      setNewsPhotoPreview(null);
+      fetchData();
+    }
+  };
+
+  const handleEditNewsClick = (article: any) => {
+    setEditingNewsArticle(article);
+    setNewsTitle(article.title);
+    setNewsCategory(article.category);
+    setNewsDate(article.date);
+    setNewsAuthor(article.author);
+    setNewsDescContent(article.desc_content);
+    setNewsLinkUrl(article.link_url);
+    setNewsPhotoPreview(article.image_url);
+  };
+
+  const handleCancelNewsEdit = () => {
+    setEditingNewsArticle(null);
+    setNewsTitle("");
+    setNewsCategory("ANNOUNCEMENT");
+    setNewsDate("");
+    setNewsAuthor("Healix Press Team");
+    setNewsDescContent("");
+    setNewsLinkUrl("#");
+    setNewsPhotoPreview(null);
+  };
+
   const showToast = (msg: string, type: "ok" | "err" = "ok") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
@@ -333,6 +562,14 @@ export default function UnifiedAdminDashboard() {
           if (localPubs.length > 0) {
             res.publications = [...localPubs, ...(res.publications || [])];
           }
+          // Merge local healix news fallback
+          const localNews = JSON.parse(localStorage.getItem('healix_news') || '[]');
+          if (localNews.length > 0) {
+            res.healix_news = [
+              ...localNews,
+              ...((res.healix_news || []).filter((dbn: any) => !localNews.find((ln: any) => ln.id === dbn.id)))
+            ];
+          }
           // Merge local innovators fallback
           const localInnovators = JSON.parse(localStorage.getItem('healix_innovators') || '[]');
           const serverInnovators = res.innovators || [];
@@ -357,6 +594,33 @@ export default function UnifiedAdminDashboard() {
         setAcademyMentors(mentorsData);
       } catch (academyErr) {
         console.warn("Academy data unavailable, using defaults:", academyErr);
+      }
+
+      // Load academy live feed settings (isolated)
+      try {
+        const lfRes = await getLiveFeedSettings();
+        if (lfRes.data) {
+          setLiveFeedTag(lfRes.data.tag || "Live Session \u2022 Healix Academy");
+          setLiveFeedTitle(lfRes.data.title || "Interactive Research & learning Discussion in Progress");
+          setLiveFeedSubtitle(lfRes.data.subtitle || "Healix main auditorium / Session ID: HSF-ACAD-2026");
+          setLiveFeedImageUrl(lfRes.data.image_url || "/academy-classroom.jpg");
+          setLiveFeedTableExists(lfRes.tableExists !== false);
+        }
+      } catch (lfErr) {
+        console.warn("Live feed settings unavailable, using defaults:", lfErr);
+      }
+
+      // Load upcoming events (for admin editing)
+      try {
+        const supabaseClient = createClient();
+        const { data: evData } = await supabaseClient
+          .from("biolab_events")
+          .select("*")
+          .order("start_date", { ascending: true })
+          .limit(20);
+        if (evData) setEventsData(evData);
+      } catch (evErr) {
+        console.warn("Events fetch unavailable:", evErr);
       }
 
       // Load Suraksha data (isolated)
@@ -405,8 +669,10 @@ export default function UnifiedAdminDashboard() {
       // Load global facilities
       setFacilitiesList(await fetchSafeList("/api/facilities?all=true"));
 
-      // Load global engineers
       setEngineersList(await fetchSafeList("/api/engineers?all=true"));
+
+      // Load global ambassadors
+      setAmbassadorsList(await fetchSafeList("/api/ambassadors?all=true"));
 
 
 
@@ -419,30 +685,40 @@ export default function UnifiedAdminDashboard() {
   };
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(() => {
-      fetchData();
-    });
+    fetchData();
 
-    // Realtime Suraksha sub triggers
-    const channel = supabase
-      .channel("unified_suraksha_changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "iot_devices" }, fetchData)
-      .on("postgres_changes", { event: "*", schema: "public", table: "failsafe_events" }, fetchData)
-      .on("postgres_changes", { event: "*", schema: "public", table: "incident_reports" }, (payload) => {
-        fetchData();
-        if (payload.eventType === 'INSERT' && payload.new.type === 'SOS') {
-          setGlobalAlert({ deviceId: payload.new.device_id, description: payload.new.description });
-          setAlarmPlaying(true);
-          setTimeout(() => setAlarmPlaying(false), 4000); 
-          setActiveTab("suraksha"); 
-          setSurakshaActiveTab("map");
-        }
-      })
-      .subscribe();
+    let channel: any = null;
+    let supabase: any = null;
+    try {
+      supabase = createClient();
+      // Realtime Suraksha sub triggers
+      channel = supabase
+        .channel("unified_suraksha_changes")
+        .on("postgres_changes", { event: "*", schema: "public", table: "iot_devices" }, fetchData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "failsafe_events" }, fetchData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "incident_reports" }, (payload: any) => {
+          fetchData();
+          if (payload.eventType === 'INSERT' && payload.new.type === 'SOS') {
+            setGlobalAlert({ deviceId: payload.new.device_id, description: payload.new.description });
+            setAlarmPlaying(true);
+            setTimeout(() => setAlarmPlaying(false), 4000); 
+            setActiveTab("suraksha"); 
+            setSurakshaActiveTab("map");
+          }
+        })
+        .subscribe();
+    } catch (realtimeErr) {
+      console.warn("Supabase realtime channel subscription failed:", realtimeErr);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && supabase) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (err) {
+          console.warn("Failed to remove Supabase realtime channel:", err);
+        }
+      }
     };
   }, []);
 
@@ -1546,6 +1822,238 @@ export default function UnifiedAdminDashboard() {
     }
   };
 
+  // ─── GLOBAL NETWORK AMBASSADORS CRUD HANDLERS ───
+  const handleAmbassadorDragReorder = async (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    if (draggedId.startsWith("amb-fallback-") || targetId.startsWith("amb-fallback-")) {
+      showToast("Reordering is only enabled for database records. Run SQL schema first.", "err");
+      return;
+    }
+    const ordered = [...ambassadorsList].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+    const dragIdx = ordered.findIndex(m => m.id === draggedId);
+    const targetIdx = ordered.findIndex(m => m.id === targetId);
+    if (dragIdx === -1 || targetIdx === -1) return;
+    const reordered = [...ordered];
+    const [dragged] = reordered.splice(dragIdx, 1);
+    reordered.splice(targetIdx, 0, dragged);
+    // Optimistic update
+    setAmbassadorsList(reordered.map((m, i) => ({ ...m, display_order: i })));
+    // Persist each updated order
+    try {
+      await Promise.all(
+        reordered.map((m, i) =>
+          fetch(`/api/ambassadors/${m.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ display_order: i }),
+          })
+        )
+      );
+      showToast("Order saved!", "ok");
+      fetchData();
+    } catch (err: any) {
+      showToast("Failed to save reorder: " + err.message, "err");
+    }
+  };
+
+  const openAmbassadorAddForm = () => {
+    setEditingAmbassadorId(null);
+    setAmbassadorForm({ ...EMPTY_AMBASSADOR, display_order: ambassadorsList.length });
+    setShowAmbassadorForm(true);
+    setAmbassadorDbAlert(false);
+  };
+
+  const openAmbassadorEditForm = (a: any) => {
+    setEditingAmbassadorId(a.id);
+    setAmbassadorForm({
+      name: a.name || "",
+      role: a.role || "",
+      institution: a.institution || "",
+      logo_url: a.logo_url || "",
+      email: a.email || "",
+      phone: a.phone || "",
+      address: a.address || "",
+      quote: a.quote || "",
+      photo_url: a.photo_url || "",
+      accent_color: a.accent_color || "#0B4A9E",
+      accent_color_sec: a.accent_color_sec || "#E60717",
+      display_order: a.display_order || 0,
+      active: a.active ?? true,
+    });
+    setShowAmbassadorForm(true);
+    setAmbassadorDbAlert(false);
+  };
+
+  const handleAmbassadorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAmbassadorSubmitting(true);
+    try {
+      const method = editingAmbassadorId ? "PUT" : "POST";
+      const url = editingAmbassadorId ? `/api/ambassadors/${editingAmbassadorId}` : "/api/ambassadors";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ambassadorForm),
+      });
+      
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          setAmbassadorDbAlert(true);
+          throw new Error(resData.message || "Ambassadors table does not exist.");
+        }
+        throw new Error(resData.error || "Failed to save ambassador details");
+      }
+      
+      showToast(editingAmbassadorId ? "Ambassador details updated!" : "New ambassador registered!");
+      setShowAmbassadorForm(false);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to save ambassador details", "err");
+    } finally {
+      setAmbassadorSubmitting(false);
+    }
+  };
+
+  const handleAmbassadorDelete = async (id: string, name: string) => {
+    if (id.startsWith("amb-fallback-")) {
+      showToast("Cannot delete fallback ambassadors. Run SQL schema to enable database edits.", "err");
+      return;
+    }
+    if (!confirm(`Delete brand ambassador "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/ambassadors/${id}`, { method: "DELETE" });
+      const resData = await res.json();
+      if (!res.ok) {
+        if (resData.error === "DB_TABLE_MISSING") {
+          showToast("Ambassadors table does not exist. Run schema SQL first.", "err");
+          return;
+        }
+        throw new Error(resData.error || "Failed to delete ambassador");
+      }
+      showToast(`"${name}" removed successfully.`);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "err");
+    }
+  };
+
+  const toggleAmbassadorActive = async (a: any) => {
+    if (a.id.startsWith("amb-fallback-")) {
+      showToast("Cannot toggle fallback ambassadors. Run SQL schema to enable database updates.", "err");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/ambassadors/${a.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !a.active }),
+      });
+      if (!res.ok) throw new Error("Failed to update ambassador state");
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Toggle failed", "err");
+    }
+  };
+
+  const moveAmbassadorOrder = async (a: any, dir: "up" | "down") => {
+    if (a.id.startsWith("amb-fallback-")) {
+      showToast("Reordering is only enabled for database records. Run SQL schema first.", "err");
+      return;
+    }
+    const newOrder = dir === "up" ? a.display_order - 1 : a.display_order + 1;
+    try {
+      const res = await fetch(`/api/ambassadors/${a.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_order: newOrder }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update order");
+      }
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update order", "err");
+    }
+  };
+
+  const handleAmbassadorPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, id: string, uploadType: "photo" | "logo") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await processAmbassadorAssetUpload(file, id, uploadType);
+  };
+
+  const handleAmbassadorPhotoDrop = async (e: React.DragEvent<HTMLDivElement>, id: string, uploadType: "photo" | "logo") => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    await processAmbassadorAssetUpload(file, id, uploadType);
+  };
+
+  const processAmbassadorAssetUpload = async (file: File, id: string, uploadType: "photo" | "logo") => {
+    if (id.startsWith("amb-fallback-")) {
+      showToast("Cannot upload photos for static fallbacks. Run SQL schema first.", "err");
+      return;
+    }
+    if (uploadType === "logo") {
+      setAmbassadorLogoUploadingFor(id);
+    } else {
+      setAmbassadorUploadingFor(id);
+    }
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("ambassadorId", id);
+      fd.append("type", uploadType);
+      const res = await fetch("/api/ambassadors/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast(`${uploadType === "logo" ? "Logo" : "Photo"} uploaded and synced!`);
+        fetchData();
+      } else {
+        showToast(data.error || "Upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setAmbassadorLogoUploadingFor(null);
+      setAmbassadorUploadingFor(null);
+    }
+  };
+
+  const handleModalAssetUpload = async (file: File, uploadType: "photo" | "logo") => {
+    const id = editingAmbassadorId || "new";
+    if (uploadType === "logo") {
+      setAmbassadorLogoUploadingFor(id);
+    } else {
+      setAmbassadorUploadingFor(id);
+    }
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("ambassadorId", editingAmbassadorId || "temp");
+      fd.append("type", uploadType);
+      const res = await fetch("/api/ambassadors/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast(`${uploadType === "logo" ? "Logo" : "Photo"} uploaded!`);
+        setAmbassadorForm((f: any) => ({
+          ...f,
+          [uploadType === "logo" ? "logo_url" : "photo_url"]: data.url
+        }));
+      } else {
+        showToast(data.error || "Upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setAmbassadorLogoUploadingFor(null);
+      setAmbassadorUploadingFor(null);
+    }
+  };
+
   // ─── GLOBAL NETWORK PROFESSIONAL CRUD HANDLERS ───
   const openProfessionalAddForm = () => {
     setEditingProfessionalId(null);
@@ -1556,17 +2064,68 @@ export default function UnifiedAdminDashboard() {
 
   const openProfessionalEditForm = (p: any) => {
     setEditingProfessionalId(p.id);
+    let parsedQuals = "";
+    if (p.qualifications) {
+      if (Array.isArray(p.qualifications)) {
+        parsedQuals = p.qualifications.join("\n");
+      } else if (typeof p.qualifications === "string") {
+        try {
+          if (p.qualifications.trim().startsWith("[")) {
+            parsedQuals = JSON.parse(p.qualifications).join("\n");
+          } else {
+            parsedQuals = p.qualifications;
+          }
+        } catch {
+          parsedQuals = p.qualifications;
+        }
+      }
+    }
     setProfessionalForm({
       name: p.name || "",
       role: p.role || "",
       institution: p.institution || "",
       photo_url: p.photo_url || "",
       description: p.description || "",
+      qualifications: parsedQuals,
+      hospital_name: p.hospital_name || "",
+      hospital_location: p.hospital_location || "",
+      hospital_image: p.hospital_image || "",
       display_order: p.display_order || 0,
       active: p.active ?? true
     });
     setShowProfessionalForm(true);
     setProfessionalDbAlert(false);
+  };
+
+  const handleProfessionalModalAssetUpload = async (file: File, uploadType: "photo" | "hospital") => {
+    const id = editingProfessionalId || "new";
+    if (uploadType === "hospital") {
+      setProfessionalHospitalUploadingFor(id);
+    } else {
+      setProfessionalUploadingFor(id);
+    }
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("professionalId", editingProfessionalId || "temp");
+      fd.append("type", uploadType);
+      const res = await fetch("/api/professionals/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) {
+        showToast(`${uploadType === "hospital" ? "Hospital Image" : "Professional Photo"} uploaded!`);
+        setProfessionalForm((f: any) => ({
+          ...f,
+          [uploadType === "hospital" ? "hospital_image" : "photo_url"]: data.url
+        }));
+      } else {
+        showToast(data.error || "Upload failed", "err");
+      }
+    } catch {
+      showToast("Upload failed", "err");
+    } finally {
+      setProfessionalHospitalUploadingFor(null);
+      setProfessionalUploadingFor(null);
+    }
   };
 
   const handleProfessionalSubmit = async (e: React.FormEvent) => {
@@ -1576,10 +2135,19 @@ export default function UnifiedAdminDashboard() {
       const method = editingProfessionalId ? "PUT" : "POST";
       const url = editingProfessionalId ? `/api/professionals/${editingProfessionalId}` : "/api/professionals";
       
+      const qualificationsArray = typeof professionalForm.qualifications === "string"
+        ? professionalForm.qualifications.split("\n").map((q: string) => q.trim()).filter(Boolean)
+        : [];
+      
+      const payload = {
+        ...professionalForm,
+        qualifications: qualificationsArray
+      };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(professionalForm),
+        body: JSON.stringify(payload),
       });
       
       const resData = await res.json();
@@ -2074,9 +2642,18 @@ export default function UnifiedAdminDashboard() {
         localStorage.setItem('healix_mock_photos', JSON.stringify(localPhotos.filter((p: any) => p.id !== id)));
         const localPubs = JSON.parse(localStorage.getItem('healix_publications') || '[]');
         localStorage.setItem('healix_publications', JSON.stringify(localPubs.filter((p: any) => p.id !== id)));
+        const localNews = JSON.parse(localStorage.getItem('healix_news') || '[]');
+        localStorage.setItem('healix_news', JSON.stringify(localNews.filter((n: any) => n.id !== id)));
       }
       const res = await deleteFunc(id);
-      if (res.error) alert(res.error);
+      if (res.error) {
+        // If it's a database missing table error, ignore it since we already deleted from local fallback
+        if (!res.error.includes("Database table 'healix_news_articles' does not exist")) {
+          alert(res.error);
+        } else {
+          fetchData();
+        }
+      }
       else fetchData();
     }
   };
@@ -2128,7 +2705,8 @@ export default function UnifiedAdminDashboard() {
     applications: [], projects: [], vehicles: [], trips: [],
     announcements: [], events: [], news: [], photos: [],
     programs: [], reels: [], evidence: [], sos_alerts: [],
-    session_photos: [], publications: [], innovators: []
+    session_photos: [], publications: [], innovators: [],
+    healix_news: []
   };
 
   // Tabs layout navigation
@@ -2137,10 +2715,13 @@ export default function UnifiedAdminDashboard() {
     { id: "biolabs", label: "BioLabs Pipeline", icon: TestTube, color: "text-purple-400", bg: "bg-purple-500/10" },
     { id: "suraksha", label: "Suraksha Control", icon: Shield, color: "text-orange-400", bg: "bg-orange-500/10" },
     { id: "academy", label: "Academy CRM", icon: GraduationCap, color: "text-[#eab308]", bg: "bg-yellow-500/10" },
+    { id: "news", label: "News Manager", icon: Newspaper, color: "text-[#ea580c]", bg: "bg-orange-500/10" },
+    { id: "events", label: "Homepage Events", icon: Calendar, color: "text-cyan-400", bg: "bg-cyan-500/10" },
     { id: "mentors", label: "Advisors & Mentors", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { id: "team", label: "Engineering Team", icon: Code2, color: "text-[#ea580c]", bg: "bg-orange-500/10" },
     { id: "founders", label: "Founders Corner", icon: ShieldAlert, color: "text-amber-500", bg: "bg-amber-500/10" },
     { id: "network", label: "Global Network", icon: Globe, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { id: "members", label: "Our Members", icon: Users, color: "text-amber-400", bg: "bg-amber-500/10" },
     { id: "podcasts", label: "Podcasts Manager", icon: Play, color: "text-red-400", bg: "bg-red-500/10" },
     { id: "branding", label: "Branding Manager", icon: ImageIcon, color: "text-indigo-400", bg: "bg-indigo-500/10" },
     { id: "reels", label: "Comm. Reels", icon: PlayCircle, color: "text-pink-400", bg: "bg-pink-500/10" },
@@ -2216,7 +2797,7 @@ export default function UnifiedAdminDashboard() {
       )}
 
       {/* SIDEBAR */}
-      <div className="w-64 border-r border-white/10 bg-[#0a0a0a] flex flex-col h-screen sticky top-0">
+      <div className="hidden lg:flex w-64 border-r border-white/10 bg-[#0a0a0a] flex-col h-screen sticky top-0">
         <div className="p-6 border-b border-white/10 flex items-center gap-3">
           <div className="p-1.5 bg-white/5 border border-white/10">
             <Server className="h-5 w-5 text-white/80" />
@@ -2258,8 +2839,95 @@ export default function UnifiedAdminDashboard() {
         </div>
       </div>
 
+      {/* MOBILE SIDEBAR DRAWER */}
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
+            />
+            {/* Drawer Container */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 z-50 w-72 bg-[#0a0a0a] border-r border-white/10 flex flex-col h-screen lg:hidden"
+            >
+              <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <Server className="h-5 w-5 text-[#ea580c]" />
+                  <div>
+                    <h1 className="font-mono font-bold text-sm leading-tight tracking-tighter text-white">HEALIX_CONSOLE</h1>
+                    <p className="text-[9px] text-[#ea580c] uppercase tracking-[0.2em] font-mono font-bold">Integrated Terminal</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar animate-none">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id as any);
+                        setMobileSidebarOpen(false);
+                        router.push(`/admin?tab=${tab.id}`, { scroll: false });
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden group ${isActive ? 'bg-white/10 text-white border border-white/10' : 'text-white/50 hover:bg-white/5 hover:text-white/80 border border-transparent'}`}
+                    >
+                      {isActive && (
+                        <motion.div layoutId="activeTabIndicatorMobile" className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#ea580c]" />
+                      )}
+                      <Icon className={`h-4.5 w-4.5 ${isActive ? tab.color : 'text-current transition-colors group-hover:text-white'}`} />
+                      <span className="font-mono text-xs uppercase tracking-wider">{tab.label}</span>
+                    </button>
+                  )
+                })}
+              </nav>
+
+              <div className="p-6 border-t border-white/5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]" />
+                  <span className="text-xs text-white/50 font-mono">Operations Online</span>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* MAIN CONTENT WINDOW */}
       <div className="flex-1 overflow-y-auto h-screen relative bg-[#050505]">
+        
+        {/* Mobile Header Bar */}
+        <div className="lg:hidden bg-[#0a0a0a] border-b border-white/10 px-6 py-4 flex justify-between items-center z-40 sticky top-0">
+          <div className="flex items-center gap-2.5">
+            <Server className="h-4.5 w-4.5 text-[#ea580c]" />
+            <span className="font-mono font-bold text-xs uppercase tracking-wider text-white">Console</span>
+            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 uppercase">{activeTab}</span>
+          </div>
+          <button 
+            onClick={() => setMobileSidebarOpen(true)}
+            className="p-2 -mr-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white transition-all"
+            aria-label="Open Console Navigation"
+          >
+            <Menu className="w-4.5 h-4.5" />
+          </button>
+        </div>
         
         {/* Glow backlight */}
         <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl pointer-events-none" aria-hidden="true">
@@ -2267,6 +2935,8 @@ export default function UnifiedAdminDashboard() {
             activeTab === 'biolabs' ? 'bg-gradient-to-tr from-purple-500 to-blue-500' :
             activeTab === 'suraksha' ? 'bg-gradient-to-tr from-orange-500 to-blue-500' :
             activeTab === 'academy' ? 'bg-gradient-to-tr from-[#eab308]/50 to-orange-500' :
+            activeTab === 'news' ? 'bg-gradient-to-tr from-orange-600 to-amber-500' :
+            activeTab === 'events' ? 'bg-gradient-to-tr from-cyan-500 to-blue-600' :
             activeTab === 'mentors' ? 'bg-gradient-to-tr from-emerald-500 to-teal-500' :
             activeTab === 'network' ? 'bg-gradient-to-tr from-orange-600 to-amber-500' :
             activeTab === 'system' ? 'bg-gradient-to-tr from-green-500 to-emerald-500' :
@@ -3121,11 +3791,13 @@ export default function UnifiedAdminDashboard() {
                 </div>
 
                 {/* Sub-tabs */}
-                <div className="flex gap-2 mb-6 border-b border-white/5 pb-3">
+                <div className="flex flex-wrap gap-2 mb-6 border-b border-white/5 pb-3">
                   {[
                     { id: "dashboard", label: "Cohort Analytics" },
                     { id: "courses", label: "Academy Courses" },
-                    { id: "mentors", label: "Academy Instructors" }
+                    { id: "mentors", label: "Academy Instructors" },
+                    { id: "events", label: "📅 Upcoming Events" },
+                    { id: "live-feed", label: "🎥 Live Feed Image" }
                   ].map((subTab) => (
                     <button
                       key={subTab.id}
@@ -3140,6 +3812,7 @@ export default function UnifiedAdminDashboard() {
                     </button>
                   ))}
                 </div>
+
 
                 {academyActiveTab === "dashboard" && (
                   <div className="space-y-8">
@@ -3266,6 +3939,1202 @@ export default function UnifiedAdminDashboard() {
                     ))}
                   </div>
                 )}
+
+                {/* ─── UPCOMING EVENTS SUB-TAB ─── */}
+                {academyActiveTab === "events" && (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-yellow-500/10">
+                          <Calendar className="w-5 h-5 text-[#eab308]" />
+                        </div>
+                        <div>
+                          <h3 className="font-black font-mono uppercase tracking-tight text-white text-lg">Upcoming Events Manager</h3>
+                          <p className="text-white/40 text-xs font-mono">Add, edit or remove events shown on the homepage Academic Seminars section.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingEventId(null);
+                          setEventForm(EMPTY_EVENT_FORM);
+                          setEventImageUrl("");
+                          setShowEventModal(true);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#eab308] hover:bg-yellow-400 text-black font-black font-mono uppercase text-xs rounded-xl transition-all"
+                      >
+                        <Plus className="w-4 h-4" /> Add Event
+                      </button>
+                    </div>
+
+                    {/* Events List */}
+                    {eventsData.length === 0 ? (
+                      <div className="text-center py-16 border border-dashed border-white/10 rounded-2xl">
+                        <Calendar className="w-10 h-10 text-white/15 mx-auto mb-3" />
+                        <p className="text-white/30 font-mono text-xs uppercase tracking-wider">No events found in database</p>
+                        <p className="text-white/20 font-mono text-[10px] mt-1">Click "Add Event" to create the first one</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                        {eventsData.map((ev) => {
+                          let speaker = "Research Fellow";
+                          let desc = "";
+                          try {
+                            if (ev.description?.startsWith("{")) {
+                              const p = JSON.parse(ev.description);
+                              speaker = p.speaker || speaker;
+                              desc = p.description || "";
+                            } else {
+                              desc = ev.description || "";
+                            }
+                          } catch {}
+                          const evDate = ev.start_date ? new Date(ev.start_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+                          return (
+                            <GlassCard key={ev.id} className="p-0 border-white/5 bg-[#0a0a0a] overflow-hidden group relative">
+                              {/* Cover image */}
+                              <div className="relative h-36 bg-zinc-900 overflow-hidden">
+                                {ev.image_url ? (
+                                  <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                                    <Calendar className="w-8 h-8 text-white/10" />
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                <span className="absolute bottom-3 left-3 text-[9px] font-mono text-orange-400 font-bold uppercase tracking-wider">{evDate}</span>
+                                {/* Active badge */}
+                                <span className={`absolute top-3 right-3 text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${ev.is_active !== false ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"}`}>
+                                  {ev.is_active !== false ? "Active" : "Hidden"}
+                                </span>
+                              </div>
+                              <div className="p-4 space-y-2">
+                                <h4 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h4>
+                                <p className="text-[10px] text-white/40 font-mono">Speaker: {speaker}</p>
+                                {desc && <p className="text-[10px] text-white/30 line-clamp-2">{desc}</p>}
+                              </div>
+                              {/* Action buttons */}
+                              <div className="absolute top-3 left-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => {
+                                    let parsed: any = {};
+                                    try { if (ev.description?.startsWith("{")) parsed = JSON.parse(ev.description); } catch {}
+                                    setEditingEventId(ev.id);
+                                    setEventForm({
+                                      title: ev.title || "",
+                                      description: parsed.description || ev.description || "",
+                                      speaker: parsed.speaker || "",
+                                      speaker_role: parsed.speaker_role || "",
+                                      category: parsed.category || "Academic Workshops",
+                                      seats_left: String(parsed.seats_left || "30"),
+                                      start_date: ev.start_date ? ev.start_date.split("T")[0] : "",
+                                      end_date: ev.end_date ? ev.end_date.split("T")[0] : "",
+                                      image_url: ev.image_url || "",
+                                      register_url: parsed.register_url || "",
+                                    });
+                                    setEventImageUrl(ev.image_url || "");
+                                    setShowEventModal(true);
+                                  }}
+                                  className="p-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 text-[#eab308] rounded-lg transition-colors"
+                                  title="Edit Event"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm("Delete this event?")) return;
+                                    const res = await deleteBiolabEvent(ev.id) as any;
+                                    if (res.error) showToast("Delete failed: " + res.error, "err");
+                                    else { showToast("Event deleted", "ok"); fetchData(); }
+                                  }}
+                                  className="p-1.5 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-colors"
+                                  title="Delete Event"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </GlassCard>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Add/Edit Event Modal */}
+                    <AnimatePresence>
+                      {showEventModal && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] flex items-start justify-center pt-10 px-4 pb-10 overflow-y-auto"
+                          onClick={(e) => { if (e.target === e.currentTarget) setShowEventModal(false); }}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="bg-[#0d0d0d] border border-white/10 rounded-2xl p-7 w-full max-w-2xl shadow-2xl"
+                          >
+                            <div className="flex items-center justify-between mb-6">
+                              <h3 className="text-lg font-black font-mono uppercase tracking-tight text-white">
+                                {editingEventId ? "✏️ Edit Event" : "➕ Add New Event"}
+                              </h3>
+                              <button onClick={() => setShowEventModal(false)} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/50 hover:text-white">
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+
+                            <div className="space-y-5">
+                              {/* Cover Image Drag & Drop */}
+                              <div>
+                                <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-2">Cover Image</label>
+                                <div
+                                  onDragOver={(e) => { e.preventDefault(); setEventImageDragOver(true); }}
+                                  onDragLeave={() => setEventImageDragOver(false)}
+                                  onDrop={async (e) => {
+                                    e.preventDefault();
+                                    setEventImageDragOver(false);
+                                    const file = e.dataTransfer.files[0];
+                                    if (!file || !file.type.startsWith("image/")) { showToast("Please drop a valid image", "err"); return; }
+                                    setEventImageUploading(true);
+                                    try {
+                                      const fd = new FormData();
+                                      fd.append("file", file);
+                                      const res = await fetch("/api/admin/events/upload", { method: "POST", body: fd });
+                                      const json = await res.json();
+                                      if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                                      setEventImageUrl(json.url);
+                                      setEventForm(f => ({ ...f, image_url: json.url }));
+                                      showToast("Image uploaded!", "ok");
+                                    } catch (err: any) {
+                                      showToast("Upload failed: " + err.message, "err");
+                                    } finally { setEventImageUploading(false); }
+                                  }}
+                                  onClick={() => eventImageRef.current?.click()}
+                                  className={`relative border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer transition-all min-h-[140px] overflow-hidden ${
+                                    eventImageDragOver ? "border-[#eab308] bg-yellow-500/10" : "border-white/10 hover:border-white/25 hover:bg-white/3"
+                                  }`}
+                                >
+                                  <input ref={eventImageRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                    const file = e.target.files?.[0]; if (!file) return;
+                                    setEventImageUploading(true);
+                                    try {
+                                      const fd = new FormData(); fd.append("file", file);
+                                      const res = await fetch("/api/admin/events/upload", { method: "POST", body: fd });
+                                      const json = await res.json();
+                                      if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                                      setEventImageUrl(json.url);
+                                      setEventForm(f => ({ ...f, image_url: json.url }));
+                                      showToast("Image uploaded!", "ok");
+                                    } catch (err: any) { showToast("Upload failed: " + err.message, "err"); }
+                                    finally { setEventImageUploading(false); e.target.value = ""; }
+                                  }} />
+                                  {eventImageUploading ? (
+                                    <div className="flex flex-col items-center gap-2">
+                                      <Loader2 className="w-7 h-7 text-[#eab308] animate-spin" />
+                                      <p className="text-white/50 text-xs font-mono">Uploading...</p>
+                                    </div>
+                                  ) : eventImageUrl ? (
+                                    <>
+                                      <img src={eventImageUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                                      <div className="relative z-10 flex flex-col items-center gap-1">
+                                        <Upload className="w-5 h-5 text-white/70" />
+                                        <p className="text-white/70 text-xs font-mono">Click or drop to replace</p>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div className="flex flex-col items-center gap-2">
+                                      <Upload className="w-7 h-7 text-white/25" />
+                                      <p className="text-white text-sm font-mono font-bold">Drag & Drop Cover Image</p>
+                                      <p className="text-white/40 text-xs font-mono">or click to browse — JPG, PNG, WEBP</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              <div>
+                                <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Event Title *</label>
+                                <input type="text" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
+                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                                  placeholder="e.g. Distributed Audio Failsafe Networks & Hardware Telemetry" />
+                              </div>
+
+                              {/* Speaker + Role */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Speaker Name *</label>
+                                  <input type="text" value={eventForm.speaker} onChange={e => setEventForm(f => ({ ...f, speaker: e.target.value }))}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                                    placeholder="e.g. Prof. R. Sharma" />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Speaker Role</label>
+                                  <input type="text" value={eventForm.speaker_role} onChange={e => setEventForm(f => ({ ...f, speaker_role: e.target.value }))}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                                    placeholder="e.g. BioLabs Faculty Advisor" />
+                                </div>
+                              </div>
+
+                              {/* Description */}
+                              <div>
+                                <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Description</label>
+                                <textarea value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))} rows={3}
+                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors resize-none"
+                                  placeholder="Brief description of the event..." />
+                              </div>
+
+                              {/* Dates + Seats */}
+                              <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                  <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Start Date *</label>
+                                  <input type="date" value={eventForm.start_date} onChange={e => setEventForm(f => ({ ...f, start_date: e.target.value }))}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors" />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">End Date *</label>
+                                  <input type="date" value={eventForm.end_date} onChange={e => setEventForm(f => ({ ...f, end_date: e.target.value }))}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors" />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Seats Left</label>
+                                  <input type="number" value={eventForm.seats_left} onChange={e => setEventForm(f => ({ ...f, seats_left: e.target.value }))}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors" />
+                                </div>
+                              </div>
+
+                              {/* Registration URL */}
+                              <div>
+                                <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Registration Google Form URL</label>
+                                <input type="url" value={eventForm.register_url || ""} onChange={e => setEventForm(f => ({ ...f, register_url: e.target.value }))}
+                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors placeholder-white/20"
+                                  placeholder="e.g. https://docs.google.com/forms/d/... (leave empty for standard popup)" />
+                              </div>
+
+                              {/* Category */}
+                              <div>
+                                <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Category</label>
+                                <select value={eventForm.category} onChange={e => setEventForm(f => ({ ...f, category: e.target.value }))}
+                                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors">
+                                  <option value="Academic Workshops">Academic Workshops</option>
+                                  <option value="Research Seminars">Research Seminars</option>
+                                  <option value="Clinical Informatics">Clinical Informatics</option>
+                                  <option value="Mentorship Programs">Mentorship Programs</option>
+                                  <option value="AI & Technology">AI & Technology</option>
+                                </select>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex gap-3 pt-2">
+                                <button onClick={() => setShowEventModal(false)}
+                                  className="flex-1 px-4 py-2.5 border border-white/10 hover:bg-white/5 text-white/60 hover:text-white font-mono text-xs uppercase tracking-wider rounded-xl transition-all">
+                                  Cancel
+                                </button>
+                                <button
+                                  disabled={eventSaving || eventImageUploading || !eventForm.title || !eventForm.start_date || !eventForm.end_date}
+                                  onClick={async () => {
+                                    setEventSaving(true);
+                                    try {
+                                      const fd = new FormData();
+                                      fd.append("title", eventForm.title);
+                                      fd.append("description", eventForm.description);
+                                      fd.append("speaker", eventForm.speaker);
+                                      fd.append("speaker_role", eventForm.speaker_role);
+                                      fd.append("category", eventForm.category);
+                                      fd.append("seats_left", eventForm.seats_left);
+                                      fd.append("start_date", eventForm.start_date);
+                                      fd.append("end_date", eventForm.end_date);
+                                      fd.append("image_url", eventImageUrl || eventForm.image_url);
+                                      fd.append("register_url", eventForm.register_url || "");
+                                      let res: any;
+                                      if (editingEventId) {
+                                        res = await updateBiolabEvent(editingEventId, fd);
+                                      } else {
+                                        res = await addBiolabEvent(fd);
+                                      }
+                                      if (res.error) showToast("Save failed: " + res.error, "err");
+                                      else {
+                                        showToast(editingEventId ? "Event updated!" : "Event added!", "ok");
+                                        setShowEventModal(false);
+                                        fetchData();
+                                      }
+                                    } catch (err: any) { showToast("Error: " + err.message, "err"); }
+                                    finally { setEventSaving(false); }
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#eab308] hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black font-mono uppercase text-xs rounded-xl transition-all"
+                                >
+                                  {eventSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                  {eventSaving ? "Saving..." : editingEventId ? "Update Event" : "Create Event"}
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                {/* ─── LIVE FEED IMAGE SUB-TAB ─── */}
+                {academyActiveTab === "live-feed" && (
+                  <div className="space-y-8">
+                    {/* Header */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2.5 rounded-xl bg-yellow-500/10">
+                        <Tv className="w-5 h-5 text-[#eab308]" />
+                      </div>
+                      <div>
+                        <h3 className="font-black font-mono uppercase tracking-tight text-white text-lg">Academy Live Feed</h3>
+                        <p className="text-white/40 text-xs font-mono">Update the projected classroom image shown on the homepage Academy section.</p>
+                      </div>
+                    </div>
+
+                    {/* DB table missing warning */}
+                    {!liveFeedTableExists && (
+                      <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/5 text-xs font-mono text-red-400">
+                        ⚠ The <strong>academy_live_feed</strong> table does not exist in Supabase yet. Run the SQL from <code className="bg-white/10 px-1 rounded">supabase_academy_live_feed.sql</code> to enable persistent saves. Changes will use fallback defaults until then.
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Left: Upload + Fields */}
+                      <div className="space-y-6">
+                        {/* Drag & Drop Zone */}
+                        <div
+                          onDragOver={(e) => { e.preventDefault(); setLiveFeedDragOver(true); }}
+                          onDragLeave={() => setLiveFeedDragOver(false)}
+                          onDrop={async (e) => {
+                            e.preventDefault();
+                            setLiveFeedDragOver(false);
+                            const file = e.dataTransfer.files[0];
+                            if (!file || !file.type.startsWith("image/")) {
+                              showToast("Please drop a valid image file.", "err");
+                              return;
+                            }
+                            setLiveFeedUploading(true);
+                            try {
+                              const fd = new FormData();
+                              fd.append("file", file);
+                              const res = await fetch("/api/admin/academy/live-feed-upload", { method: "POST", body: fd });
+                              const json = await res.json();
+                              if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                              setLiveFeedImageUrl(json.url);
+                              showToast("Image uploaded successfully!", "ok");
+                            } catch (err: any) {
+                              showToast("Upload failed: " + err.message, "err");
+                            } finally {
+                              setLiveFeedUploading(false);
+                            }
+                          }}
+                          onClick={() => liveFeedFileRef.current?.click()}
+                          className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[200px] ${
+                            liveFeedDragOver
+                              ? "border-[#eab308] bg-yellow-500/10 scale-[1.01]"
+                              : "border-white/10 bg-white/2 hover:border-white/25 hover:bg-white/5"
+                          }`}
+                        >
+                          <input
+                            ref={liveFeedFileRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setLiveFeedUploading(true);
+                              try {
+                                const fd = new FormData();
+                                fd.append("file", file);
+                                const res = await fetch("/api/admin/academy/live-feed-upload", { method: "POST", body: fd });
+                                const json = await res.json();
+                                if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                                setLiveFeedImageUrl(json.url);
+                                showToast("Image uploaded successfully!", "ok");
+                              } catch (err: any) {
+                                showToast("Upload failed: " + err.message, "err");
+                              } finally {
+                                setLiveFeedUploading(false);
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          {liveFeedUploading ? (
+                            <>
+                              <Loader2 className="w-8 h-8 text-[#eab308] animate-spin mb-3" />
+                              <p className="text-white/60 font-mono text-xs uppercase tracking-wider">Uploading...</p>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-8 h-8 text-white/30 mb-3" />
+                              <p className="text-white font-mono text-sm font-bold">Drag & Drop Image Here</p>
+                              <p className="text-white/40 font-mono text-xs mt-1">or click to browse — JPG, PNG, WEBP up to 5MB</p>
+                              {liveFeedImageUrl && !liveFeedImageUrl.startsWith("/") && (
+                                <p className="text-[#eab308] font-mono text-[10px] mt-3 truncate max-w-full px-4">
+                                  ✓ Custom image active
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Text Fields */}
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Session Tag</label>
+                            <input
+                              type="text"
+                              value={liveFeedTag}
+                              onChange={(e) => setLiveFeedTag(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                              placeholder="e.g. Live Session \u2022 Healix Academy"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Session Title</label>
+                            <input
+                              type="text"
+                              value={liveFeedTitle}
+                              onChange={(e) => setLiveFeedTitle(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                              placeholder="e.g. Interactive Research Discussion in Progress"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Session Subtitle</label>
+                            <input
+                              type="text"
+                              value={liveFeedSubtitle}
+                              onChange={(e) => setLiveFeedSubtitle(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#eab308]/50 transition-colors"
+                              placeholder="e.g. Healix main auditorium / Session ID: HSF-ACAD-2026"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <button
+                          disabled={liveFeedSaving || liveFeedUploading}
+                          onClick={async () => {
+                            setLiveFeedSaving(true);
+                            try {
+                              const res = await updateLiveFeedSettings(liveFeedTag, liveFeedTitle, liveFeedSubtitle, liveFeedImageUrl);
+                              if (res.error) {
+                                showToast("Save failed: " + res.error, "err");
+                              } else {
+                                showToast("Live feed updated successfully!", "ok");
+                              }
+                            } catch (err: any) {
+                              showToast("Save failed: " + err.message, "err");
+                            } finally {
+                              setLiveFeedSaving(false);
+                            }
+                          }}
+                          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#eab308] hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black font-mono uppercase tracking-widest text-sm rounded-xl transition-all"
+                        >
+                          {liveFeedSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                          {liveFeedSaving ? "Saving..." : "Save Changes"}
+                        </button>
+                      </div>
+
+                      {/* Right: Live Preview */}
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">Live Preview</p>
+                        <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-950/40 aspect-[16/10] shadow-[0_20px_50px_rgba(0,102,255,0.2)] group">
+                          {liveFeedImageUrl ? (
+                            <img
+                              src={liveFeedImageUrl}
+                              alt="Live feed preview"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                              <p className="text-white/20 font-mono text-xs">No image uploaded yet</p>
+                            </div>
+                          )}
+                          {/* Overlays matching homepage */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#0066ff]/5 to-white/10 opacity-70 pointer-events-none" />
+                          {/* Corner brackets */}
+                          <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-white/50 pointer-events-none" />
+                          <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-white/50 pointer-events-none" />
+                          <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-white/50 pointer-events-none" />
+                          <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-white/50 pointer-events-none" />
+                          {/* REC badge */}
+                          <div className="absolute top-4 left-10 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-md border border-white/10">
+                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                            <span className="text-[9px] font-mono text-white tracking-widest uppercase">REC</span>
+                          </div>
+                          {/* Bottom info overlay */}
+                          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent p-5 pt-14">
+                            <p className="text-[9px] font-mono text-[#0066ff] font-bold uppercase tracking-widest mb-1">{liveFeedTag || "Session Tag"}</p>
+                            <h4 className="text-white font-mono text-xs font-bold leading-snug uppercase">{liveFeedTitle || "Session Title"}</h4>
+                            <p className="text-zinc-400 font-mono text-[9px] mt-1 uppercase">{liveFeedSubtitle || "Session Subtitle"}</p>
+                          </div>
+                        </div>
+                        <p className="text-white/25 font-mono text-[10px] text-center">This preview matches the homepage display. Click Save Changes to publish.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+
+            {/* ═══════════════════════════════════════════════════════
+                NEWS MANAGER TAB
+            ═══════════════════════════════════════════════════════ */}
+            {activeTab === "news" && (
+              <motion.div key="news" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                
+                {/* Page Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Newspaper className="w-5 h-5 text-[#ea580c]" />
+                      <h1 className="text-2xl font-black font-mono tracking-tight uppercase text-white">News Manager</h1>
+                    </div>
+                    <p className="text-xs text-white/50">Manage dynamic news articles shown on the homepage and the main news portal.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  {/* Left Column: Form (5 cols) */}
+                  <div className="lg:col-span-5 space-y-6">
+                    <div className="bg-[#0b0b0c] border border-white/10 rounded-2xl p-6 shadow-xl">
+                      <h3 className="text-base font-bold font-mono tracking-tight text-white mb-4 uppercase flex items-center gap-2">
+                        {editingNewsArticle ? "Edit Article" : "Create New Article"}
+                        {editingNewsArticle && (
+                          <span className="text-[10px] font-normal px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 lowercase">Editing</span>
+                        )}
+                      </h3>
+
+                      <form onSubmit={handleSubmitNews} className="space-y-4">
+                        {/* Title */}
+                        <div>
+                          <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Article Title</label>
+                          <input 
+                            value={newsTitle} 
+                            onChange={e => setNewsTitle(e.target.value)} 
+                            required 
+                            placeholder="e.g. Healix Incorporation Process Underway" 
+                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                          />
+                        </div>
+
+                        {/* Category & Date */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Category</label>
+                            <select 
+                              value={newsCategory} 
+                              onChange={e => setNewsCategory(e.target.value)} 
+                              className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                            >
+                              <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
+                              <option value="RESEARCH">RESEARCH</option>
+                              <option value="OPPORTUNITY">OPPORTUNITY</option>
+                              <option value="UPDATE">UPDATE</option>
+                              <option value="MEDIA">MEDIA</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Date</label>
+                            <input 
+                              value={newsDate} 
+                              onChange={e => setNewsDate(e.target.value)} 
+                              placeholder="e.g. June 2026" 
+                              className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Author & Redirect Link */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Author</label>
+                            <input 
+                              value={newsAuthor} 
+                              onChange={e => setNewsAuthor(e.target.value)} 
+                              required 
+                              placeholder="e.g. Healix Press Team" 
+                              className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Redirect Link</label>
+                            <input 
+                              value={newsLinkUrl} 
+                              onChange={e => setNewsLinkUrl(e.target.value)} 
+                              required 
+                              placeholder="e.g. https://medium.com/... or #" 
+                              className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                          <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Brief Description</label>
+                          <textarea 
+                            value={newsDescContent} 
+                            onChange={e => setNewsDescContent(e.target.value)} 
+                            required 
+                            rows={4}
+                            placeholder="Write a summary of the article..." 
+                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#ea580c]/50 transition-colors"
+                          />
+                        </div>
+
+                        {/* Photo Drag & Drop Zone */}
+                        <div>
+                          <label className="text-[10px] font-mono text-white/40 uppercase tracking-widest block mb-1">Article Image</label>
+                          <div 
+                            className={`relative rounded-xl border border-dashed transition-all duration-200 cursor-pointer min-h-[120px] flex flex-col items-center justify-center p-4 ${
+                              newsPhotoDragOver ? "border-[#ea580c] bg-[#ea580c]/5" : "border-white/10 bg-[#050505] hover:border-[#ea580c]/30"
+                            }`}
+                            onDragOver={(e) => { e.preventDefault(); setNewsPhotoDragOver(true); }}
+                            onDragLeave={() => setNewsPhotoDragOver(false)}
+                            onDrop={handleNewsPhotoDrop}
+                            onClick={() => newsPhotoRef.current?.click()}
+                          >
+                            <input 
+                              ref={newsPhotoRef} 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleNewsPhotoUpload(file);
+                              }} 
+                            />
+                            
+                            {newsPhotoUploading ? (
+                              <div className="flex flex-col items-center justify-center space-y-2">
+                                <Loader2 className="w-5 h-5 text-[#ea580c] animate-spin" />
+                                <span className="text-[10px] font-mono text-white/40">Uploading to cloud...</span>
+                              </div>
+                            ) : newsPhotoPreview ? (
+                              <div className="relative w-full h-[100px] rounded-lg overflow-hidden group">
+                                <img src={newsPhotoPreview} alt="News Image Preview" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                  <span className="text-[9px] font-mono text-white uppercase tracking-wider font-bold">Replace Photo</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center text-center">
+                                <Upload className="w-5 h-5 mb-2 text-white/30" />
+                                <span className="text-[10px] text-white/50 block">Drag & drop photo or <span className="text-[#ea580c] font-bold">browse</span></span>
+                                <span className="text-[8px] text-white/30 block mt-1 font-mono">Supports image/png, image/jpeg (Max 10MB)</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Image URL text fallback */}
+                          <div className="mt-2">
+                            <input 
+                              value={newsPhotoPreview || ""} 
+                              onChange={e => setNewsPhotoPreview(e.target.value)} 
+                              required
+                              placeholder="Or paste direct image URL here..." 
+                              className="w-full bg-[#050505] border border-white/5 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" 
+                            />
+                          </div>
+                        </div>
+
+                        {/* Submit Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <button 
+                            type="submit" 
+                            className="flex-1 bg-[#ea580c] hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl py-2 text-xs font-bold transition-colors uppercase tracking-wider font-mono flex items-center justify-center gap-1.5"
+                          >
+                            {editingNewsArticle ? "Update Article" : "Publish Article"}
+                          </button>
+                          {editingNewsArticle && (
+                            <button 
+                              type="button"
+                              onClick={handleCancelNewsEdit}
+                              className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl px-4 py-2 text-xs font-bold transition-colors uppercase tracking-wider font-mono"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+
+                  {/* Right Column: List & Filter (7 cols) */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="bg-[#0b0b0c] border border-white/10 rounded-2xl p-6 shadow-xl h-full flex flex-col">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 className="text-base font-bold font-mono tracking-tight text-white uppercase">Articles Directory ({safeData.healix_news?.length || 0})</h3>
+                        <div className="relative w-full sm:w-60">
+                          <input 
+                            value={newsSearch} 
+                            onChange={e => setNewsSearch(e.target.value)} 
+                            placeholder="Search articles..." 
+                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Directory List */}
+                      <div className="flex-1 overflow-y-auto max-h-[560px] pr-1 space-y-4 custom-scrollbar">
+                        {(() => {
+                          const filtered = (safeData.healix_news || []).filter((art: any) => 
+                            art.title?.toLowerCase().includes(newsSearch.toLowerCase()) ||
+                            art.category?.toLowerCase().includes(newsSearch.toLowerCase()) ||
+                            art.desc_content?.toLowerCase().includes(newsSearch.toLowerCase())
+                          );
+
+                          if (filtered.length === 0) {
+                            return (
+                              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                                <Newspaper className="w-8 h-8 text-white/20 mb-3" />
+                                <p className="text-sm font-medium text-white/50">No articles found</p>
+                                <p className="text-xs text-white/30 max-w-xs mt-1">Get started by filling out the form on the left to publish your first article.</p>
+                              </div>
+                            );
+                          }
+
+                          return filtered.map((art: any) => (
+                            <div key={art.id} className="flex gap-4 p-4 bg-white/5 hover:bg-white/[0.08] border border-white/5 rounded-xl transition-all group relative">
+                              <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-lg overflow-hidden bg-black border border-white/10">
+                                <img src={art.image_url} alt={art.title} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 flex flex-col justify-between min-w-0">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/20 uppercase">
+                                      {art.category}
+                                    </span>
+                                    <span className="text-[9px] text-white/40 font-mono">{art.date}</span>
+                                    {art.id.startsWith("local-") && (
+                                      <span className="text-[7px] font-mono font-bold px-1 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase">Local Sync</span>
+                                    )}
+                                  </div>
+                                  <h4 className="text-sm font-bold font-mono uppercase tracking-tight text-white line-clamp-1 group-hover:text-[#ea580c] transition-colors">{art.title}</h4>
+                                  <p className="text-xs text-white/50 line-clamp-2 leading-relaxed">{art.desc_content}</p>
+                                </div>
+                                <div className="flex justify-between items-center mt-2 pt-2 border-t border-white/5">
+                                  <span className="text-[8px] text-white/30 font-mono uppercase">By {art.author}</span>
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <button 
+                                      onClick={() => handleEditNewsClick(art)} 
+                                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                      title="Edit Article"
+                                    >
+                                      <Edit3 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteContent(art.id, deleteHealixNewsArticle)} 
+                                      className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/15 text-white/60 hover:text-red-400 transition-colors"
+                                      title="Delete Article"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </motion.div>
+            )}
+
+            {/* ═══════════════════════════════════════════════════════
+                HOMEPAGE EVENTS TAB — Standalone top-level panel
+            ═══════════════════════════════════════════════════════ */}
+            {activeTab === "events" && (
+              <motion.div key="events" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+
+                {/* Page Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 rounded-full">Homepage Section</span>
+                    </div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Upcoming Events</h2>
+                    <p className="text-white/50 text-sm mt-1">Manage the event cards displayed in the <span className="text-cyan-400 font-semibold">"Academic Seminars — Upcoming Events"</span> section on the main homepage.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingEventId(null);
+                      setEventForm(EMPTY_EVENT_FORM);
+                      setEventImageUrl("");
+                      setShowEventModal(true);
+                    }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black font-mono uppercase text-xs rounded-xl transition-all shrink-0 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                  >
+                    <Plus className="w-4 h-4" /> Add Event
+                  </button>
+                </div>
+
+                {/* Live preview banner */}
+                <div className="flex items-center gap-4 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0">
+                    <Eye className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold font-mono text-white uppercase tracking-wider">Live on Homepage</p>
+                    <p className="text-white/40 text-xs font-mono mt-0.5">Changes are reflected immediately after saving. The homepage shows the 3 most recent active events.</p>
+                  </div>
+                  <a href="/#events-section" target="_blank" className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-wider rounded-lg transition-colors">
+                    <ExternalLink className="w-3.5 h-3.5" /> View Section
+                  </a>
+                </div>
+
+                {/* Events Grid */}
+                {eventsData.length === 0 ? (
+                  <div className="text-center py-24 border border-dashed border-white/10 rounded-2xl">
+                    <Calendar className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                    <p className="text-white/30 font-mono text-sm uppercase tracking-wider">No events in the database</p>
+                    <p className="text-white/20 font-mono text-xs mt-2 mb-6">Create your first event to display it on the homepage</p>
+                    <button
+                      onClick={() => { setEditingEventId(null); setEventForm(EMPTY_EVENT_FORM); setEventImageUrl(""); setShowEventModal(true); }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black font-mono uppercase text-xs rounded-xl transition-all"
+                    >
+                      <Plus className="w-4 h-4" /> Create First Event
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {eventsData.map((ev, idx) => {
+                      let speaker = "Research Fellow";
+                      let desc = "";
+                      let category = "Academic Workshops";
+                      try {
+                        if (ev.description?.startsWith("{")) {
+                          const p = JSON.parse(ev.description);
+                          speaker = p.speaker || speaker;
+                          desc = p.description || "";
+                          category = p.category || category;
+                        } else { desc = ev.description || ""; }
+                      } catch {}
+                      const evDate = ev.start_date
+                        ? new Date(ev.start_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                        : "—";
+                      const isShownOnHomepage = idx < 3 && ev.is_active !== false;
+                      return (
+                        <GlassCard key={ev.id} className={`p-0 overflow-hidden group relative border ${isShownOnHomepage ? "border-cyan-500/20 bg-[#080f10]" : "border-white/5 bg-[#0a0a0a]"}`}>
+                          {/* Homepage indicator */}
+                          {isShownOnHomepage && (
+                            <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+                          )}
+
+                          {/* Cover image */}
+                          <div className="relative w-full aspect-[4/5] bg-zinc-900 overflow-hidden">
+                            {ev.image_url ? (
+                              <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 gap-2">
+                                <Calendar className="w-8 h-8 text-white/10" />
+                                <p className="text-white/20 text-[10px] font-mono">No cover image</p>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                            {/* Date badge */}
+                            <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3 text-cyan-400" />
+                              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider">{evDate}</span>
+                            </div>
+
+                            {/* Status badges */}
+                            <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+                              <span className={`text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${ev.is_active !== false ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30"}`}>
+                                {ev.is_active !== false ? "Active" : "Hidden"}
+                              </span>
+                              {isShownOnHomepage && (
+                                <span className="text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                                  On Homepage
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-5 space-y-3">
+                            <div>
+                              <span className="text-[9px] font-mono font-bold text-cyan-400/60 uppercase tracking-widest">{category}</span>
+                              <h4 className="font-bold text-sm text-white leading-snug mt-1 line-clamp-2">{ev.title}</h4>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                              <p className="text-[11px] text-white/40 font-mono">Speaker: <strong className="text-white/60">{speaker}</strong></p>
+                            </div>
+                            {desc && <p className="text-[11px] text-white/25 line-clamp-2 leading-relaxed">{desc}</p>}
+                          </div>
+
+                          {/* Action footer */}
+                          <div className="px-5 pb-4 flex items-center gap-2 border-t border-white/5 pt-3">
+                            <button
+                              onClick={() => {
+                                let parsed: any = {};
+                                try { if (ev.description?.startsWith("{")) parsed = JSON.parse(ev.description); } catch {}
+                                setEditingEventId(ev.id);
+                                setEventForm({
+                                  title: ev.title || "",
+                                  description: parsed.description || ev.description || "",
+                                  speaker: parsed.speaker || "",
+                                  speaker_role: parsed.speaker_role || "",
+                                  category: parsed.category || "Academic Workshops",
+                                  seats_left: String(parsed.seats_left || "30"),
+                                  start_date: ev.start_date ? ev.start_date.split("T")[0] : "",
+                                  end_date: ev.end_date ? ev.end_date.split("T")[0] : "",
+                                  image_url: ev.image_url || "",
+                                  register_url: parsed.register_url || "",
+                                });
+                                setEventImageUrl(ev.image_url || "");
+                                setShowEventModal(true);
+                              }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-400 text-white/50 rounded-lg transition-colors text-xs font-mono font-bold uppercase tracking-wider"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" /> Edit
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!confirm("Delete this event?")) return;
+                                const res = await deleteBiolabEvent(ev.id) as any;
+                                if (res.error) showToast("Delete failed: " + res.error, "err");
+                                else { showToast("Event deleted", "ok"); fetchData(); }
+                              }}
+                              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-500/5 hover:bg-red-500/15 text-red-500/50 hover:text-red-400 rounded-lg transition-colors text-xs font-mono font-bold uppercase tracking-wider"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </GlassCard>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Info note about 3-event display limit */}
+                {eventsData.length > 0 && (
+                  <div className="text-center py-4 border-t border-white/5">
+                    <p className="text-white/25 font-mono text-[10px] uppercase tracking-wider">
+                      Homepage displays the first 3 active events sorted by date · Total: {eventsData.length} event{eventsData.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                )}
+
+                {/* Add/Edit Event Modal */}
+                <AnimatePresence>
+                  {showEventModal && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] flex items-start justify-center pt-10 px-4 pb-10 overflow-y-auto"
+                      onClick={(e) => { if (e.target === e.currentTarget) setShowEventModal(false); }}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.97, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.97, y: 20 }}
+                        className="bg-[#0d0d0d] border border-white/10 rounded-2xl p-7 w-full max-w-2xl shadow-2xl"
+                      >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h3 className="text-xl font-black font-mono uppercase tracking-tight text-white">
+                              {editingEventId ? "Edit Event" : "New Event"}
+                            </h3>
+                            <p className="text-white/30 text-xs font-mono mt-0.5">
+                              {editingEventId ? "Update event details — changes go live immediately" : "This event will appear on the homepage"}
+                            </p>
+                          </div>
+                          <button onClick={() => setShowEventModal(false)} className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/40 hover:text-white">
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-5">
+                          {/* Cover Image Drag & Drop */}
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-2">Cover Image</label>
+                            <div
+                              onDragOver={(e) => { e.preventDefault(); setEventImageDragOver(true); }}
+                              onDragLeave={() => setEventImageDragOver(false)}
+                              onDrop={async (e) => {
+                                e.preventDefault(); setEventImageDragOver(false);
+                                const file = e.dataTransfer.files[0];
+                                if (!file || !file.type.startsWith("image/")) { showToast("Please drop a valid image", "err"); return; }
+                                setEventImageUploading(true);
+                                try {
+                                  const fd = new FormData(); fd.append("file", file);
+                                  const res = await fetch("/api/admin/events/upload", { method: "POST", body: fd });
+                                  const json = await res.json();
+                                  if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                                  setEventImageUrl(json.url); setEventForm(f => ({ ...f, image_url: json.url }));
+                                  showToast("Image uploaded!", "ok");
+                                } catch (err: any) { showToast("Upload failed: " + err.message, "err"); }
+                                finally { setEventImageUploading(false); }
+                              }}
+                              onClick={() => eventImageRef.current?.click()}
+                              className={`relative border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer transition-all min-h-[160px] overflow-hidden ${
+                                eventImageDragOver ? "border-cyan-500 bg-cyan-500/10 scale-[1.01]" : "border-white/10 hover:border-white/25 hover:bg-white/3"
+                              }`}
+                            >
+                              <input ref={eventImageRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                const file = e.target.files?.[0]; if (!file) return;
+                                setEventImageUploading(true);
+                                try {
+                                  const fd = new FormData(); fd.append("file", file);
+                                  const res = await fetch("/api/admin/events/upload", { method: "POST", body: fd });
+                                  const json = await res.json();
+                                  if (!res.ok || json.error) throw new Error(json.error || "Upload failed");
+                                  setEventImageUrl(json.url); setEventForm(f => ({ ...f, image_url: json.url }));
+                                  showToast("Image uploaded!", "ok");
+                                } catch (err: any) { showToast("Upload failed: " + err.message, "err"); }
+                                finally { setEventImageUploading(false); e.target.value = ""; }
+                              }} />
+                              {eventImageUploading ? (
+                                <div className="flex flex-col items-center gap-2 p-8">
+                                  <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                                  <p className="text-white/50 text-xs font-mono">Uploading image...</p>
+                                </div>
+                              ) : eventImageUrl ? (
+                                <>
+                                  <img src={eventImageUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover opacity-55" />
+                                  <div className="relative z-10 flex flex-col items-center gap-2 bg-black/50 px-4 py-2 rounded-lg">
+                                    <Upload className="w-5 h-5 text-white/80" />
+                                    <p className="text-white/80 text-xs font-mono font-bold">Click or drag to replace</p>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex flex-col items-center gap-2 p-8">
+                                  <Upload className="w-8 h-8 text-white/20 mb-1" />
+                                  <p className="text-white text-sm font-mono font-bold">Drag & Drop Cover Image</p>
+                                  <p className="text-white/35 text-xs font-mono">or click to browse — JPG, PNG, WEBP up to 10MB</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Title */}
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Event Title <span className="text-red-400">*</span></label>
+                            <input type="text" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors placeholder-white/20"
+                              placeholder="e.g. Distributed Audio Failsafe Networks & Hardware Telemetry" />
+                          </div>
+
+                          {/* Speaker + Role */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Speaker <span className="text-red-400">*</span></label>
+                              <input type="text" value={eventForm.speaker} onChange={e => setEventForm(f => ({ ...f, speaker: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors placeholder-white/20"
+                                placeholder="e.g. Prof. R. Sharma" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Speaker Role</label>
+                              <input type="text" value={eventForm.speaker_role} onChange={e => setEventForm(f => ({ ...f, speaker_role: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors placeholder-white/20"
+                                placeholder="e.g. BioLabs Faculty Advisor" />
+                            </div>
+                          </div>
+
+                          {/* Description */}
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Description</label>
+                            <textarea value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))} rows={3}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors resize-none placeholder-white/20"
+                              placeholder="Brief description of the event..." />
+                          </div>
+
+                          {/* Dates + Seats */}
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Start Date <span className="text-red-400">*</span></label>
+                              <input type="date" value={eventForm.start_date} onChange={e => setEventForm(f => ({ ...f, start_date: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">End Date <span className="text-red-400">*</span></label>
+                              <input type="date" value={eventForm.end_date} onChange={e => setEventForm(f => ({ ...f, end_date: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Seats Left</label>
+                              <input type="number" value={eventForm.seats_left} onChange={e => setEventForm(f => ({ ...f, seats_left: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors" />
+                            </div>
+                          </div>
+
+                          {/* Registration URL */}
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Registration Google Form URL</label>
+                            <input type="url" value={eventForm.register_url || ""} onChange={e => setEventForm(f => ({ ...f, register_url: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors placeholder-white/20"
+                              placeholder="e.g. https://docs.google.com/forms/d/... (leave empty for standard popup)" />
+                          </div>
+
+                          {/* Category */}
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest mb-1.5">Category</label>
+                            <select value={eventForm.category} onChange={e => setEventForm(f => ({ ...f, category: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors">
+                              <option value="Academic Workshops">Academic Workshops</option>
+                              <option value="Research Seminars">Research Seminars</option>
+                              <option value="Clinical Informatics">Clinical Informatics</option>
+                              <option value="Mentorship Programs">Mentorship Programs</option>
+                              <option value="AI & Technology">AI & Technology</option>
+                            </select>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-3 pt-2">
+                            <button onClick={() => setShowEventModal(false)}
+                              className="flex-1 px-4 py-3 border border-white/10 hover:bg-white/5 text-white/50 hover:text-white font-mono text-xs uppercase tracking-wider rounded-xl transition-all">
+                              Cancel
+                            </button>
+                            <button
+                              disabled={eventSaving || eventImageUploading || !eventForm.title || !eventForm.start_date || !eventForm.end_date}
+                              onClick={async () => {
+                                setEventSaving(true);
+                                try {
+                                  const fd = new FormData();
+                                  fd.append("title", eventForm.title);
+                                  fd.append("description", eventForm.description);
+                                  fd.append("speaker", eventForm.speaker);
+                                  fd.append("speaker_role", eventForm.speaker_role);
+                                  fd.append("category", eventForm.category);
+                                  fd.append("seats_left", eventForm.seats_left);
+                                  fd.append("start_date", eventForm.start_date);
+                                  fd.append("end_date", eventForm.end_date);
+                                  fd.append("image_url", eventImageUrl || eventForm.image_url);
+                                  fd.append("register_url", eventForm.register_url || "");
+                                  const res: any = editingEventId
+                                    ? await updateBiolabEvent(editingEventId, fd)
+                                    : await addBiolabEvent(fd);
+                                  if (res.error) showToast("Save failed: " + res.error, "err");
+                                  else {
+                                    showToast(editingEventId ? "Event updated!" : "Event created!", "ok");
+                                    setShowEventModal(false);
+                                    fetchData();
+                                  }
+                                } catch (err: any) { showToast("Error: " + err.message, "err"); }
+                                finally { setEventSaving(false); }
+                              }}
+                              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black font-mono uppercase text-xs rounded-xl transition-all"
+                            >
+                              {eventSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                              {eventSaving ? "Saving..." : editingEventId ? "Update Event" : "Create Event"}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </motion.div>
             )}
 
@@ -3536,14 +5405,6 @@ export default function UnifiedAdminDashboard() {
                   {/* Sub-tab selection */}
                   <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl max-w-fit shrink-0">
                     <button
-                      onClick={() => setNetworkSubTab("professionals")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
-                        networkSubTab === "professionals" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      Professionals
-                    </button>
-                    <button
                       onClick={() => setNetworkSubTab("facilities")}
                       className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
                         networkSubTab === "facilities" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
@@ -3563,105 +5424,6 @@ export default function UnifiedAdminDashboard() {
                 </div>
 
                 {/* Sub Tab Content */}
-                {networkSubTab === "professionals" && (
-                  <>
-                    <div className="flex justify-end mb-4">
-                      <button onClick={openProfessionalAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
-                        <Plus className="w-4 h-4" /> Add Professional
-                      </button>
-                    </div>
-
-                    {professionalsList.some(p => String(p.id).startsWith("p")) && (
-                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
-                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
-                          <p>Currently showing static fallback professionals. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management (including custom photo uploading, reordering, and permanent deletion).</p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      {professionalsList.map((p) => {
-                        const isFallback = String(p.id).startsWith("p");
-                        return (
-                          <GlassCard key={p.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${p.active ? "opacity-100" : "opacity-55"}`}>
-                            <div className="space-y-4">
-                              <div className="flex gap-4">
-                                <div 
-                                  className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
-                                    professionalUploadingFor === p.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
-                                  }`}
-                                  onDragOver={(e) => e.preventDefault()}
-                                  onDrop={(e) => handleProfessionalPhotoDrop(e, p.id)}
-                                >
-                                  {p.photo_url ? (
-                                    <Image src={p.photo_url} alt={p.name} fill className="object-cover object-top" unoptimized />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{p.name?.[0]}</div>
-                                  )}
-                                  {!isFallback && (
-                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
-                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
-                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                          setProfessionalUploadingFor(p.id);
-                                          const fd = new FormData();
-                                          fd.append("file", file);
-                                          fd.append("professionalId", p.id);
-                                          fetch("/api/professionals/upload", { method: "POST", body: fd })
-                                            .then(r => r.json())
-                                            .then(data => {
-                                              if (data.url) {
-                                                showToast("Professional photo uploaded and synced!");
-                                                fetchData();
-                                              } else {
-                                                showToast(data.error ?? "Photo upload failed", "err");
-                                              }
-                                            })
-                                            .catch(() => showToast("Upload failed", "err"))
-                                            .finally(() => setProfessionalUploadingFor(null));
-                                        }
-                                      }} />
-                                    </label>
-                                  )}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-[9px] font-mono text-orange-400 uppercase tracking-wider truncate">{p.role}</p>
-                                  <h3 className="text-base font-bold text-white truncate">{p.name || "Unnamed"}</h3>
-                                  <p className="text-[10px] text-gray-400 font-mono truncate">{p.institution}</p>
-                                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase mt-1 ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
-                                    {isFallback ? "Static Fallback" : "Live DB"}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative">
-                                <p className="text-xs text-gray-400 font-sans line-clamp-4">
-                                  {p.description || "No description provided."}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                              <div className="flex gap-1">
-                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
-                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
-                              </div>
-                              <div className="flex gap-1.5">
-                                <button disabled={isFallback} onClick={() => toggleProfessionalActive(p)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${p.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
-                                  {p.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                                </button>
-                                <button onClick={() => openProfessionalEditForm(p)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
-                                <button disabled={isFallback} onClick={() => handleProfessionalDelete(p.id, p.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
-                              </div>
-                            </div>
-                          </GlassCard>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
 
                 {networkSubTab === "facilities" && (
                   <>
@@ -3883,6 +5645,277 @@ export default function UnifiedAdminDashboard() {
                 )}
               </motion.div>
             )}
+            {/* OUR MEMBERS TAB */}
+            {activeTab === "members" && (
+              <motion.div key="members" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black font-mono uppercase tracking-tight text-white">Our Members</h2>
+                    <p className="text-white/50 text-sm">Manage dynamic profiles appearing on the Our Members page.</p>
+                  </div>
+                  
+                  {/* Sub-tab selection */}
+                  <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl max-w-fit shrink-0">
+                    <button
+                      onClick={() => setMembersSubTab("ambassadors")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
+                        membersSubTab === "ambassadors" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Brand Ambassadors
+                    </button>
+                    <button
+                      onClick={() => setMembersSubTab("professionals")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${
+                        membersSubTab === "professionals" ? "bg-orange-600 text-white shadow-md" : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Healthcare Professionals
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub Tab Content */}
+                {membersSubTab === "professionals" && (
+                  <>
+                    <div className="flex justify-end mb-4">
+                      <button onClick={openProfessionalAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Professional
+                      </button>
+                    </div>
+
+                    {professionalsList.some(p => String(p.id).startsWith("p")) && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                          <p>Currently showing static fallback professionals. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database management (including custom photo uploading, reordering, and permanent deletion).</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {professionalsList.map((p) => {
+                        const isFallback = String(p.id).startsWith("p");
+                        return (
+                          <GlassCard key={p.id} className={`p-5 flex flex-col justify-between gap-4 border border-white/5 bg-[#0a0a0a] hover:border-white/10 transition-all ${p.active ? "opacity-100" : "opacity-55"}`}>
+                            <div className="space-y-4">
+                              <div className="flex gap-4">
+                                <div 
+                                  className={`w-20 h-20 rounded-xl overflow-hidden relative border shrink-0 group/avatar cursor-pointer transition-all duration-300 ${
+                                    professionalUploadingFor === p.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                                  }`}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => handleProfessionalPhotoDrop(e, p.id)}
+                                >
+                                  {p.photo_url ? (
+                                    <Image src={p.photo_url} alt={p.name} fill className="object-cover object-top" unoptimized />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl font-bold bg-[#111]">{p.name?.[0]}</div>
+                                  )}
+                                  {!isFallback && (
+                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400 animate-bounce" /> Drag & Drop
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          setProfessionalUploadingFor(p.id);
+                                          const fd = new FormData();
+                                          fd.append("file", file);
+                                          fd.append("professionalId", p.id);
+                                          fetch("/api/professionals/upload", { method: "POST", body: fd })
+                                            .then(r => r.json())
+                                            .then(data => {
+                                              if (data.url) {
+                                                showToast("Professional photo uploaded and synced!");
+                                                fetchData();
+                                              } else {
+                                                showToast(data.error ?? "Photo upload failed", "err");
+                                              }
+                                            })
+                                            .catch(() => showToast("Upload failed", "err"))
+                                            .finally(() => setProfessionalUploadingFor(null));
+                                        }
+                                      }} />
+                                    </label>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[9px] font-mono text-[#ff7a00] uppercase tracking-wider truncate">{p.role || "Professional"}</p>
+                                  <h3 className="text-sm font-bold text-white truncate">{p.name || "Unnamed"}</h3>
+                                  <p className="text-xs text-gray-400 truncate">{p.institution || "No Institution"}</p>
+                                </div>
+                              </div>
+                              
+                              <p className="text-xs text-white/60 line-clamp-3 leading-relaxed font-sans">{p.description || "No description provided."}</p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                              <div className="flex gap-1">
+                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                                <button disabled={isFallback} onClick={() => moveProfessionalOrder(p, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                              </div>
+                              <div className="flex gap-1.5">
+                                <button disabled={isFallback} onClick={() => toggleProfessionalActive(p)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${p.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                                  {p.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                </button>
+                                <button onClick={() => openProfessionalEditForm(p)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                                <button disabled={isFallback} onClick={() => handleProfessionalDelete(p.id, p.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                              </div>
+                            </div>
+                          </GlassCard>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {membersSubTab === "ambassadors" && (
+                  <>
+                    <div className="flex justify-end mb-4">
+                      <button onClick={openAmbassadorAddForm} className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono uppercase tracking-wider text-xs rounded-xl">
+                        <Plus className="w-4 h-4" /> Add Ambassador
+                      </button>
+                    </div>
+
+                    {ambassadorsList.some(a => String(a.id).startsWith("amb-fallback-")) && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 text-amber-200 text-xs leading-relaxed font-mono">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase mb-1">Database Schema Notice</p>
+                          <p>Currently showing static fallback ambassadors. Run <code className="text-white bg-black/40 px-1 py-0.5 rounded">supabase_global_network_ambassadors_schema.sql</code> in your Supabase SQL editor to create the table and enable dynamic database changes (including photo uploading, reordering, and permanent deletion).</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {[...ambassadorsList].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)).map((amb) => {
+                        const isFallback = String(amb.id).startsWith("amb-fallback-");
+                        return (
+                          <div
+                            key={amb.id}
+                            draggable={!isFallback}
+                            onDragStart={() => setAmbassadorDragId(amb.id)}
+                            onDragOver={(e: React.DragEvent) => { e.preventDefault(); setAmbassadorDragOverId(amb.id); }}
+                            onDragLeave={() => setAmbassadorDragOverId(null)}
+                            onDrop={(e: React.DragEvent) => { e.preventDefault(); if (ambassadorDragId) handleAmbassadorDragReorder(ambassadorDragId, amb.id); setAmbassadorDragId(null); setAmbassadorDragOverId(null); }}
+                            onDragEnd={() => { setAmbassadorDragId(null); setAmbassadorDragOverId(null); }}
+                            className={`${isFallback ? "" : "cursor-grab active:cursor-grabbing"} select-none`}
+                          >
+                            <GlassCard
+                              className={`p-5 flex flex-col gap-4 border transition-all ${
+                                ambassadorDragOverId === amb.id ? "border-orange-400 bg-orange-500/5 scale-[1.02]" :
+                                ambassadorDragId === amb.id ? "border-white/20 opacity-40" :
+                                amb.active ? "border-white/5 bg-[#0a0a0a] hover:border-white/10" : "border-white/5 bg-[#0a0a0a] opacity-55"
+                              }`}
+                            >
+                              {/* Drag handle & state */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {!isFallback && <GripVertical className="w-4 h-4 text-white/20" />}
+                                  <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${isFallback ? "bg-zinc-800 text-zinc-400" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+                                    {isFallback ? "Static Fallback" : "Live DB"}
+                                  </span>
+                                </div>
+                                <span className={`text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full ${ amb.active ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400" }`}>
+                                  {amb.active ? "Active" : "Disabled"}
+                                </span>
+                              </div>
+
+                              <div className="flex gap-4">
+                                {/* Photo Upload Box */}
+                                <div
+                                  className={`w-20 h-20 rounded-full overflow-hidden relative border shrink-0 group/photo cursor-pointer flex items-center justify-center bg-[#111] transition-all duration-300 ${
+                                    ambassadorUploadingFor === amb.id ? "border-orange-500 bg-orange-500/20 scale-105" : "border-white/10"
+                                  }`}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={(e) => handleAmbassadorPhotoDrop(e, amb.id, "photo")}
+                                >
+                                  {amb.photo_url || amb.photo ? (
+                                    <Image src={amb.photo_url || amb.photo} alt={amb.name} fill className="object-cover" unoptimized />
+                                  ) : (
+                                    <div className="text-gray-555 text-[10px] font-mono text-center px-1">No Photo</div>
+                                  )}
+                                  {!isFallback && (
+                                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/photo:opacity-100 flex flex-col items-center justify-center transition-opacity text-[8px] font-mono font-bold text-white uppercase tracking-widest cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5 mb-1 text-orange-400" /> Upload Photo
+                                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAmbassadorPhotoUpload(e, amb.id, "photo")} />
+                                    </label>
+                                  )}
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-sm font-bold text-white truncate">{amb.name || "Unnamed"}</h3>
+                                  <p className="text-xs text-orange-400 font-mono truncate">{amb.role}</p>
+                                  <p className="text-[10px] text-gray-450 truncate">{amb.institution}</p>
+                                  
+                                  {/* Institution Logo Upload Box */}
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <span className="text-[9px] font-mono text-gray-500 uppercase">Logo:</span>
+                                    <div 
+                                      className={`w-8 h-8 rounded-lg overflow-hidden relative border bg-white/5 flex items-center justify-center group/logo cursor-pointer shrink-0 transition-all ${
+                                        ambassadorLogoUploadingFor === amb.id ? "border-blue-500 bg-blue-500/20" : "border-white/10"
+                                      }`}
+                                      onDragOver={(e) => e.preventDefault()}
+                                      onDrop={(e) => handleAmbassadorPhotoDrop(e, amb.id, "logo")}
+                                    >
+                                      {amb.logo_url || amb.logo ? (
+                                        <Image src={amb.logo_url || amb.logo} alt={amb.institution} fill className="object-contain p-1" unoptimized />
+                                      ) : (
+                                        <span className="text-[7px] text-gray-500 font-mono">None</span>
+                                      )}
+                                      {!isFallback && (
+                                        <label className="absolute inset-0 bg-black/75 opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity text-[6px] text-white font-mono uppercase cursor-pointer">
+                                          <Upload className="w-2.5 h-2.5" />
+                                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAmbassadorPhotoUpload(e, amb.id, "logo")} />
+                                        </label>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {amb.quote && (
+                                <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
+                                  <p className="text-[10px] text-gray-455 italic line-clamp-2">"{amb.quote}"</p>
+                                </div>
+                              )}
+
+                              {/* Color Swatch / Technical Settings */}
+                              <div className="flex gap-2 text-[10px] font-mono">
+                                <div className="flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full border border-white/20" style={{ backgroundColor: amb.accent_color || "#0B4A9E" }}></span>
+                                  <span className="text-gray-555 text-[8px]">{amb.accent_color || "#0B4A9E"}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full border border-white/20" style={{ backgroundColor: amb.accent_color_sec || "#E60717" }}></span>
+                                  <span className="text-gray-555 text-[8px]">{amb.accent_color_sec || "#E60717"}</span>
+                                </div>
+                              </div>
+
+                              {/* Actions footer */}
+                              <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+                                <div className="flex gap-1">
+                                  <button disabled={isFallback} onClick={() => moveAmbassadorOrder(amb, "up")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5 text-gray-400"/></button>
+                                  <button disabled={isFallback} onClick={() => moveAmbassadorOrder(amb, "down")} className="p-1.5 bg-white/5 rounded disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5 text-gray-400"/></button>
+                                </div>
+                                <div className="flex gap-1.5">
+                                  <button disabled={isFallback} onClick={() => toggleAmbassadorActive(amb)} className={`p-1.5 rounded transition-all disabled:opacity-30 ${amb.active ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"}`}>
+                                    {amb.active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                  </button>
+                                  <button onClick={() => openAmbassadorEditForm(amb)} className="p-1.5 bg-blue-500/10 text-blue-400 rounded"><Edit3 className="w-3.5 h-3.5"/></button>
+                                  <button disabled={isFallback} onClick={() => handleAmbassadorDelete(amb.id, amb.name)} className="p-1.5 bg-red-500/10 text-red-400 rounded disabled:opacity-30"><Trash2 className="w-3.5 h-3.5"/></button>
+                                </div>
+                              </div>
+                            </GlassCard>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
 
             {/* PODCASTS TAB */}
             {activeTab === "podcasts" && (
@@ -4046,7 +6079,7 @@ export default function UnifiedAdminDashboard() {
                 )}
 
                 {brandingActiveSubTab === "assets" && (() => {
-                  const rideUrl = typeof window !== 'undefined' ? `${window.location.origin}/ride/DEMO-SAFE-001` : "https://healix-nu.vercel.app/ride/DEMO-SAFE-001";
+                  const rideUrl = typeof window !== 'undefined' ? `${window.location.origin}/ride/DEMO-SAFE-001` : "https://www.healix-technologies.com/ride/DEMO-SAFE-001";
                   const copyUrl = () => {
                     navigator.clipboard.writeText(rideUrl);
                     setBrandingCopied(true);
@@ -5019,65 +7052,191 @@ export default function UnifiedAdminDashboard() {
                   <input required value={professionalForm.institution} onChange={e => setProfessionalForm(f => ({ ...f, institution: e.target.value }))} placeholder="e.g. AIIMS Delhi, IIT Madras" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
                 </div>
 
+                {/* Qualifications */}
                 <div>
-                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo URL</label>
-                  <input value={professionalForm.photo_url} onChange={e => setProfessionalForm(f => ({ ...f, photo_url: e.target.value }))} placeholder="https://..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Qualifications (one per line) *</label>
+                  <textarea required rows={2} value={professionalForm.qualifications || ""} onChange={e => setProfessionalForm(f => ({ ...f, qualifications: e.target.value }))} placeholder="e.g. MBBS, MS, MCh (Neurosurgery)&#10;Fellowship in Advanced Spine Surgery" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none font-sans" />
                 </div>
 
-                <div 
-                  className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-8 flex flex-col items-center justify-center relative transition-all duration-300"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) {
-                      const id = editingProfessionalId || "temp";
-                      if (String(id).startsWith("p")) {
-                        showToast("Cannot upload photo for static fallback professional. Run SQL schema first.", "err");
-                        return;
-                      }
-                      const fd = new FormData();
-                      fd.append("file", file);
-                      fd.append("professionalId", id);
-                      fetch("/api/professionals/upload", { method: "POST", body: fd })
-                        .then(r => r.json())
-                        .then(data => {
-                          if (data.url) {
-                            setProfessionalForm((f: any) => ({ ...f, photo_url: data.url }));
-                            showToast("Professional photo uploaded successfully!");
-                          } else {
-                            showToast(data.error || "Upload failed", "err");
+                {/* Hospital Affiliation Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Affiliated Hospital Name *</label>
+                    <input required value={professionalForm.hospital_name || ""} onChange={e => setProfessionalForm(f => ({ ...f, hospital_name: e.target.value }))} placeholder="e.g. SHRI GANGARAM HOSPITAL" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Affiliated Hospital Location *</label>
+                    <input required value={professionalForm.hospital_location || ""} onChange={e => setProfessionalForm(f => ({ ...f, hospital_location: e.target.value }))} placeholder="e.g. New Delhi, India" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                {/* Double Drag-and-Drop Zones for Portrait and Hospital Logo */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Doctor Portrait Upload */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Doctor Photo (Portrait)</label>
+                    <div 
+                      className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-4 flex flex-col items-center justify-center relative transition-all duration-300 min-h-[140px] text-center"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          const id = editingProfessionalId || "temp";
+                          if (String(id).startsWith("p")) {
+                            showToast("Cannot upload photo for static fallback professional. Run SQL schema first.", "err");
+                            return;
                           }
-                        });
-                    }
-                  }}
-                >
-                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
-                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Image Here to Upload</p>
-                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
-                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const id = editingProfessionalId || "temp";
-                      if (String(id).startsWith("p")) {
-                        showToast("Cannot upload photo for static fallback professional. Run SQL schema first.", "err");
-                        return;
-                      }
-                      const fd = new FormData();
-                      fd.append("file", file);
-                      fd.append("professionalId", id);
-                      fetch("/api/professionals/upload", { method: "POST", body: fd })
-                        .then(r => r.json())
-                        .then(data => {
-                          if (data.url) {
-                            setProfessionalForm((f: any) => ({ ...f, photo_url: data.url }));
-                            showToast("Professional photo uploaded successfully!");
-                          } else {
-                            showToast(data.error || "Upload failed", "err");
+                          handleProfessionalModalAssetUpload(file, "photo");
+                        }
+                      }}
+                    >
+                      {professionalUploadingFor ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2" />
+                          <p className="text-[10px] text-gray-400 font-mono">Uploading photo...</p>
+                        </div>
+                      ) : professionalForm.photo_url ? (
+                        <div className="relative group w-20 h-20 rounded-full overflow-hidden border border-white/10">
+                          <Image 
+                            src={professionalForm.photo_url} 
+                            alt="Preview" 
+                            fill 
+                            className="object-cover" 
+                            unoptimized 
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full z-20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setProfessionalForm((f: any) => ({ ...f, photo_url: "" }));
+                              }}
+                              className="p-1.5 rounded-full bg-red-600/80 hover:bg-red-600 text-white z-30"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                          <Upload className="w-6 h-6 text-orange-400 mb-1.5 animate-pulse" />
+                          <p className="text-[10px] text-white font-mono uppercase tracking-wider">Drag & Drop Photo</p>
+                          <p className="text-[9px] text-gray-500 mt-0.5 font-mono">Or click to select</p>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const id = editingProfessionalId || "temp";
+                            if (String(id).startsWith("p")) {
+                              showToast("Cannot upload photo for static fallback professional. Run SQL schema first.", "err");
+                              return;
+                            }
+                            handleProfessionalModalAssetUpload(file, "photo");
                           }
-                        });
-                    }
-                  }} />
+                        }} 
+                      />
+                    </div>
+                    <input 
+                      type="text"
+                      value={professionalForm.photo_url || ""}
+                      onChange={(e) => setProfessionalForm((f: any) => ({ ...f, photo_url: e.target.value }))}
+                      placeholder="Or paste photo URL here..."
+                      className="w-full mt-2 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none placeholder-gray-600 font-mono"
+                    />
+                  </div>
+
+                  {/* Hospital Logo Upload */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Hospital Logo / Image</label>
+                    <div 
+                      className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-4 flex flex-col items-center justify-center relative transition-all duration-300 min-h-[140px] text-center"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          const id = editingProfessionalId || "temp";
+                          if (String(id).startsWith("p")) {
+                            showToast("Cannot upload hospital image for static fallback professional. Run SQL schema first.", "err");
+                            return;
+                          }
+                          handleProfessionalModalAssetUpload(file, "hospital");
+                        }
+                      }}
+                    >
+                      {professionalHospitalUploadingFor ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2" />
+                          <p className="text-[10px] text-gray-400 font-mono">Uploading image...</p>
+                        </div>
+                      ) : professionalForm.hospital_image ? (
+                        <div className="relative group w-20 h-20 flex items-center justify-center bg-[#0d0d0d] rounded-lg border border-white/10 p-1.5">
+                          <div className="relative w-full h-full">
+                            <Image 
+                              src={professionalForm.hospital_image} 
+                              alt="Hospital Preview" 
+                              fill 
+                              className="object-contain" 
+                              unoptimized 
+                            />
+                          </div>
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg z-20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setProfessionalForm((f: any) => ({ ...f, hospital_image: "" }));
+                              }}
+                              className="p-1.5 rounded-full bg-red-600/80 hover:bg-red-600 text-white z-30"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                          <Upload className="w-6 h-6 text-orange-400 mb-1.5 animate-pulse" />
+                          <p className="text-[10px] text-white font-mono uppercase tracking-wider">Drag & Drop Logo</p>
+                          <p className="text-[9px] text-gray-500 mt-0.5 font-mono">Or click to select</p>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const id = editingProfessionalId || "temp";
+                            if (String(id).startsWith("p")) {
+                              showToast("Cannot upload hospital image for static fallback professional. Run SQL schema first.", "err");
+                              return;
+                            }
+                            handleProfessionalModalAssetUpload(file, "hospital");
+                          }
+                        }} 
+                      />
+                    </div>
+                    <input 
+                      type="text"
+                      value={professionalForm.hospital_image || ""}
+                      onChange={(e) => setProfessionalForm((f: any) => ({ ...f, hospital_image: e.target.value }))}
+                      placeholder="Or paste hospital logo URL..."
+                      className="w-full mt-2 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none placeholder-gray-600 font-mono"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -5158,10 +7317,15 @@ export default function UnifiedAdminDashboard() {
                 </div>
 
                 <div 
-                  className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-6 flex flex-col items-center justify-center relative transition-all duration-300"
+                  className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center relative transition-all duration-300 ${
+                    facilityModalUploading 
+                      ? "border-orange-500 bg-orange-500/10 cursor-not-allowed" 
+                      : "border-white/10 hover:border-orange-500/50 bg-[#070707]"
+                  }`}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
+                    if (facilityModalUploading) return;
                     const file = e.dataTransfer.files?.[0];
                     if (file) {
                       const id = editingFacilityId || "temp";
@@ -5173,46 +7337,62 @@ export default function UnifiedAdminDashboard() {
                       fd.append("file", file);
                       fd.append("facilityId", id);
                       fd.append("type", "campus");
+                      setFacilityModalUploading(true);
                       fetch("/api/facilities/upload", { method: "POST", body: fd })
                         .then(r => r.json())
                         .then(data => {
                           if (data.url) {
                             setFacilityForm((f: any) => ({ ...f, image_url: data.url }));
-                            showToast("Campus backdrop uploaded successfully!");
+                            showToast("Campus photo uploaded!");
                           } else {
                             showToast(data.error || "Upload failed", "err");
                           }
-                        });
+                        })
+                        .catch(() => showToast("Upload failed", "err"))
+                        .finally(() => setFacilityModalUploading(false));
                     }
                   }}
                 >
-                  <Upload className="w-6 h-6 text-orange-400 mb-2 animate-pulse" />
-                  <p className="text-xs text-white font-mono uppercase tracking-wider">Drag & Drop Campus Photo here to upload</p>
-                  <p className="text-[10px] text-gray-500 mt-1 font-mono">Or click to select a file locally</p>
-                  <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const id = editingFacilityId || "temp";
-                      if (String(id).startsWith("f")) {
-                        showToast("Cannot upload photo for static fallback facility. Run SQL schema first.", "err");
-                        return;
+                  <Upload className={`w-6 h-6 mb-2 ${facilityModalUploading ? "text-orange-300 animate-spin" : "text-orange-400 animate-pulse"}`} />
+                  <p className="text-xs text-white font-mono uppercase tracking-wider">
+                    {facilityModalUploading ? "Uploading... Please wait" : "Drag & Drop Campus Photo here to upload"}
+                  </p>
+                  <p className="text-[10px] text-gray-500 mt-1 font-mono">
+                    {facilityModalUploading ? "Save Changes will be enabled after upload completes" : "Or click to select a file locally"}
+                  </p>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    disabled={facilityModalUploading}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full disabled:cursor-not-allowed" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && !facilityModalUploading) {
+                        const id = editingFacilityId || "temp";
+                        if (String(id).startsWith("f")) {
+                          showToast("Cannot upload photo for static fallback facility. Run SQL schema first.", "err");
+                          return;
+                        }
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        fd.append("facilityId", id);
+                        fd.append("type", "campus");
+                        setFacilityModalUploading(true);
+                        fetch("/api/facilities/upload", { method: "POST", body: fd })
+                          .then(r => r.json())
+                          .then(data => {
+                            if (data.url) {
+                              setFacilityForm((f: any) => ({ ...f, image_url: data.url }));
+                              showToast("Campus photo uploaded successfully!");
+                            } else {
+                              showToast(data.error || "Upload failed", "err");
+                            }
+                          })
+                          .catch(() => showToast("Upload failed", "err"))
+                          .finally(() => setFacilityModalUploading(false));
                       }
-                      const fd = new FormData();
-                      fd.append("file", file);
-                      fd.append("facilityId", id);
-                      fd.append("type", "campus");
-                      fetch("/api/facilities/upload", { method: "POST", body: fd })
-                        .then(r => r.json())
-                        .then(data => {
-                          if (data.url) {
-                            setFacilityForm((f: any) => ({ ...f, image_url: data.url }));
-                            showToast("Campus backdrop uploaded successfully!");
-                          } else {
-                            showToast(data.error || "Upload failed", "err");
-                          }
-                        });
-                    }
-                  }} />
+                    }} 
+                  />
                 </div>
 
                 <div>
@@ -5307,8 +7487,13 @@ export default function UnifiedAdminDashboard() {
 
                 <div className="flex gap-3 pt-4 border-t border-white/5">
                   <button type="button" onClick={() => setShowFacilityForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
-                  <button type="submit" disabled={facilitySubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
-                    {facilitySubmitting ? "Saving..." : editingFacilityId ? "Save Changes" : "Create Facility"}
+                  <button 
+                    type="submit" 
+                    disabled={facilitySubmitting || facilityModalUploading} 
+                    title={facilityModalUploading ? "Please wait for photo upload to complete" : undefined}
+                    className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {facilityModalUploading ? "Uploading Photo..." : facilitySubmitting ? "Saving..." : editingFacilityId ? "Save Changes" : "Create Facility"}
                   </button>
                 </div>
               </form>
@@ -5432,6 +7617,275 @@ export default function UnifiedAdminDashboard() {
                   <button type="button" onClick={() => setShowEngineerForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
                   <button type="submit" disabled={engineerSubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
                     {engineerSubmitting ? "Saving..." : editingEngineerId ? "Save Changes" : "Create Node"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Network Ambassadors Modal */}
+      <AnimatePresence>
+        {showAmbassadorForm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={() => setShowAmbassadorForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-bold text-white font-mono uppercase tracking-wider">{editingAmbassadorId ? "Edit Ambassador" : "Add Brand Ambassador"}</h2>
+                <button onClick={() => setShowAmbassadorForm(false)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              {ambassadorDbAlert && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-red-200 text-xs leading-relaxed font-mono">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold uppercase mb-1">Database Table Missing</p>
+                    <p>The database table 'global_ambassadors' is missing in Supabase. You must run `supabase_global_network_ambassadors_schema.sql` in your Supabase SQL editor to create the table and enable dynamic database changes.</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleAmbassadorSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Name *</label>
+                    <input required value={ambassadorForm.name} onChange={e => setAmbassadorForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="e.g. Rohan Verma" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Role *</label>
+                    <input required value={ambassadorForm.role} onChange={e => setAmbassadorForm((f: any) => ({ ...f, role: e.target.value }))} placeholder="e.g. Global Brand Ambassador" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Institution *</label>
+                    <input required value={ambassadorForm.institution} onChange={e => setAmbassadorForm((f: any) => ({ ...f, institution: e.target.value }))} placeholder="e.g. IIT Delhi" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Email *</label>
+                    <input required type="email" value={ambassadorForm.email} onChange={e => setAmbassadorForm((f: any) => ({ ...f, email: e.target.value }))} placeholder="ambassador@iitd.ac.in" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Phone *</label>
+                    <input required value={ambassadorForm.phone} onChange={e => setAmbassadorForm((f: any) => ({ ...f, phone: e.target.value }))} placeholder="+91 98765 43210" className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Address *</label>
+                    <input required value={ambassadorForm.address} onChange={e => setAmbassadorForm((f: any) => ({ ...f, address: e.target.value }))} placeholder="IIT Delhi, Hauz Khas..." className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Quote *</label>
+                  <textarea required value={ambassadorForm.quote} onChange={e => setAmbassadorForm((f: any) => ({ ...f, quote: e.target.value }))} placeholder="Collaborating for a better tomorrow..." rows={3} className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none resize-none" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Primary Accent Color</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={ambassadorForm.accent_color || "#0B4A9E"} onChange={e => setAmbassadorForm((f: any) => ({ ...f, accent_color: e.target.value }))} className="w-10 h-10 bg-transparent border-0 cursor-pointer" />
+                      <input value={ambassadorForm.accent_color || ""} onChange={e => setAmbassadorForm((f: any) => ({ ...f, accent_color: e.target.value }))} placeholder="#0B4A9E" className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none font-mono" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Secondary Accent Color</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={ambassadorForm.accent_color_sec || "#E60717"} onChange={e => setAmbassadorForm((f: any) => ({ ...f, accent_color_sec: e.target.value }))} className="w-10 h-10 bg-transparent border-0 cursor-pointer" />
+                      <input value={ambassadorForm.accent_color_sec || ""} onChange={e => setAmbassadorForm((f: any) => ({ ...f, accent_color_sec: e.target.value }))} placeholder="#E60717" className="flex-1 bg-[#050505] border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none font-mono" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Photo Drag & Drop Zone */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Photo (Portrait)</label>
+                    <div 
+                      className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-4 flex flex-col items-center justify-center relative transition-all duration-300 min-h-[140px] text-center"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          const id = editingAmbassadorId || "temp";
+                          if (String(id).startsWith("amb-fallback-")) {
+                            showToast("Cannot upload photo for static fallback ambassador. Run SQL schema first.", "err");
+                            return;
+                          }
+                          handleModalAssetUpload(file, "photo");
+                        }
+                      }}
+                    >
+                      {ambassadorUploadingFor ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2" />
+                          <p className="text-[10px] text-gray-400 font-mono">Uploading photo...</p>
+                        </div>
+                      ) : ambassadorForm.photo_url ? (
+                        <div className="relative group w-20 h-20 rounded-full overflow-hidden border border-white/10">
+                          <Image 
+                            src={ambassadorForm.photo_url} 
+                            alt="Preview" 
+                            fill 
+                            className="object-cover" 
+                            unoptimized 
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full z-20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setAmbassadorForm((f: any) => ({ ...f, photo_url: "" }));
+                              }}
+                              className="p-1.5 rounded-full bg-red-600/80 hover:bg-red-600 text-white z-30"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                          <Upload className="w-6 h-6 text-orange-400 mb-1.5 animate-pulse" />
+                          <p className="text-[10px] text-white font-mono uppercase tracking-wider">Drag & Drop Photo</p>
+                          <p className="text-[9px] text-gray-500 mt-0.5 font-mono">Or click to select</p>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const id = editingAmbassadorId || "temp";
+                            if (String(id).startsWith("amb-fallback-")) {
+                              showToast("Cannot upload photo for static fallback ambassador. Run SQL schema first.", "err");
+                              return;
+                            }
+                            handleModalAssetUpload(file, "photo");
+                          }
+                        }} 
+                      />
+                    </div>
+                    <input 
+                      type="text"
+                      value={ambassadorForm.photo_url || ""}
+                      onChange={(e) => setAmbassadorForm((f: any) => ({ ...f, photo_url: e.target.value }))}
+                      placeholder="Or paste photo URL here..."
+                      className="w-full mt-2 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none placeholder-gray-600 font-mono"
+                    />
+                  </div>
+
+                  {/* Logo Drag & Drop Zone */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-400 mb-1.5 uppercase tracking-wider">Institution Logo</label>
+                    <div 
+                      className="border-2 border-dashed border-white/10 hover:border-orange-500/50 bg-[#070707] rounded-xl p-4 flex flex-col items-center justify-center relative transition-all duration-300 min-h-[140px] text-center"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          const id = editingAmbassadorId || "temp";
+                          if (String(id).startsWith("amb-fallback-")) {
+                            showToast("Cannot upload logo for static fallback ambassador. Run SQL schema first.", "err");
+                            return;
+                          }
+                          handleModalAssetUpload(file, "logo");
+                        }
+                      }}
+                    >
+                      {ambassadorLogoUploadingFor ? (
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2" />
+                          <p className="text-[10px] text-gray-400 font-mono">Uploading logo...</p>
+                        </div>
+                      ) : ambassadorForm.logo_url ? (
+                        <div className="relative group w-20 h-20 flex items-center justify-center bg-[#0d0d0d] rounded-lg border border-white/10 p-1.5">
+                          <div className="relative w-full h-full">
+                            <Image 
+                              src={ambassadorForm.logo_url} 
+                              alt="Logo Preview" 
+                              fill 
+                              className="object-contain" 
+                              unoptimized 
+                            />
+                          </div>
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg z-20">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setAmbassadorForm((f: any) => ({ ...f, logo_url: "" }));
+                              }}
+                              className="p-1.5 rounded-full bg-red-600/80 hover:bg-red-600 text-white z-30"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                          <Upload className="w-6 h-6 text-orange-400 mb-1.5 animate-pulse" />
+                          <p className="text-[10px] text-white font-mono uppercase tracking-wider">Drag & Drop Logo</p>
+                          <p className="text-[9px] text-gray-500 mt-0.5 font-mono">Or click to select</p>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const id = editingAmbassadorId || "temp";
+                            if (String(id).startsWith("amb-fallback-")) {
+                              showToast("Cannot upload logo for static fallback ambassador. Run SQL schema first.", "err");
+                              return;
+                            }
+                            handleModalAssetUpload(file, "logo");
+                          }
+                        }} 
+                      />
+                    </div>
+                    <input 
+                      type="text"
+                      value={ambassadorForm.logo_url || ""}
+                      onChange={(e) => setAmbassadorForm((f: any) => ({ ...f, logo_url: e.target.value }))}
+                      placeholder="Or paste logo URL here..."
+                      className="w-full mt-2 bg-[#050505] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none placeholder-gray-600 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="amb_active" checked={ambassadorForm.active} onChange={e => setAmbassadorForm((f: any) => ({ ...f, active: e.target.checked }))} className="w-4 h-4 rounded border-white/10 bg-[#050505] text-orange-600 focus:ring-0 focus:ring-offset-0" />
+                  <label htmlFor="amb_active" className="text-xs font-mono text-gray-400 uppercase tracking-wider select-none cursor-pointer">Active / Visible on site</label>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-white/5">
+                  <button type="button" onClick={() => setShowAmbassadorForm(false)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={ambassadorSubmitting} className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold font-mono text-sm uppercase tracking-wider disabled:opacity-50">
+                    {ambassadorSubmitting ? "Saving..." : editingAmbassadorId ? "Save Changes" : "Register Ambassador"}
                   </button>
                 </div>
               </form>

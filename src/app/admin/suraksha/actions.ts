@@ -5,6 +5,7 @@ import { checkIsAdmin } from "@/app/admin/actions";
 import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
 import { Resend } from "resend";
+import { getEmailTemplateHtml } from "@/utils/emailTemplate";
 
 export async function getSurakshaData() {
   try {
@@ -102,18 +103,33 @@ export async function triggerSimulationEvent(deviceId: string, type: 'failsafe' 
     // Trigger simulated emergency email via Resend
     if (process.env.RESEND_API_KEY && process.env.ADMIN_EMAIL) {
       const resend = new Resend(process.env.RESEND_API_KEY);
+      const subject = `🚨 CRITICAL SOS: Vehicle ${deviceId}`;
+      
       await resend.emails.send({
         from: "Suraksha Operations <alerts@resend.dev>",
         to: process.env.ADMIN_EMAIL,
-        subject: `🚨 CRITICAL SOS: Vehicle ${deviceId}`,
-        html: `
-          <div style="font-family: sans-serif; background: #111; color: #fff; padding: 30px; border-radius: 10px; border-top: 5px solid #ef4444;">
-            <h2 style="color: #ef4444;">Project Suraksha Emergency Alert</h2>
-            <p>An SOS has been manually triggered from the hardware in device <strong>${deviceId}</strong>.</p>
-            <p>Failsafe tracking is active. Incident report has been opened in the Device Operations Center.</p>
-            <a href="http://localhost:3000/admin/suraksha" style="display:inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">Open Operations Center</a>
-          </div>
-        `
+        subject: subject,
+        html: getEmailTemplateHtml({
+          subjectTitle: subject,
+          recipientName: "Operations Security Administrator",
+          bodyHtml: `
+            <p style="margin-top: 0; margin-bottom: 16px;">
+              A critical security alarm has been manually triggered from the onboard hardware of device/vehicle <strong>${deviceId}</strong>.
+            </p>
+            <div style="background-color: #fef2f2; border: 1.5px solid #fecaca; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; margin-bottom: 10px; color: #dc2626; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">🚨 Simulation Alert Incident</h4>
+              <p style="margin: 0 0 10px 0; font-size: 13.5px; color: #09090b;"><strong>Device ID:</strong> ${deviceId}</p>
+              <p style="margin: 0 0 10px 0; font-size: 13.5px; color: #09090b;"><strong>Details:</strong> Failsafe tracking is active. Incident report has been registered in the Device Operations Center.</p>
+              
+              <div style="margin-top: 15px;">
+                <a href="http://localhost:3000/admin/suraksha" style="display: inline-block; background-color: #dc2626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Open Operations Center</a>
+              </div>
+            </div>
+          `,
+          senderName: "Project Suraksha Sentinel",
+          senderRole: "Hardware Failsafe Engine",
+          senderEmail: "alerts@healix-technologies.com"
+        })
       });
     }
   }

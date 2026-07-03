@@ -13,11 +13,12 @@ export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("file") as File;
   const professionalId = formData.get("professionalId") as string;
+  const type = formData.get("type") as string || "photo"; // "photo" or "hospital"
 
   if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
   const ext = file.name.split(".").pop();
-  const fileName = `${professionalId || 'temp'}-${Date.now()}.${ext}`;
+  const fileName = `${type}-${professionalId || 'temp'}-${Date.now()}.${ext}`;
   const arrayBuffer = await file.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
 
@@ -54,9 +55,16 @@ export async function POST(req: Request) {
 
   // If professionalId is a real UUID, update the record in db
   if (professionalId && professionalId !== "temp" && !professionalId.startsWith("p")) {
+    const updatePayload: Record<string, string> = {};
+    if (type === "hospital") {
+      updatePayload.hospital_image = urlData.publicUrl;
+    } else {
+      updatePayload.photo_url = urlData.publicUrl;
+    }
+
     await adminSupabase
       .from("global_professionals")
-      .update({ photo_url: urlData.publicUrl })
+      .update(updatePayload)
       .eq("id", professionalId);
   }
 

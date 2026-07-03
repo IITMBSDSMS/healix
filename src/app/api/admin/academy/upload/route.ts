@@ -11,6 +11,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail && user.email !== adminEmail) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const mentorId = formData.get("mentorId") as string;

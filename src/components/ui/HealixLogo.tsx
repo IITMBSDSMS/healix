@@ -16,17 +16,20 @@ interface HealixLogoProps {
  * Note: Place the new logo image file at `public/official-logo.png`
  */
 export function HealixLogo({ size = 40, className }: HealixLogoProps) {
+  // Trimmed logo has aspect ratio 3.523 (754x214)
+  const width = Math.round(size * 3.523);
+  const height = size;
   return (
     <span
       className={cn("inline-flex items-center justify-center shrink-0 relative", className)}
-      style={{ width: size, height: size }}
+      style={{ width, height }}
     >
       <Image
-        src="/official-logo-web.png"
-        alt="Healix Official Logo"
-        width={size}
-        height={size}
-        className="object-cover rounded-full overflow-hidden bg-white shadow-sm ring-2 ring-white/10"
+        src="/healix-inc-logo-trimmed.png"
+        alt="Healix Technologies Incorporated Logo"
+        width={width}
+        height={height}
+        className="object-contain"
         priority
       />
     </span>

@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart, ChevronLeft, ChevronRight, Quote, ExternalLink, Award, Users, Target, BookOpen } from "lucide-react";
+import { ArrowRight, Shield, Activity, Server, MessageSquareQuote, X, Smartphone, Calendar, GraduationCap, Newspaper, Rocket, HelpCircle, ChevronDown, Play, Sparkles, Building2, Heart, ChevronLeft, ChevronRight, Quote, ExternalLink, Award, Users, Target, BookOpen, MapPin } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { HeroCarousel } from "@/components/ui/HeroCarousel";
@@ -12,15 +12,15 @@ const TEAM_MEMBERS = [
   {
     name: "Avnish Verma",
     role: "Founder & CEO",
-    photo: "https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=400&auto=format&fit=crop",
+    photo: "/founder_avnish.jpg",
     linkedin: "https://www.linkedin.com/company/quick-healix/",
     quote: "Precision health data infrastructure is the foundation of modern clinical safety and AI diagnostics. At Healix, we are commoditizing the complex engineering required to unify fragmented health datasets so innovators can build clinical products at scale.",
     institution: "Healix Technologies"
   },
   {
-    name: "Mahima Sharma",
+    name: "Divya Pasam",
     role: "Chief Operating Officer",
-    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+    photo: "/coo_divya.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/",
     quote: "Reliability is not a feature; it is the core foundation. Scaling operations, securing strategic partnerships, and building sustainable ecosystem networks are key to translating Healix's clinical tech into tangible community outcomes.",
     institution: "Healix Technologies"
@@ -28,17 +28,17 @@ const TEAM_MEMBERS = [
   {
     name: "Debraghya Bag",
     role: "Chief Medical Officer",
-    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+    photo: "/debarghya.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/",
     quote: "Precision medicine starts with precise data engineering. Ensuring scientific credibility, medical correctness, and healthcare system reliability is not a post-hoc check—it is built into every telemetry model we run at Healix.",
     institution: "AIIMS New Delhi"
   },
   {
-    name: "Sudiksha Sharma",
-    role: "Mental Health & Psychology",
-    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    name: "Kaveri Gupta",
+    role: "Associate COO",
+    photo: "/member_kaveri.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/",
-    quote: "Technology must serve the human experience. Designing healthcare systems that people emotionally trust, feel safe using, and find reassuring is critical for securing widespread public health adoption.",
+    quote: "Operational efficiency and strategic alignment are the backbones of healthcare innovation. We build robust workflows that allow clinical teams, engineers, and partners to execute our vision with speed and safety.",
     institution: "Healix Technologies"
   },
   {
@@ -68,116 +68,84 @@ const TEAM_MEMBERS = [
 ];
 
 const DEFAULT_ADVISORS = [
-  // Clinical Advisors
+  // Index 0: Row 1 - Card 1 (Swaranjali Sonje) [category: academic]
   {
-    name: "Dr. Partha Pratim",
-    designation: "MD",
-    institution: "AIIMS New Delhi",
-    expertise: "Genomics sequencing diagnostics & risk profiling",
-    category: "clinical",
-    photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Dr. Sarah Chen",
-    designation: "MD, PhD",
-    institution: "Stanford Medicine",
-    expertise: "Clinical decision support & triaging pipelines",
-    category: "clinical",
-    photo: "https://images.unsplash.com/photo-1594824813573-246434de83fb?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Dr. A. C. Roy",
-    designation: "MD, FACC",
-    institution: "Mayo Clinic",
-    expertise: "Cardiovascular telemetry & remote monitoring",
-    category: "clinical",
-    photo: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  // Research Advisors
-  {
-    name: "Dr. Rajesh K. Sharma",
-    designation: "PhD",
-    institution: "IISc Bangalore",
-    expertise: "Distributed algorithms & database reliability",
-    category: "research",
-    photo: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Prof. Michael Sterling",
-    designation: "PhD",
-    institution: "MIT Media Lab",
-    expertise: "Wearable biosensors & edge compute arrays",
-    category: "research",
-    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Dr. Ananya Ray",
-    designation: "PhD",
-    institution: "IIT Madras",
-    expertise: "In-silico molecular modeling & cancer targets",
-    category: "research",
-    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  // Academic Mentors
-  {
-    name: "Prof. R. Sharma",
-    designation: "Senior Faculty",
+    name: "Swaranjali Sonje",
+    designation: "Biomedical Engineering",
     institution: "IIT Delhi",
-    expertise: "Telemetry synchronization & network protocols",
+    expertise: "Biosensors & telemetry interface synchronization",
     category: "academic",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    photo: "/mentor_swaranjali.jpg",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
+  // Index 1: Row 2 - Card 1 (Dr. Samir K Kalra) [category: clinical]
   {
-    name: "Dr. Vikram Sen",
-    designation: "Professor",
-    institution: "AIIMS New Delhi",
-    expertise: "Community health diagnostics & survey design",
+    name: "Dr. Samir K Kalra",
+    designation: "Senior Neuro Surgeon",
+    institution: "Shri Ganga Ram Hospital",
+    expertise: "Edge clinical safety telemetry integration",
+    category: "clinical",
+    photo: "/mentor_samir.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Index 2: Row 1 - Card 2 (Bristi Saha) [category: academic]
+  {
+    name: "Bristi Saha",
+    designation: "Cognitive Science Researcher",
+    institution: "IIT Delhi",
+    expertise: "Cognitive model telemetry & deep learning studies",
     category: "academic",
-    photo: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=400&auto=format&fit=crop",
+    photo: "/mentor_bristi.jpg",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
+  // Index 3: Row 2 - Card 2 (Dr. Simran Kauts) [category: research]
   {
-    name: "Dr. Helen Rostova",
-    designation: "Faculty",
-    institution: "Cambridge University",
-    expertise: "Explainable deep learning models in healthcare",
-    category: "academic",
-    photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop",
+    name: "Dr. Simran Kauts",
+    designation: "PhD In Medical Science",
+    institution: "AIIMS Delhi",
+    expertise: "Molecular pathology & predictive diagnostic models",
+    category: "research",
+    photo: "/mentor_simran.jpg",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
-  // Industry Experts
+  // Index 4: Row 1 - Card 3 (Dr. Suresh Bangla) [category: clinical]
   {
-    name: "Sudiksha Sharma",
-    designation: "Human Systems Strategist",
-    institution: "CU Delhi",
-    expertise: "Behavioral psychology & interface trust dynamics",
+    name: "Dr. Suresh Bangla",
+    designation: "Resident of Community Medicine",
+    institution: "AIIMS Delhi",
+    expertise: "Rural health outreach diagnostics & tracking",
+    category: "clinical",
+    photo: "/mentor_suresh.jpg",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Index 5: Row 2 - Card 3 (Dr. Swati Bishnoi) [category: research]
+  {
+    name: "Dr. Swati Bishnoi",
+    designation: "PhD Scientist",
+    institution: "IIT Delhi",
+    expertise: "Biomaterials, CRISPR drives & genetic assays",
+    category: "research",
+    photo: "/mentor_swati.png",
+    linkedin: "https://www.linkedin.com/company/quick-healix/"
+  },
+  // Index 6: Row 1 - Card 4 (Afsha Mirza Faisal) [category: industry]
+  {
+    name: "Afsha Mirza Faisal",
+    designation: "Business Mentor",
+    institution: "Healix Technologies",
+    expertise: "Medical technology incubation & growth strategy",
     category: "industry",
-    photo: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    photo: "/mentor_afsha.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   },
+  // Index 7: Row 2 - Card 4 (Dr. Nafrasha Khan) [category: clinical]
   {
-    name: "Siddharth Bose",
-    designation: "Partner",
-    institution: "Biotech Capital",
-    expertise: "Commercialization & intellectual property structures",
-    category: "industry",
-    photo: "https://images.unsplash.com/photo-1519085186480-b8553f4b2a44?q=80&w=400&auto=format&fit=crop",
-    linkedin: "https://www.linkedin.com/company/quick-healix/"
-  },
-  {
-    name: "Elena Petrova",
-    designation: "Director",
-    institution: "Global Pharma Solutions",
-    expertise: "Clinical trial designs & regulatory compliance",
-    category: "industry",
-    photo: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=400&auto=format&fit=crop",
+    name: "Dr. Nafrasha Khan",
+    designation: "PhD In Medical Science",
+    institution: "AIIMS Delhi",
+    expertise: "Pharmacological telemetry & safety protocols",
+    category: "clinical",
+    photo: "/mentor_nafrasha.png",
     linkedin: "https://www.linkedin.com/company/quick-healix/"
   }
 ];
@@ -196,8 +164,7 @@ const IconMap: Record<string, any> = {
 
 function Counter({ target, duration = 1.2 }: { target: number; duration?: number }) {
   const [count, setCount] = useState(0);
-  const ref = React.useRef(null);
-  const inView = true; // Simple trigger on client mount
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     let start = 0;
@@ -205,42 +172,53 @@ function Counter({ target, duration = 1.2 }: { target: number; duration?: number
     if (start === end) return;
 
     const totalMilliseconds = duration * 1000;
-    const incrementTime = Math.abs(Math.floor(totalMilliseconds / end));
+    const incrementTime = Math.max(10, Math.abs(Math.floor(totalMilliseconds / end)));
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const timer = setInterval(() => {
       start += 1;
       setCount(start);
-      if (start === end) clearInterval(timer);
+      if (start === end) {
+        clearInterval(timer);
+        // Pause for 4 seconds, then reset and trigger loop again
+        timeoutId = setTimeout(() => {
+          setCount(0);
+          setResetKey((prev) => prev + 1);
+        }, 4000);
+      }
     }, incrementTime);
 
-    return () => clearInterval(timer);
-  }, [target, duration]);
+    return () => {
+      clearInterval(timer);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [target, duration, resetKey]);
 
-  return <span ref={ref}>{count}</span>;
+  return <span>{count}</span>;
 }
 
 const STATIC_BRANDS = [
   {
     id: "avennix",
-    name: "Avennix Pharma",
+    name: "Lupens & Co.",
     role: "Clinical Research & Digital Care",
     desc: "Developing indigenous digital twin software pipelines and therapeutics networks to standardize clinical trial metrics across leading institutional networks.",
-    logoText: "AVENNIX",
+    logoText: "LUPENS",
     color: "#3b82f6",
     accent: "text-blue-500 bg-blue-500/10 border-blue-500/20",
     icon_name: "Shield",
-    logo_url: "/avennix-official-logo.png"
+    logo_url: "/lupens/lupens_logo.png"
   },
   {
     id: "shesecure",
-    name: "SheSecure System",
+    name: "Belongs",
     role: "Women Travel & Community Safety",
     desc: "Low-latency telemetry tracking, encrypted hardware beacons, and one-tap emergency SOS broadcasts connected to localized responder networks.",
-    logoText: "SHE-SECURE",
+    logoText: "BELONG",
     color: "#ef4444",
     accent: "text-red-500 bg-red-500/10 border-red-500/20",
     icon_name: "Heart",
-    logo_url: "/hsf-official-logo-web.png"
+    logo_url: "/belong_logo.png"
   },
   {
     id: "biolabs",
@@ -253,17 +231,6 @@ const STATIC_BRANDS = [
     icon_name: "Activity",
     logo_url: "/biolabs-logo-web.png"
   },
-  {
-    id: "academy",
-    name: "Healix Academy",
-    role: "Systems Architecture Training",
-    desc: "Educating developers and clinical researchers on high-reliability distributed databases, secure cryptographic APIs, and responsive edge apps.",
-    logoText: "ACADEMY",
-    color: "#ea580c",
-    accent: "text-[#ea580c] bg-[#ea580c]/10 border-[#ea580c]/20",
-    icon_name: "GraduationCap",
-    logo_url: "/official-logo-web.png"
-  }
 ];
 
 const DEFAULT_FOUNDERS = [
@@ -272,7 +239,7 @@ const DEFAULT_FOUNDERS = [
     name: "Avnish",
     role: "Founder & CEO",
     quote: "Precision health data infrastructure is the foundation of modern clinical safety and AI diagnostics. At Healix, we are commoditizing the complex engineering required to unify fragmented health datasets so innovators can build clinical products at scale.",
-    photo_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
+    photo_url: "/founder_avnish.jpg",
     display_order: 0,
     active: true
   },
@@ -281,25 +248,25 @@ const DEFAULT_FOUNDERS = [
     name: "Debraghya Bag",
     role: "Co-Founder & Chief Medical Officer (CMO)",
     quote: "Precision medicine starts with precise data engineering. Ensuring scientific credibility, medical correctness, and healthcare system reliability is not a post-hoc check—it is built into every telemetry model we run at Healix.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/2354710c-6edf-459f-9e26-09a96d274a9d-1779985736208.png",
+    photo_url: "/debarghya.png",
     display_order: 1,
     active: true
   },
   {
     id: "f3",
-    name: "Mahima Sharma",
+    name: "Divya Pasam",
     role: "COO",
     quote: "Reliability is not a feature; it is the core foundation. Scaling operations, securing strategic partnerships, and building sustainable ecosystem networks are key to translating Healix's clinical tech into tangible community outcomes.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/7dbf680f-f5d2-4967-b1bb-1bdc40edd29c-1779985889408.png",
+    photo_url: "/coo_divya.png",
     display_order: 2,
     active: true
   },
   {
     id: "f4",
-    name: "Sudiksha Sharma",
-    role: "Behavioral Psychology & Human Systems Strategist",
-    quote: "Technology must serve the human experience. Designing healthcare systems that people emotionally trust, feel safe using, and find reassuring is critical for securing widespread public health adoption.",
-    photo_url: "https://chdujpvwawaqgaenrgms.supabase.co/storage/v1/object/public/mentor-photos/9e91e2a2-6910-4254-aeca-5fdc074ebb05-1779985539265.png",
+    name: "Kaveri Gupta",
+    role: "Associate COO",
+    quote: "Operational efficiency and strategic alignment are the backbones of healthcare innovation. We build robust workflows that allow clinical teams, engineers, and partners to execute our vision with speed and safety.",
+    photo_url: "/member_kaveri.png",
     display_order: 3,
     active: true
   }
@@ -334,7 +301,7 @@ function BigAdvisorCard({ advisor }: { advisor: any }) {
       
       {photo ? (
         <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-zinc-100 shadow-sm mb-5 shrink-0 relative group-hover:scale-110 transition-transform duration-500">
-          <img src={photo} alt={advisor.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+          <img src={photo} alt={advisor.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" loading="lazy" decoding="async" />
         </div>
       ) : (
         <div className="w-24 h-24 rounded-full bg-zinc-100 flex items-center justify-center border-[3px] border-white shadow-sm mb-5 shrink-0 text-zinc-400 group-hover:scale-110 transition-transform duration-500">
@@ -406,6 +373,8 @@ function AdvisorCard({ advisor }: { advisor: any }) {
             src={photo} 
             alt={advisor.name} 
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.05] transition-all duration-500"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       )}
@@ -440,6 +409,64 @@ function AdvisorCard({ advisor }: { advisor: any }) {
     </div>
   );
 }
+const PAST_EVENT_ROW_1 = [
+  { src: "/reel-1-thumb.webp", alt: "Systems Architecture Onsite Workshop", tag: "Academy Workshop" },
+  { src: "/pipeline-labs.png", alt: "BioLabs Hardware Testing Panel", tag: "BioLabs Panel" },
+  { src: "/founder-photo-1.jpg", alt: "Healix Foundation Inaugural Meeting", tag: "Inaugural Meet" },
+  { src: "/hsf-banner-collage.png", alt: "Student Developers Collaborative Hackathon", tag: "Collaboration Hack" },
+  { src: "/shesecure-hero.png", alt: "Women in STEM Cybersecurity Panel", tag: "SheSecure Session" },
+  { src: "/pipeline-doc.png", alt: "Healix Documentation & Research Symposium", tag: "Research Symposium" },
+];
+
+const PAST_EVENT_ROW_2 = [
+  { src: "/reel-2-thumb.webp", alt: "Healix Clinical Mentorship Program Launch", tag: "Mentorship Launch" },
+  { src: "/pipeline-meds.png", alt: "Explainable AI Diagnostics Demonstration", tag: "AI Demo" },
+  { src: "/founder-photo-2.jpg", alt: "Annual Board of Advisors Review", tag: "Annual Board Review" },
+  { src: "/reel-3-thumb.webp", alt: "Distributed Audio Failsafe Telemetry Lab", tag: "Telemetry Lab" },
+  { src: "/reel-4-thumb.webp", alt: "Systems Architecture Coding Bootcamp", tag: "Coding Bootcamp" },
+  { src: "/founder-photo-3.jpg", alt: "Advisory Council Roundtable Discussion", tag: "Roundtable Discussion" },
+];
+
+function FounderVisionTypewriter({ text }: { text: string }) {
+  const [displayText, setDisplayText] = useState("");
+  const [index, setIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    const typingSpeed = 30;
+    const deletingSpeed = 10;
+    const pauseDuration = 4000;
+
+    if (!isDeleting && index < text.length) {
+      timer = setTimeout(() => {
+        setDisplayText((prev) => prev + text.charAt(index));
+        setIndex((prev) => prev + 1);
+      }, typingSpeed);
+    } else if (isDeleting && index > 0) {
+      timer = setTimeout(() => {
+        setDisplayText((prev) => prev.slice(0, -1));
+        setIndex((prev) => prev - 1);
+      }, deletingSpeed);
+    } else if (!isDeleting && index === text.length) {
+      timer = setTimeout(() => {
+        setIsDeleting(true);
+      }, pauseDuration);
+    } else if (isDeleting && index === 0) {
+      setIsDeleting(false);
+    }
+
+    return () => clearTimeout(timer);
+  }, [index, isDeleting, text]);
+
+  return (
+    <span>
+      &ldquo;{displayText}
+      <span className="inline-block w-[3px] h-[1em] bg-[#ea580c] align-middle ml-1 animate-[pulse_1s_infinite] shadow-[0_0_8px_#ea580c]" />
+      &rdquo;
+    </span>
+  );
+}
 
 export default function Home() {
   const [reels, setReels] = useState<any[]>([]);
@@ -455,6 +482,17 @@ export default function Home() {
   const [selectedFounderForMsg, setSelectedFounderForMsg] = useState<any | null>(null);
   const [dbMentors, setDbMentors] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [liveFeed, setLiveFeed] = useState<{
+    tag: string;
+    title: string;
+    subtitle: string;
+    image_url: string;
+  }>({
+    tag: "Live Session • Healix Academy",
+    title: "Interactive Research & learning Discussion in Progress",
+    subtitle: "Healix main auditorium / Session ID: HSF-ACAD-2026",
+    image_url: "/academy-classroom.jpg"
+  });
 
   // If founders exist in the database, use ONLY the database founders to allow removal.
   // Sort them by display_order. If database is empty, fallback to TEAM_MEMBERS.
@@ -474,127 +512,82 @@ export default function Home() {
     : TEAM_MEMBERS;
 
   useEffect(() => {
-    const fetchReels = async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase.from("community_reels").select("*").eq("is_active", true).order("created_at", { ascending: false });
-      if (data && data.length > 0) {
-        setReels(data);
-      } else {
-        setReels([
-          { id: 1, title: "Emergency SOS Response Test", user_handle: "@sarah_j", thumbnail_url: "/reel-1-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-          { id: 2, title: "Healix AI Symptom Checker Review", user_handle: "@marcus_tech", thumbnail_url: "/reel-2-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-          { id: 3, title: "Night Travel with HSF System", user_handle: "@priya_travels", thumbnail_url: "/reel-3-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-          { id: 4, title: "BioLabs Student Tour", user_handle: "@uni_science", thumbnail_url: "/reel-4-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-        ]);
-      }
-    };
+    const supabase = createClient();
 
-    const fetchPodcasts = async () => {
-      try {
-        const res = await fetch("/api/podcasts");
-        if (res.ok) {
-          const data = await res.json();
+    // Fetch all homepage data in parallel to eliminate waterfall blocking
+    const fetchAll = async () => {
+      await Promise.allSettled([
+        // Reels
+        supabase.from("community_reels").select("*").eq("is_active", true).order("created_at", { ascending: false }).then(({ data }) => {
+          if (data && data.length > 0) setReels(data);
+          else setReels([
+            { id: 1, title: "Emergency SOS Response Test", user_handle: "@sarah_j", thumbnail_url: "/reel-1-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+            { id: 2, title: "Healix AI Symptom Checker Review", user_handle: "@marcus_tech", thumbnail_url: "/reel-2-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+            { id: 3, title: "Night Travel with HSF System", user_handle: "@priya_travels", thumbnail_url: "/reel-3-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+            { id: 4, title: "BioLabs Student Tour", user_handle: "@uni_science", thumbnail_url: "/reel-4-thumb.webp", video_url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+          ]);
+        }),
+
+        // Podcasts
+        fetch("/api/podcasts").then(r => r.ok ? r.json() : []).then(data => {
           if (Array.isArray(data)) {
-            const realPodcasts = data.filter(p => p.youtube_url && !p.youtube_url.includes("dQw4w9WgXcQ"));
-            setPodcasts(realPodcasts);
-            return;
+            const real = data.filter((p: any) => p.youtube_url && !p.youtube_url.includes("dQw4w9WgXcQ"));
+            setPodcasts(real);
           }
-        }
-      } catch (err) {
-        console.warn("Error fetching podcasts:", err);
-      }
-      setPodcasts([]);
-    };
+        }).catch(() => {}),
 
-    const fetchBrands = async () => {
-      try {
-        const res = await fetch("/api/brands");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setBrands(data);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn("Error fetching brands:", err);
-      }
-    };
+        // Brands
+        fetch("/api/brands").then(r => r.ok ? r.json() : []).then(data => {
+          if (Array.isArray(data) && data.length > 0) setBrands(data);
+        }).catch(() => {}),
 
-    const fetchFounders = async () => {
-      try {
-        const res = await fetch("/api/founders");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setFounders(data);
-          }
-        }
-      } catch (err) {
-        console.warn("Error fetching founders:", err);
-      }
-    };
+        // Founders
+        fetch("/api/founders").then(r => r.ok ? r.json() : []).then(data => {
+          if (Array.isArray(data) && data.length > 0) setFounders(data);
+        }).catch(() => {}),
 
-    const fetchMentors = async () => {
-      try {
-        const res = await fetch("/api/mentors");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setDbMentors(data);
-          }
-        }
-      } catch (err) {
-        console.warn("Error fetching mentors:", err);
-      }
-    };
+        // Mentors
+        fetch("/api/mentors").then(r => r.ok ? r.json() : []).then(data => {
+          if (Array.isArray(data)) setDbMentors(data);
+        }).catch(() => {}),
 
-    const fetchEvents = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("biolab_events")
-          .select("*")
-          .eq("is_active", true)
-          .order("start_date", { ascending: true })
-          .limit(3);
-        if (data && data.length > 0) {
-          const mapped = data.map(e => {
-            let speaker = "Research Fellow";
-            try {
-              if (e.description.startsWith("{") && e.description.endsWith("}")) {
-                const parsed = JSON.parse(e.description);
-                speaker = parsed.speaker || speaker;
-              }
-            } catch (err) {}
-            
-            const d = new Date(e.start_date);
-            const formattedDate = d.toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric"
+        // Events — include rows where is_active is true OR null (not explicitly hidden)
+        supabase.from("biolab_events").select("*").neq("is_active", false).order("start_date", { ascending: true }).limit(3).then(({ data }) => {
+          if (data && data.length > 0) {
+            const mapped = data.map(e => {
+              let speaker = "Research Fellow";
+              let register_url = "";
+              try {
+                if (e.description && e.description.startsWith("{") && e.description.endsWith("}")) {
+                  const parsed = JSON.parse(e.description);
+                  speaker = parsed.speaker || speaker;
+                  register_url = parsed.register_url || "";
+                }
+              } catch (err) {}
+              const d = new Date(e.start_date);
+              const formattedDate = d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+              return {
+                id: e.id,
+                title: e.title,
+                speaker,
+                date: formattedDate,
+                register_url,
+                // Carry the actual event banner image from DB
+                image_url: e.image_url || "",
+              };
             });
-            
-            return {
-              id: e.id,
-              title: e.title,
-              speaker: speaker,
-              date: formattedDate
-            };
-          });
-          setUpcomingEvents(mapped);
-        }
-      } catch (err) {
-        console.warn("Error fetching events:", err);
-      }
+            setUpcomingEvents(mapped);
+          }
+        }),
+
+        // Live Feed
+        fetch("/api/academy/live-feed").then(r => r.ok ? r.json() : null).then(data => {
+          if (data && !data.error) setLiveFeed(data);
+        }).catch(() => {}),
+      ]);
     };
 
-    fetchReels();
-    fetchPodcasts();
-    fetchBrands();
-    fetchFounders();
-    fetchMentors();
-    fetchEvents();
+    fetchAll();
   }, []);
 
   useEffect(() => {
@@ -674,7 +667,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-[radial-gradient(#ea580c_0.5px,transparent_0.5px)] [background-size:24px_24px] opacity-[0.02] pointer-events-none" />
 
       {/* 1. Hero Carousel Banner */}
-      <div className="w-full">
+      <div className="w-full" data-tour="hero">
         <HeroCarousel />
       </div>
 
@@ -774,6 +767,8 @@ export default function Home() {
                           src={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).photo}
                           alt={(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}
                           className="w-full h-full object-cover object-top select-none"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-5xl font-black text-[#ea580c] uppercase">
@@ -798,7 +793,7 @@ export default function Home() {
                 </div>
 
                 {/* Name + Title overlay at bottom-left */}
-                <div className="absolute bottom-6 left-6 z-30 pointer-events-auto">
+                <div className="absolute bottom-4 left-4 right-4 z-30 pointer-events-auto bg-white/95 backdrop-blur-sm border border-zinc-200/60 p-4 rounded-xl shadow-lg">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeFounderIndex}
@@ -807,8 +802,8 @@ export default function Home() {
                       exit={{ opacity: 0, y: -5 }}
                       transition={{ duration: 0.35 }}
                     >
-                      <p className="text-zinc-950 font-bold text-base leading-tight tracking-tight">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}</p>
-                      <p className="text-zinc-500 text-xs mt-1 font-medium">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).role}</p>
+                      <p className="text-zinc-950 font-extrabold text-base leading-tight tracking-tight">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).name}</p>
+                      <p className="text-[#ea580c] text-[10px] font-mono uppercase tracking-widest mt-1.5 font-bold">{(displayTeam[activeFounderIndex % (displayTeam.length || 1)] || TEAM_MEMBERS[0]).role}</p>
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -829,10 +824,10 @@ export default function Home() {
       </section>
 
       {/* 3. Healix Network */}
-      <section className="bg-zinc-950 text-white py-24 px-6 sm:px-8 border-y border-zinc-900 relative overflow-hidden">
+      <section className="bg-zinc-50 text-zinc-900 py-24 px-6 sm:px-8 border-y border-zinc-200 relative overflow-hidden">
         {/* Grid backdrop */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:35px_35px] pointer-events-none" />
-        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#ea580c]/5 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:35px_35px] pointer-events-none" />
+        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#ea580c]/3 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
 
         <div className="max-w-[94%] mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 items-center">
@@ -840,11 +835,11 @@ export default function Home() {
             {/* LEFT: Content */}
             <div>
               <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-4">Institutional Scope</p>
-              <h2 className="text-4xl md:text-5xl xl:text-6xl font-black uppercase tracking-tight font-mono mb-3 leading-none">
+              <h2 className="text-4xl md:text-5xl xl:text-6xl font-black uppercase tracking-tight font-mono mb-3 leading-none text-zinc-950">
                 Healix<br /><span className="text-[#ea580c]">Network</span>
               </h2>
               <div className="w-14 h-[3px] bg-[#ea580c] mb-6" />
-              <p className="text-zinc-400 text-sm leading-relaxed mb-10 max-w-md">
+              <p className="text-zinc-650 text-sm leading-relaxed mb-10 max-w-md">
                 A growing interdisciplinary ecosystem of clinicians, researchers, engineers, psychologists, and innovators spanning top institutions across India.
               </p>
 
@@ -859,12 +854,12 @@ export default function Home() {
                   { label: "Innovation Programs", value: 8, suffix: "" },
                   { label: "Healthcare Initiatives", value: 12, suffix: "" },
                 ].map((stat, i) => (
-                  <div key={i} className="p-4 border border-zinc-800 hover:border-[#ea580c]/50 hover:bg-zinc-900/60 transition-all duration-300 group relative overflow-hidden">
+                  <div key={i} className="p-4 border border-zinc-200 bg-white/70 hover:border-[#ea580c]/50 hover:bg-white hover:shadow-sm transition-all duration-300 group relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#ea580c]/0 group-hover:from-[#ea580c]/5 to-transparent transition-all duration-500" />
                     <p className="text-2xl font-black text-[#ea580c] font-mono tracking-tight relative z-10 group-hover:scale-105 transition-transform duration-300 inline-block">
                       <Counter target={stat.value} />{stat.suffix}
                     </p>
-                    <p className="text-[9px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1 leading-snug relative z-10">
+                    <p className="text-[9px] text-zinc-550 font-mono font-bold uppercase tracking-widest mt-1 leading-snug relative z-10">
                       {stat.label}
                     </p>
                   </div>
@@ -873,10 +868,10 @@ export default function Home() {
 
               {/* CTAs */}
               <div className="flex gap-4 flex-wrap">
-                <Link href="/global-network" className="inline-flex items-center gap-2 px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_0_24px_rgba(234,88,12,0.35)] hover:shadow-[0_0_36px_rgba(234,88,12,0.5)]">
-                  Explore Network <ArrowRight className="w-3.5 h-3.5" />
+                <Link href="/biolabs" className="inline-flex items-center gap-2 px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_0_24px_rgba(234,88,12,0.25)] hover:shadow-[0_0_36px_rgba(234,88,12,0.4)]">
+                  Explore BioLabs <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                <Link href="/about" className="inline-flex items-center gap-2 px-6 py-3 border border-zinc-700 hover:border-[#ea580c] hover:text-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                <Link href="/about" className="inline-flex items-center gap-2 px-6 py-3 border border-zinc-300 bg-white hover:border-[#ea580c] hover:text-[#ea580c] text-zinc-700 hover:bg-zinc-50 text-xs font-bold uppercase tracking-wider transition-all duration-300">
                   Meet Our Team <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -886,35 +881,37 @@ export default function Home() {
             <div className="hidden lg:flex items-center justify-center relative min-h-[480px]">
               {/* Ambient glow */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[380px] h-[380px] rounded-full bg-[#ea580c]/8 blur-[90px]" />
+                <div className="w-[380px] h-[380px] rounded-full bg-[#ea580c]/5 blur-[90px]" />
               </div>
               {/* Decorative rings */}
-              <div className="absolute w-[480px] h-[480px] border border-zinc-800/60 rounded-full animate-[spin_40s_linear_infinite]" />
-              <div className="absolute w-[380px] h-[380px] border border-[#ea580c]/15 rounded-full animate-[spin_30s_linear_infinite_reverse]" />
+              <div className="absolute w-[480px] h-[480px] border border-zinc-200/80 rounded-full animate-[spin_40s_linear_infinite]" />
+              <div className="absolute w-[380px] h-[380px] border border-[#ea580c]/10 rounded-full animate-[spin_30s_linear_infinite_reverse]" />
 
               {/* Main illustration */}
               <div className="relative z-10">
                 <img
-                  src="/network-globe.png"
-                  alt="Global research network illustration — scientist examining a globe"
+                  src="/network-illustration-light.png"
+                  alt="Healix Network Ecosystem Illustration"
                   className="w-[440px] xl:w-[500px] object-contain select-none"
-                  style={{ filter: "invert(1) drop-shadow(0 0 28px rgba(234,88,12,0.3))" }}
+                  style={{ filter: "drop-shadow(0 0 28px rgba(234,88,12,0.18))" }}
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 {/* Floating badge — top right */}
-                <div className="absolute top-14 -right-4 bg-zinc-900/90 backdrop-blur border border-zinc-700 px-3 py-2 rounded-lg shadow-2xl">
+                <div className="absolute top-8 -right-4 bg-white/95 backdrop-blur border border-zinc-200 px-3 py-2 rounded-lg shadow-md">
                   <p className="text-[8px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Live Network</p>
-                  <p className="text-sm font-black text-white font-mono">150+ Members</p>
+                  <p className="text-sm font-black text-zinc-900 font-mono">150+ Members</p>
                 </div>
 
-                {/* Floating badge — bottom left */}
-                <div className="absolute bottom-20 -left-4 bg-zinc-900/90 backdrop-blur border border-zinc-700 px-3 py-2 rounded-lg shadow-2xl">
+                {/* Floating badge — top left */}
+                <div className="absolute top-28 -left-4 bg-white/95 backdrop-blur border border-zinc-200 px-3 py-2 rounded-lg shadow-md">
                   <p className="text-[8px] font-mono text-[#ea580c] uppercase tracking-widest font-bold">Institutions</p>
-                  <p className="text-sm font-black text-white font-mono">AIIMS · IIT · HSF</p>
+                  <p className="text-sm font-black text-zinc-900 font-mono">AIIMS · IIT · HSF</p>
                 </div>
 
                 {/* Pulse indicator */}
-                <span className="absolute top-10 right-0 flex h-3 w-3">
+                <span className="absolute top-5 right-12 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ea580c] opacity-75" />
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-[#ea580c]" />
                 </span>
@@ -941,9 +938,10 @@ export default function Home() {
 
           {(() => {
             // Only real advisors (no placeholders) in the marquee
-            const allAdvisors = finalGroupedAdvisors.flatMap(cat =>
-              cat.members.map((member: any) => ({ ...member, categoryLabel: cat.label, categoryColor: cat.color }))
-            );
+            const allAdvisors = sourceAdvisors.map((member: any) => {
+              const cat = CATEGORY_CONFIG.find(c => c.key === member.category) || CATEGORY_CONFIG[0];
+              return { ...member, categoryLabel: cat.label, categoryColor: cat.color };
+            });
 
             // Need at least a few to marquee — if empty show nothing
             if (allAdvisors.length === 0) return null;
@@ -1030,6 +1028,8 @@ export default function Home() {
                         src={founder.photo}
                         alt={founder.name || "Avnish Verma"}
                         className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full bg-zinc-200 flex items-center justify-center">
@@ -1067,8 +1067,8 @@ export default function Home() {
               {/* Main Vision Statement */}
               <div className="relative font-serif py-2 pl-6 border-l-4 border-[#ea580c]">
                 <Quote className="absolute -top-3 -left-3 w-8 h-8 text-orange-50 rotate-180 -z-10" />
-                <p className="text-zinc-700 text-sm md:text-base leading-relaxed italic font-medium font-sans">
-                  "Healix Technologies was founded to bridge the gap between healthcare, research, technology, and education by building an ecosystem where clinicians, researchers, engineers, psychologists, and innovators can collaborate to solve real-world healthcare challenges."
+                <p className="text-zinc-700 text-sm md:text-base leading-relaxed italic font-medium font-sans min-h-[7.5rem] md:min-h-[4.5rem]">
+                  <FounderVisionTypewriter text="Healix Technologies was founded to bridge the gap between healthcare, research, technology, and education by building an ecosystem where clinicians, researchers, engineers, psychologists, and innovators can collaborate to solve real-world healthcare challenges." />
                 </p>
               </div>
 
@@ -1121,68 +1121,107 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {[
+          <div className="flex flex-col gap-8 md:gap-0 max-w-6xl mx-auto">
+            {(brands.length > 0 ? brands : [
               {
-                title: "BioLabs Genomics",
-                subtitle: "Research • Innovation • Mentorship",
-                desc: "Building high-performance genomic sequence modeling tools, CRISPR outcome validation protocols, and elite research fellowships.",
-                logo: "/biolabs-logo-web.png",
+                name: "BioLabs Genomics",
+                role: "Research • Innovation • Mentorship",
+                description: "Building high-performance genomic sequence modeling tools, CRISPR outcome validation protocols, and elite research fellowships.",
+                logo_url: "/biolabs-logo-web.png",
                 href: "/biolabs",
                 tag: "GENOMICS & RESEARCH"
               },
               {
-                title: "Healix AI",
-                subtitle: "Artificial Intelligence for Healthcare",
-                desc: "Developing explainable deep learning diagnostic pipelines, medical twin simulations, and low-latency clinical triaging networks.",
-                logo: "/ai-logo.jpg",
-                href: "/ai-check",
-                tag: "PREDICTIVE CLINICAL AI"
-              },
-              {
-                title: "Avennix Pharma",
-                subtitle: "Pharmaceutical & Healthcare Solutions",
-                desc: "Standardizing clinical trial metrics, software-driven drug discovery pipelines, and secure IoT care networks.",
-                logo: "/avennix-official-logo.png",
+                name: "Lupens & Co.",
+                role: "Pharmaceutical & Healthcare Solutions",
+                description: "Standardizing clinical trial metrics, software-driven drug discovery pipelines, and secure IoT care networks.",
+                logo_url: "/lupens/lupens_logo.png",
                 href: "/care",
                 tag: "DIGITAL THERAPEUTICS"
               },
               {
-                title: "Healix Sahyog Foundation",
-                subtitle: "Mental Health • Community Impact • Education",
-                desc: "Empowering community health with active safety networks, Project Suraksha coordinates, and inclusive mental health support.",
-                logo: "/hsf-official-logo-web.png",
+                name: "Belongs",
+                role: "Mental Health • Community Impact • Education",
+                description: "Empowering community health with active safety networks, Project Suraksha coordinates, and inclusive mental health support.",
+                logo_url: "/belong_logo.png",
                 href: "/shesecure",
                 tag: "COMMUNITY HEALTH & SAFETY"
               }
-            ].map((eco, i) => (
-              <div key={i} className="group relative flex flex-col justify-between p-6 bg-white border border-zinc-200 hover:border-zinc-950 transition-all duration-300 min-h-[290px] shadow-sm">
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="text-[8px] font-mono text-[#ea580c] bg-[#ea580c]/5 border border-[#ea580c]/20 px-2 py-0.5 font-bold uppercase tracking-wider">{eco.tag}</span>
-                    <div className="w-8 h-8 rounded border border-zinc-200/60 bg-white flex items-center justify-center overflow-hidden shrink-0">
-                      <img src={eco.logo} alt="" className="w-full h-full object-contain p-1" />
+            ]).map((eco: any, i: number) => {
+              const isEven = i % 2 === 0;
+              const title = eco.name || eco.title || "";
+              const subtitle = eco.role || eco.subtitle || "";
+              const desc = eco.description || eco.desc || "";
+              const logo = eco.logo_url || eco.logo || "";
+              const href = eco.href || eco.link_url || "/";
+              const tag = eco.tag || eco.category || eco.accent_label || "";
+              return (
+                <div 
+                  key={eco.id || i} 
+                  className={`group flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center justify-between gap-12 md:gap-24 py-16 border-b border-zinc-200/60 last:border-b-0 max-w-5xl mx-auto w-full`}
+                >
+                  {/* Logo Container */}
+                  <div className="relative shrink-0 select-none">
+                    <div className="w-44 h-44 md:w-52 md:h-52 bg-white border border-zinc-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.01)] rounded flex items-center justify-center p-6 transition-all duration-300 group-hover:shadow-[0_10px_30px_rgba(234,88,12,0.06)] group-hover:border-zinc-300">
+                      {logo ? (
+                        <img src={logo} alt={`${title} logo`} className="w-full h-full object-contain filter group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" decoding="async" />
+                      ) : (
+                        <span className="text-3xl font-black text-zinc-300 uppercase font-mono">{title[0]}</span>
+                      )}
+                    </div>
+                    
+                    {/* Animated Corner Brackets */}
+                    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-2 border-l-2 border-zinc-300 transition-all duration-300 ease-out group-hover:-top-3 group-hover:-left-3 group-hover:w-8 group-hover:h-8 group-hover:border-[#ea580c] group-hover:drop-shadow-[0_0_3px_rgba(234,88,12,0.4)]" />
+                    <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-2 border-r-2 border-zinc-300 transition-all duration-300 ease-out group-hover:-bottom-3 group-hover:-right-3 group-hover:w-8 group-hover:h-8 group-hover:border-[#ea580c] group-hover:drop-shadow-[0_0_3px_rgba(234,88,12,0.4)]" />
+                  </div>
+
+                  {/* Information Column */}
+                  <div className="flex-1 flex flex-col justify-center text-center md:text-left">
+                    <div>
+                      {tag && (
+                        <span className="text-[9px] font-mono text-[#ea580c] bg-[#ea580c]/5 border border-[#ea580c]/20 px-2.5 py-0.5 font-bold uppercase tracking-wider inline-block mb-4">
+                          {tag}
+                        </span>
+                      )}
+                      
+                      <div className="mb-2">
+                        <h3 className="text-2xl md:text-3xl font-black text-zinc-950 uppercase font-mono tracking-tight transition-colors duration-300 group-hover:text-[#ea580c] relative inline-block">
+                          {title}
+                          <span className="absolute left-0 bottom-[-6px] w-full h-[1px] bg-zinc-200 transition-all duration-300 group-hover:bg-[#ea580c] group-hover:h-[2px]" />
+                        </h3>
+                      </div>
+                      
+                      {subtitle && (
+                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider font-semibold mt-3 mb-4">
+                          {subtitle}
+                        </p>
+                      )}
+                      
+                      <p className="text-zinc-650 text-sm md:text-base leading-relaxed max-w-xl mx-auto md:mx-0">
+                        {desc}
+                      </p>
+                    </div>
+
+                    <div className="mt-8">
+                      <Link 
+                        href={href} 
+                        className="inline-flex items-center gap-2 px-6 py-2.5 border border-zinc-300 hover:border-[#ea580c] hover:bg-[#ea580c]/5 text-zinc-800 hover:text-[#ea580c] font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 shadow-sm"
+                      >
+                        Explore <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+                      </Link>
                     </div>
                   </div>
-                  <h3 className="text-base font-black text-zinc-950 uppercase group-hover:text-[#ea580c] transition-colors font-mono tracking-tight mt-2">{eco.title}</h3>
-                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wide font-bold mt-1 leading-snug">{eco.subtitle}</p>
-                  <p className="text-xs text-zinc-650 leading-relaxed mt-4">{eco.desc}</p>
                 </div>
-                <div className="mt-6">
-                  <Link href={eco.href} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider transition-colors">
-                    Explore Portal <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* 7. Current Projects */}
-      <section id="initiatives" className="py-24 bg-white border-b border-zinc-100 relative">
+      <section id="initiatives" className="pt-24 pb-36 bg-white border-b border-zinc-100 relative">
         <div className="max-w-[94%] mx-auto">
-          <div className="text-center mb-16 max-w-2xl mx-auto">
+          <div className="text-center mb-20 max-w-2xl mx-auto">
             <p className="text-[10px] font-mono text-[#ea580c] uppercase tracking-widest font-bold mb-3">Active Pursuits</p>
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-zinc-950 font-mono">Current Projects</h2>
             <div className="w-16 h-1 bg-[#ea580c] mx-auto mt-4 mb-5" />
@@ -1191,13 +1230,14 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 max-w-7xl mx-auto">
             {[
               {
                 title: "Project Suraksha",
                 desc: "Developing low-latency travel safety telemetry tracking, encrypted hardware beacons, and emergency SOS networks.",
                 status: "DEVELOPING / FIELD TESTING",
                 color: "text-amber-600 border-amber-600/20 bg-amber-500/5",
+                accentBorder: "border-amber-600",
                 href: "/shesecure"
               },
               {
@@ -1205,6 +1245,7 @@ export default function Home() {
                 desc: "Providing research stipends and laboratory access for graduate researchers building sequence modeling models.",
                 status: "APPLICATIONS OPEN",
                 color: "text-emerald-600 border-emerald-600/20 bg-emerald-500/5",
+                accentBorder: "border-emerald-600",
                 href: "/biolabs"
               },
               {
@@ -1212,6 +1253,7 @@ export default function Home() {
                 desc: "Connecting engineers, psychologists, and clinicians to develop and test pilot systems in real-world environments.",
                 status: "IN PROGRESS",
                 color: "text-blue-600 border-blue-600/20 bg-blue-500/5",
+                accentBorder: "border-blue-600",
                 href: "/contact"
               },
               {
@@ -1219,24 +1261,40 @@ export default function Home() {
                 desc: "Deploying deep learning triage models to remote clinics to assist local caregivers with diagnostic classifications.",
                 status: "BETA TESTING",
                 color: "text-purple-600 border-purple-600/20 bg-purple-500/5",
+                accentBorder: "border-purple-600",
                 href: "/ai-check"
               }
-            ].map((init, i) => (
-              <div key={i} className="bg-zinc-50 border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-950 transition-all duration-300 min-h-[230px] shadow-sm">
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className={`text-[8px] font-mono font-bold tracking-widest uppercase border px-2 py-0.5 ${init.color}`}>{init.status}</span>
+            ].map((init, i) => {
+              // Alternating staggered translation offsets for visual wave effect on desktop
+              const staggerClass = i % 2 === 0 ? "md:-translate-y-4" : "md:translate-y-8";
+
+              return (
+                <div 
+                  key={i} 
+                  className={`relative group bg-zinc-50 border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-950 transition-all duration-500 ease-out min-h-[240px] shadow-sm hover:shadow-md ${staggerClass}`}
+                >
+                  {/* Decorative Corner Brackets (slide inwards to hug the card on hover) */}
+                  {/* Top-Left Bracket */}
+                  <span className={`absolute -top-1.5 -left-1.5 w-6 h-6 border-t-2 border-l-2 ${init.accentBorder} opacity-60 group-hover:opacity-100 group-hover:top-0 group-hover:left-0 transition-all duration-300 pointer-events-none`} />
+                  
+                  {/* Bottom-Right Bracket */}
+                  <span className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 border-b-2 border-r-2 ${init.accentBorder} opacity-60 group-hover:opacity-100 group-hover:bottom-0 group-hover:right-0 transition-all duration-300 pointer-events-none`} />
+
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className={`text-[8px] font-mono font-bold tracking-widest uppercase border px-2 py-0.5 ${init.color}`}>{init.status}</span>
+                    </div>
+                    <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight leading-snug">{init.title}</h3>
+                    <p className="text-xs text-zinc-650 leading-relaxed mt-4">{init.desc}</p>
                   </div>
-                  <h3 className="font-extrabold text-sm text-zinc-950 font-mono uppercase tracking-tight leading-snug">{init.title}</h3>
-                  <p className="text-xs text-zinc-650 leading-relaxed mt-4">{init.desc}</p>
+                  <div className="mt-6">
+                    <Link href={init.href} className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider flex items-center gap-1">
+                      Learn More <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="mt-6">
-                  <Link href={init.href} className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-wider flex items-center gap-1">
-                    Learn More <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1254,47 +1312,205 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((sem, idx) => (
-                <div key={idx} className="bg-white border border-zinc-200 hover:border-zinc-950 p-6 flex flex-col justify-between transition-all duration-300 min-h-[200px] shadow-sm group">
-                  <div>
-                    <div className="flex items-center gap-2 text-[#ea580c] mb-4">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{sem.date}</span>
+            {(() => {
+                const displayEvents = (() => {
+                  const DEFAULT_EVENTS = [
+                    {
+                      id: "def-1",
+                      title: "Women Safety Awareness Session — Project Suraksha",
+                      speaker: "Healix Technologies",
+                      date: "06 Aug 2026",
+                      image_url: "",
+                      register_url: "mailto:gupta.kaveri@healix-technologies.com",
+                    },
+                    {
+                      id: "def-2",
+                      title: "Reel Making Competition 2026",
+                      speaker: "Healix Technologies",
+                      date: "05 Aug 2026",
+                      image_url: "",
+                      register_url: "mailto:gupta.kaveri@healix-technologies.com",
+                    },
+                    {
+                      id: "def-3",
+                      title: "Doctor's Day — Honoring the Lifesavers Among Us",
+                      speaker: "Healix Technologies",
+                      date: "01 Jul 2026",
+                      image_url: "",
+                      register_url: "",
+                    }
+                  ];
+                  if (upcomingEvents.length === 0) return DEFAULT_EVENTS;
+                  // Always show 3 cards — pad with defaults if DB has fewer than 3
+                  const padded = [...upcomingEvents];
+                  let defIdx = 0;
+                  while (padded.length < 3) {
+                    padded.push({ ...DEFAULT_EVENTS[defIdx % DEFAULT_EVENTS.length], id: `pad-${defIdx}` });
+                    defIdx++;
+                  }
+                  return padded;
+                })();
+
+                return displayEvents.map((sem: any, idx: number) => {
+                  // Use DB image_url if present, else fall back to keyword-matched static image
+                  const titleLower = sem.title.toLowerCase();
+                  const fallbackImage = titleLower.includes("suraksha") || titleLower.includes("safety")
+                    ? "/event_suraksha.jpg"
+                    : titleLower.includes("reel") || titleLower.includes("competition")
+                    ? "/event_reel.jpg"
+                    : titleLower.includes("doctor") || titleLower.includes("lifesavers")
+                    ? "/event_doctors_day.png"
+                    : idx === 0
+                    ? "/event_suraksha.jpg"
+                    : idx === 1
+                    ? "/event_reel.jpg"
+                    : "/event_doctors_day.png";
+                  const eventImage = sem.image_url && sem.image_url.trim() !== "" ? sem.image_url : fallbackImage;
+
+                return (
+                  <div 
+                    key={sem.id || idx} 
+                    className="relative overflow-hidden w-full aspect-[4/5] group border border-zinc-200 shadow-sm bg-zinc-900"
+                  >
+                    {/* Cover Image (zooms in slightly on hover) */}
+                    <img 
+                      src={eventImage} 
+                      alt={sem.title} 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                    />
+
+                    {/* Dark Tint Overlay to preserve initial contrast */}
+                    <div className="absolute inset-0 bg-black/15 group-hover:bg-black/35 transition-colors duration-500" />
+
+                    {/* Help indicator pill (fades out on hover) */}
+                    <div className="absolute bottom-4 right-4 bg-zinc-950/80 backdrop-blur-sm px-2.5 py-1 text-[8px] font-mono font-bold text-white uppercase tracking-widest border border-white/10 group-hover:opacity-0 transition-opacity duration-300">
+                      Hover for Info
                     </div>
-                    <h3 className="text-base font-black text-zinc-950 uppercase font-mono tracking-tight leading-snug group-hover:text-[#ea580c] transition-colors">
-                      {sem.title}
-                    </h3>
-                    <p className="text-xs text-zinc-550 mt-3 flex items-center gap-1.5 font-sans">
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 shrink-0" />
-                      Speaker: <strong className="text-zinc-750 font-semibold">{sem.speaker}</strong>
-                    </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
-                    <Link 
-                      href={`/events?search=${encodeURIComponent(sem.title)}`} 
-                      className="text-[10px] font-bold text-[#ea580c] hover:text-[#c2410c] font-mono uppercase tracking-widest flex items-center gap-1"
+
+                    {/* Sliding Details Panel (slides in from the right) */}
+                    <div 
+                      className="absolute inset-y-0 right-0 w-[85%] sm:w-[78%] bg-zinc-950/95 backdrop-blur-md p-6 flex flex-col justify-between translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out border-l-2 border-[#ea580c] shadow-2xl z-10"
                     >
-                      Register Now <ArrowRight className="w-3 h-3" />
-                    </Link>
-                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 uppercase">Academic Session</span>
+                      <div>
+                        {/* Event Date */}
+                        <div className="flex items-center gap-2 text-[#ea580c] mb-3">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-orange-400">{sem.date}</span>
+                        </div>
+                        
+                        {/* Event Title */}
+                        <h3 className="text-xs font-black text-white uppercase font-mono tracking-tight leading-snug">
+                          {sem.title}
+                        </h3>
+
+                        {/* Speaker info */}
+                        <p className="text-[11px] text-zinc-400 mt-3 flex items-center gap-1.5 font-sans">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                          Speaker: <strong className="text-zinc-250 font-semibold">{sem.speaker}</strong>
+                        </p>
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                        {sem.register_url ? (
+                          <a 
+                            href={sem.register_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-bold text-[#ea580c] hover:text-[#ff782c] font-mono uppercase tracking-widest flex items-center gap-1"
+                          >
+                            Register Now <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
+                          </a>
+                        ) : (
+                          <Link 
+                            href={`/events?search=${encodeURIComponent(sem.title)}`} 
+                            className="text-[10px] font-bold text-[#ea580c] hover:text-[#ff782c] font-mono uppercase tracking-widest flex items-center gap-1"
+                          >
+                            Register Now <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
+                          </Link>
+                        )}
+                        <span className="text-[8px] font-mono text-zinc-400 bg-white/5 px-2 py-0.5 uppercase border border-white/5">Academic Session</span>
+                      </div>
+                    </div>
                   </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
+          {/* Cinematic Full Bleed Past Events Photo Reel (Moved outside the restricted container) */}
+          <div className="mt-16 relative py-12 bg-transparent w-full max-w-[99%] mx-auto px-4 md:px-6 overflow-visible">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-[#0066ff]/5 rounded-full blur-[130px] pointer-events-none" />
+            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-[130px] pointer-events-none" />
+
+            {/* Projected Screen Container (Cinematic Full Bleed) */}
+            <div className="w-full relative z-10 flex justify-center items-center py-4">
+              <div className="relative w-full max-w-7xl transition-all duration-500">
+                {/* Floating inner wrapper */}
+                <div className="animate-float relative aspect-[16/10] md:aspect-[21/9] rounded-2xl overflow-hidden shadow-[0_25px_70px_rgba(0,102,255,0.35)] border border-white/10 bg-zinc-950/40 backdrop-blur-sm group">
+                  
+                  {/* The Classroom Image */}
+                  <img 
+                    src={liveFeed.image_url} 
+                    alt="Healix Academy Classroom" 
+                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-102" 
+                  />
+                  
+                  {/* Cinematic lens flare / projection glare overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#0066ff]/5 to-white/15 opacity-70 group-hover:opacity-90 transition-opacity pointer-events-none" />
+                  
+                  {/* Movie projection beam sweep / flicker overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0066ff]/0 via-[#0066ff]/8 to-[#0066ff]/0 animate-flicker pointer-events-none" />
+                  
+                  {/* Interactive hover glow frame */}
+                  <div className="absolute inset-0 border border-white/20 group-hover:border-[#0066ff]/40 transition-colors duration-500 rounded-2xl pointer-events-none" />
+                  
+                  {/* Glowing corner brackets for cinematic camera frame look */}
+                  <div className="absolute top-5 left-5 w-6 h-6 border-t-2 border-l-2 border-white/60 pointer-events-none" />
+                  <div className="absolute top-5 right-5 w-6 h-6 border-t-2 border-r-2 border-white/60 pointer-events-none" />
+                  <div className="absolute bottom-5 left-5 w-6 h-6 border-b-2 border-l-2 border-white/60 pointer-events-none" />
+                  <div className="absolute bottom-5 right-5 w-6 h-6 border-b-2 border-r-2 border-white/60 pointer-events-none" />
+
+                  {/* Rec indicator */}
+                  <div className="absolute top-6 left-8 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-md border border-white/15 pointer-events-none shadow-md">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-mono text-white tracking-widest uppercase font-bold">REC</span>
+                  </div>
+
+                  {/* Frame resolution label */}
+                  <div className="absolute top-6 right-8 bg-black/70 px-3 py-1.5 rounded-md border border-white/15 pointer-events-none shadow-md">
+                    <span className="text-[10px] font-mono text-zinc-300 tracking-wider font-semibold">4K UHD 23.976 fps</span>
+                  </div>
+
+                  {/* Bottom overlay with description */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-6 md:p-10 pt-20 md:pt-32 text-left">
+                    <p className="text-[10px] font-mono text-[#0066ff] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#0066ff] animate-ping" />
+                      {liveFeed.tag}
+                    </p>
+                    <h4 className="text-white font-sans text-xl md:text-3xl lg:text-4xl font-extrabold leading-tight uppercase tracking-wider">
+                      {liveFeed.title}
+                    </h4>
+                    <div className="flex items-center gap-1.5 text-zinc-400 font-mono text-[10px] md:text-xs mt-3 uppercase font-semibold">
+                      <MapPin className="w-3.5 h-3.5 text-[#0066ff] shrink-0" />
+                      <span>{liveFeed.subtitle}</span>
+                    </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-zinc-650 font-mono text-sm">Upcoming events will be announced shortly.</p>
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="text-center mt-12">
-            <Link 
-              href="/events" 
-              className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
-            >
-              View All Seminars <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="max-w-[94%] mx-auto">
+            <div className="text-center mt-12">
+              <Link 
+                href="/events" 
+                className="inline-flex items-center gap-2 px-8 py-3 bg-zinc-950 hover:bg-[#ea580c] text-white text-xs font-bold uppercase tracking-wider transition-colors font-mono"
+              >
+                View All Seminars <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -1361,7 +1577,7 @@ export default function Home() {
                           className="w-16 h-12 bg-zinc-200 relative shrink-0 overflow-hidden cursor-pointer shadow-sm group/thumb" 
                           onClick={() => setActivePodcast({ youtube_url: pod.youtube_url, title: pod.title })}
                         >
-                          <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300" />
+                          <img src={pod.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300" loading="lazy" decoding="async" />
                           <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
                             <Play className="w-4 h-4 fill-white" />
                           </div>
@@ -1471,10 +1687,12 @@ export default function Home() {
               {/* Illustration */}
               <div className="relative z-10 self-end">
                 <img
-                  src="/collaboration-highfive.png"
-                  alt="Collaboration - two professionals celebrating a high five"
+                  src="/collaboration-handshake.png"
+                  alt="Collaboration - two professionals shaking hands"
                   className="w-[420px] xl:w-[500px] object-contain drop-shadow-2xl select-none"
                   style={{ filter: "drop-shadow(0 0 40px rgba(234,88,12,0.15))" }}
+                  loading="lazy"
+                  decoding="async"
                 />
                 {/* Floating badge */}
                 <div className="absolute top-8 left-0 bg-zinc-900 border border-white/10 px-4 py-2.5 rounded-xl shadow-xl">
@@ -1611,6 +1829,8 @@ export default function Home() {
                         src={selectedFounderForMsg.photo || selectedFounderForMsg.photo_url}
                         alt={selectedFounderForMsg.name}
                         className="w-full h-full object-cover object-top select-none"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-44 h-52 bg-zinc-100 flex items-center justify-center text-3xl font-black text-[#ea580c] uppercase rounded-2xl border border-zinc-200 mr-8 mb-20 pointer-events-auto">
