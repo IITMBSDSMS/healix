@@ -13,8 +13,6 @@ import { HealixLogo } from "@/components/ui/HealixLogo";
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
-  { name: "Healix AI", href: "/ai-check" },
-  { name: "Lupens & Co.", href: "/care" },
   { name: "BioLabs", href: "/biolabs" },
   { name: "Our Members", href: "/our-members" },
   { name: "Events", href: "/events" },
@@ -75,8 +73,8 @@ export function Navbar() {
     };
   }, [supabase.auth]);
 
-  // Auto-hide navbar on care, biolabs & our-members pages
-  const isAutohidePage = (pathname === '/care' || pathname.startsWith('/care/')) || pathname.startsWith('/biolabs') || pathname.startsWith('/our-members');
+  // Auto-hide navbar on biolabs & our-members pages
+  const isAutohidePage = pathname.startsWith('/biolabs') || pathname.startsWith('/our-members');
 
   useEffect(() => {
     if (!isAutohidePage) {
@@ -143,7 +141,7 @@ export function Navbar() {
     setIsOpen(false);
   }, [pathname]);
 
-  if (pathname.startsWith("/ai-check")) return null;
+
 
   return (
     <header

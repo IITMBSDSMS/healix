@@ -54,8 +54,6 @@ export async function updateSession(request: NextRequest) {
 
   const isProtectedRoute =
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/ai-check') ||
-    (pathname === '/care' || pathname.startsWith('/care/')) ||
     pathname.startsWith('/shesecure');
 
   const isAdminRoute = pathname.startsWith('/dashboard/hero-manager') || pathname.startsWith('/admin');

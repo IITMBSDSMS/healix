@@ -8,10 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // ── Core pages — highest priority ───────────────────────────────────
     { url: siteUrl,                              lastModified: now, changeFrequency: "weekly",  priority: 1.0 },
     { url: `${siteUrl}/shesecure`,               lastModified: now, changeFrequency: "weekly",  priority: 0.95 },
-    { url: `${siteUrl}/ai-check`,                lastModified: now, changeFrequency: "weekly",  priority: 0.95 },
     { url: `${siteUrl}/academy`,                 lastModified: now, changeFrequency: "weekly",  priority: 0.9 },
     { url: `${siteUrl}/biolabs`,                 lastModified: now, changeFrequency: "monthly", priority: 0.85 },
-    { url: `${siteUrl}/care`,                    lastModified: now, changeFrequency: "monthly", priority: 0.8 },
 
     // ── Product pages ────────────────────────────────────────────────────
     { url: `${siteUrl}/events`,                  lastModified: now, changeFrequency: "weekly",  priority: 0.8 },

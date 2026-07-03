@@ -1132,14 +1132,6 @@ export default function Home() {
                 tag: "GENOMICS & RESEARCH"
               },
               {
-                name: "Lupens & Co.",
-                role: "Pharmaceutical & Healthcare Solutions",
-                description: "Standardizing clinical trial metrics, software-driven drug discovery pipelines, and secure IoT care networks.",
-                logo_url: "/lupens/lupens_logo.png",
-                href: "/care",
-                tag: "DIGITAL THERAPEUTICS"
-              },
-              {
                 name: "Belongs",
                 role: "Mental Health • Community Impact • Education",
                 description: "Empowering community health with active safety networks, Project Suraksha coordinates, and inclusive mental health support.",
@@ -1262,7 +1254,7 @@ export default function Home() {
                 status: "BETA TESTING",
                 color: "text-purple-600 border-purple-600/20 bg-purple-500/5",
                 accentBorder: "border-purple-600",
-                href: "/ai-check"
+                href: "#"
               }
             ].map((init, i) => {
               // Alternating staggered translation offsets for visual wave effect on desktop

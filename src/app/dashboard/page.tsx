@@ -63,37 +63,7 @@ export default function DashboardPage() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {/* Quick Action: Check Symptoms */}
-        <motion.div variants={item}>
-          <Link href="/ai-check" className="block h-full">
-            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors">
-              <div>
-                <div className="bg-primary/20 p-3 rounded-lg w-fit mb-4">
-                  <Activity className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Check Symptoms</h3>
-                <p className="text-sm text-white/60 mb-6">Use Healix AI to analyze your symptoms and get instant medical guidance.</p>
-              </div>
-              <span className="text-primary text-sm font-medium flex items-center gap-1">Start Check <ArrowRight className="h-4 w-4" /></span>
-            </GlassCard>
-          </Link>
-        </motion.div>
 
-        {/* Quick Action: Book Care */}
-        <motion.div variants={item}>
-          <Link href="/care" className="block h-full">
-            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/5 transition-colors">
-              <div>
-                <div className="bg-green-500/20 p-3 rounded-lg w-fit mb-4">
-                  <HeartPulse className="h-6 w-6 text-green-500" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Book Care</h3>
-                <p className="text-sm text-white/60 mb-6">Schedule appointments with healthcare professionals and labs.</p>
-              </div>
-              <span className="text-green-500 text-sm font-medium flex items-center gap-1">Find Doctors <ArrowRight className="h-4 w-4" /></span>
-            </GlassCard>
-          </Link>
-        </motion.div>
 
         {/* Quick Action: Emergency SOS */}
         <motion.div variants={item}>
